@@ -96,6 +96,8 @@ def promote_from_metadata(
     postprocess: Callable[[Path, Path], bool] | None = None,
     title: str = "Selected Blender Render",
     notes: list[str] | None = None,
+    save_blend: bool = False,
+    render_image: bool = True,
 ) -> RenderResult:
     source_sweep_dir = metadata_path_for_sweep(sweep_dir).parent
     variants = load_sweep_variants(sweep_dir)
@@ -123,6 +125,8 @@ def promote_from_metadata(
             "The full contact sheet was not rerendered for this selected pass.",
         ],
         source_sweep_dir=source_sweep_dir,
+        save_blend=save_blend,
+        render_image=render_image,
     )
 
 
@@ -137,6 +141,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--hero-samples", type=int, help="override hero render samples")
     parser.add_argument("--title", default="Selected Blender Render", help="README title for the selected render")
     parser.add_argument("--postprocess-glow", action="store_true", help="apply the workbench glow/contrast postprocess after rendering")
+    parser.add_argument("--save-blend", action="store_true", help="also save selected/<pick>/<pick>.blend for GUI review")
+    parser.add_argument("--export-blend-only", action="store_true", help="save the selected .blend and skip image rendering")
     return parser.parse_args(_script_args(argv))
 
 
@@ -152,8 +158,10 @@ def main(argv: list[str] | None = None) -> RenderResult:
         hero_samples=args.hero_samples,
         postprocess=postprocess_glow_contrast if args.postprocess_glow else None,
         title=args.title,
+        save_blend=args.save_blend or args.export_blend_only,
+        render_image=not args.export_blend_only,
     )
-    print(f"Promoted {result.name}: {result.finished or result.raw}")
+    print(f"Promoted {result.name}: {result.finished or result.raw or result.blend}")
     return result
 
 

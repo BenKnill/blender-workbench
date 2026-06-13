@@ -3,6 +3,7 @@ from __future__ import annotations
 import dataclasses
 import json
 import math
+import shlex
 import shutil
 import subprocess
 import time
@@ -23,11 +24,16 @@ class SweepVariant:
 @dataclass(frozen=True)
 class RenderResult:
     name: str
-    raw: str
+    raw: str | None
     finished: str | None
     settings: Any
     label: str | None = None
     note: str | None = None
+    blend: str | None = None
+    open_blend_command: str | None = None
+    render_skipped: bool = False
+    engine: str | None = None
+    camera_name: str | None = None
     build_seconds: float | None = None
     render_seconds: float | None = None
     postprocess_seconds: float | None = None
@@ -253,6 +259,10 @@ def _relative_or_absolute(path: Path, root: Path) -> str:
 def _safe_output_name(value: str) -> str:
     safe = "".join(char if char.isalnum() or char in ("-", "_") else "_" for char in value)
     return safe.strip("_") or "selected"
+
+
+def _open_blend_command(blend_path: Path, root: Path) -> str:
+    return f"open -a Blender {shlex.quote(_relative_or_absolute(blend_path, root))}"
 
 
 def variants_from_sweep_metadata(sweep_dir: Path) -> list[SweepVariant]:
@@ -527,7 +537,9 @@ def write_readme(
     for index, result in enumerate(results, start=1):
         detail = f": {result.note}" if result.note else ""
         label = f", label `{result.label}`" if result.label and result.label != result.name else ""
-        lines.append(f"{index}. pick `{result.name}` or `{index}`{label} -> `{Path(result.finished or result.raw).name}`{detail}")
+        output = result.finished or result.raw
+        output_name = Path(output).name if output else "(no image render)"
+        lines.append(f"{index}. pick `{result.name}` or `{index}`{label} -> `{output_name}`{detail}")
     if notes:
         lines.extend(["", "Notes:", ""])
         lines.extend(f"- {note}" for note in notes)
@@ -589,9 +601,33 @@ def write_selected_readme(
     if source_sweep_dir:
         root = root or Path.cwd()
         lines.append(f"Source sweep: `{_relative_or_absolute(source_sweep_dir, root)}`")
-    lines.extend(["", "Rendered files:", "", f"- `{Path(result.raw).name}`"])
+    lines.extend(["", "Rendered files:", ""])
+    if result.raw:
+        lines.append(f"- `{Path(result.raw).name}`")
+    if not result.raw and not result.finished:
+        lines.append("- No image render was requested.")
     if result.finished:
         lines.append(f"- `{Path(result.finished).name}`")
+    if result.blend:
+        lines.extend(
+            [
+                "",
+                "Blender scene:",
+                "",
+                f"- `{Path(result.blend).name}`",
+            ]
+        )
+        if result.open_blend_command:
+            lines.extend(
+                [
+                    "",
+                    "Open for GUI review:",
+                    "",
+                    "```bash",
+                    result.open_blend_command,
+                    "```",
+                ]
+            )
     if notes:
         lines.extend(["", "Notes:", ""])
         lines.extend(f"- {note}" for note in notes)
@@ -609,6 +645,8 @@ def _render_variant(
     postprocess: Callable[[Path, Path], bool] | None,
     file_suffix: str = "",
     render_label: str = "sweep",
+    save_blend_path: Path | None = None,
+    render_image: bool = True,
 ) -> RenderResult:
     import bpy
 
@@ -616,7 +654,7 @@ def _render_variant(
     raw = out_dir / f"{variant.name}{suffix}.raw.png"
     finished = out_dir / f"{variant.name}{suffix}.finished.png"
     wrote_finished = finished.exists()
-    if config.reuse_existing and raw.exists():
+    if config.reuse_existing and raw.exists() and not save_blend_path and render_image:
         postprocess_started = time.perf_counter()
         ran_postprocess = False
         if not wrote_finished and postprocess:
@@ -641,6 +679,34 @@ def _render_variant(
     engine = configure_render(config)
     if config.camera_name:
         bpy.context.scene.camera = bpy.data.objects[config.camera_name]
+
+    blend_value = None
+    open_blend_command = None
+    if save_blend_path:
+        save_blend_path.parent.mkdir(parents=True, exist_ok=True)
+        bpy.ops.wm.save_as_mainfile(filepath=str(save_blend_path))
+        blend_value = _relative_or_absolute(save_blend_path, root)
+        open_blend_command = _open_blend_command(save_blend_path, root)
+
+    if not render_image:
+        print(f"Exported {render_label} variant {variant.name} scene without rendering")
+        return RenderResult(
+            name=variant.name,
+            raw=None,
+            finished=None,
+            settings=settings_to_jsonable(variant.settings),
+            label=variant.label,
+            note=variant.note,
+            blend=blend_value,
+            open_blend_command=open_blend_command,
+            render_skipped=True,
+            engine=engine,
+            camera_name=config.camera_name,
+            build_seconds=build_seconds,
+            render_seconds=0.0,
+            postprocess_seconds=0.0,
+        )
+
     bpy.context.scene.render.filepath = str(raw)
     print(f"Rendering {render_label} variant {variant.name} ({engine}, {config.samples} samples)")
     render_started = time.perf_counter()
@@ -656,6 +722,10 @@ def _render_variant(
         settings=settings_to_jsonable(variant.settings),
         label=variant.label,
         note=variant.note,
+        blend=blend_value,
+        open_blend_command=open_blend_command,
+        engine=engine,
+        camera_name=config.camera_name,
         build_seconds=build_seconds,
         render_seconds=render_seconds,
         postprocess_seconds=postprocess_seconds,
@@ -734,6 +804,8 @@ def render_selected_variant(
     title: str = "Selected Blender Render",
     notes: list[str] | None = None,
     source_sweep_dir: Path | None = None,
+    save_blend: bool = False,
+    render_image: bool = True,
 ) -> RenderResult:
     """Render one picked variant at higher quality after inspecting a grid."""
     variant_list = list(variants)
@@ -741,8 +813,11 @@ def render_selected_variant(
     cfg = config or RenderConfig.hero_check()
     root = root or Path.cwd()
     out_dir.mkdir(parents=True, exist_ok=True)
+    if not render_image and not save_blend:
+        raise ValueError("render_image=False requires save_blend=True so the selected pass writes an artifact")
 
     selected_started = time.perf_counter()
+    blend_path = out_dir / f"{_safe_output_name(selected.name)}.blend" if save_blend else None
     result = _render_variant(
         variant=selected,
         build_scene=build_scene,
@@ -752,24 +827,36 @@ def render_selected_variant(
         postprocess=postprocess,
         file_suffix="hero",
         render_label="selected",
+        save_blend_path=blend_path,
+        render_image=render_image,
     )
     write_selected_readme(out_dir, title, selected, result, notes=notes, source_sweep_dir=source_sweep_dir, root=root)
     source_value = _relative_or_absolute(source_sweep_dir, root) if source_sweep_dir else None
+    payload = {
+        "pick": pick,
+        "source_sweep": source_value,
+        "selected": {
+            "name": selected.name,
+            "label": selected.label,
+            "note": selected.note,
+            "settings": settings_to_jsonable(selected.settings),
+        },
+        "render_config": settings_to_jsonable(cfg),
+        "total_seconds": time.perf_counter() - selected_started,
+        "result": dataclasses.asdict(result),
+    }
+    if result.blend:
+        payload["blend_export"] = {
+            "path": result.blend,
+            "open_command": result.open_blend_command,
+            "camera_name": cfg.camera_name,
+            "render_profile": settings_to_jsonable(cfg),
+            "render_image": render_image,
+            "source_sweep": source_value,
+        }
     (out_dir / "selected.json").write_text(
         json.dumps(
-            {
-                "pick": pick,
-                "source_sweep": source_value,
-                "selected": {
-                    "name": selected.name,
-                    "label": selected.label,
-                    "note": selected.note,
-                    "settings": settings_to_jsonable(selected.settings),
-                },
-                "render_config": settings_to_jsonable(cfg),
-                "total_seconds": time.perf_counter() - selected_started,
-                "result": dataclasses.asdict(result),
-            },
+            payload,
             indent=2,
         )
     )
@@ -787,6 +874,9 @@ def render_selected_from_sweep(
     postprocess: Callable[[Path, Path], bool] | None = postprocess_glow_contrast,
     title: str = "Selected Blender Render",
     notes: list[str] | None = None,
+    source_sweep_dir: Path | None = None,
+    save_blend: bool = False,
+    render_image: bool = True,
 ) -> RenderResult:
     """Promote one tile from a prior sweep grid into a heavier selected render."""
     sweep_dir = Path(sweep_dir)
@@ -803,5 +893,7 @@ def render_selected_from_sweep(
         postprocess=postprocess,
         title=title,
         notes=notes,
-        source_sweep_dir=sweep_dir,
+        source_sweep_dir=source_sweep_dir or sweep_dir,
+        save_blend=save_blend,
+        render_image=render_image,
     )

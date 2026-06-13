@@ -4,6 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import blender_workbench.sweep as sweep_module
 from blender_workbench.camera import camera_distance_for_matching_framing, orbit_location
 from blender_workbench.postprocess import (
     PostprocessLookSettings,
@@ -43,6 +44,7 @@ from blender_workbench.sweep import (
     select_variant,
     settings_to_jsonable,
     variants_from_sweep_metadata,
+    render_selected_variant,
     write_readme,
 )
 
@@ -185,6 +187,76 @@ class SweepTests(unittest.TestCase):
         self.assertIn("Do not stop at the contact sheet", text)
         self.assertIn("render_selected_from_sweep", text)
         self.assertIn("blender --background --python examples/demo.py -- --pick wide_shell", text)
+
+    def test_selected_blend_export_writes_readme_and_metadata_without_render(self):
+        calls = []
+        original_render_variant = sweep_module._render_variant
+
+        def fake_render_variant(**kwargs):
+            calls.append(kwargs)
+            blend_path = kwargs["save_blend_path"]
+            return RenderResult(
+                name=kwargs["variant"].name,
+                raw=None,
+                finished=None,
+                settings=kwargs["variant"].settings,
+                blend=str(blend_path.relative_to(kwargs["root"])),
+                open_blend_command=f"open -a Blender {blend_path.relative_to(kwargs['root'])}",
+                render_skipped=True,
+                engine=kwargs["config"].engine,
+                camera_name=kwargs["config"].camera_name,
+                build_seconds=0.01,
+                render_seconds=0.0,
+                postprocess_seconds=0.0,
+            )
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            out_dir = root / "examples/output/demo/selected/wide_shell"
+            source_sweep = root / "examples/output/demo"
+            source_sweep.mkdir(parents=True)
+            sweep_module._render_variant = fake_render_variant
+            try:
+                result = render_selected_variant(
+                    variants=[SweepVariant("wide_shell", {"width": 1.4}, label="wide")],
+                    pick="wide_shell",
+                    build_scene=lambda _settings: None,
+                    out_dir=out_dir,
+                    root=root,
+                    config=RenderConfig(camera_name="DemoCamera"),
+                    postprocess=None,
+                    source_sweep_dir=source_sweep,
+                    save_blend=True,
+                    render_image=False,
+                )
+            finally:
+                sweep_module._render_variant = original_render_variant
+
+            payload = json.loads((out_dir / "selected.json").read_text())
+            readme = (out_dir / "README.md").read_text()
+
+        self.assertEqual(result.blend, "examples/output/demo/selected/wide_shell/wide_shell.blend")
+        self.assertFalse(calls[0]["render_image"])
+        self.assertEqual(calls[0]["save_blend_path"].name, "wide_shell.blend")
+        self.assertTrue(payload["result"]["render_skipped"])
+        self.assertIsNone(payload["result"]["raw"])
+        self.assertEqual(payload["blend_export"]["path"], "examples/output/demo/selected/wide_shell/wide_shell.blend")
+        self.assertEqual(payload["blend_export"]["camera_name"], "DemoCamera")
+        self.assertFalse(payload["blend_export"]["render_image"])
+        self.assertIn("No image render was requested", readme)
+        self.assertIn("Open for GUI review", readme)
+        self.assertIn("open -a Blender examples/output/demo/selected/wide_shell/wide_shell.blend", readme)
+
+    def test_selected_export_requires_an_artifact(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaisesRegex(ValueError, "render_image=False requires save_blend=True"):
+                render_selected_variant(
+                    variants=[SweepVariant("wide_shell", {"width": 1.4})],
+                    pick="wide_shell",
+                    build_scene=lambda _settings: None,
+                    out_dir=Path(tmp),
+                    render_image=False,
+                )
 
     def test_tile_spec_auto_columns_make_square_boards(self):
         tile = TileSpec.auto_micro_grid()

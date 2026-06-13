@@ -82,6 +82,7 @@ The first command prints the planned Blender command from existing `metadata.jso
 4. Inspect `contact_sheet.png`.
 5. Widen or narrow the sweep based on what the sheet shows.
 6. Render the chosen tile with `render_selected_from_sweep(...)` before folding it into the main scene.
+7. When viewport inspection would help, add `save_blend=True` or use an example's `--save-blend` / `--export-blend-only` path and open the saved `.blend`.
 
 ## Design Bias
 
@@ -118,6 +119,7 @@ render_selected_from_sweep(
     pick="balanced_bell",
     build_scene=build_scene,
     config=RENDER_PRESETS["hero_check"],
+    save_blend=True,
 )
 ```
 
@@ -125,8 +127,10 @@ If you only have the generated sweep folder, promote from `metadata.json` and a 
 
 ```bash
 PYTHONPATH=src /Applications/Blender.app/Contents/MacOS/Blender --background --python-expr \
-'import blender_workbench.promote as p; p.main(["--sweep", "examples/output/mesh_light_scout", "--pick", "mesh_fill_p1", "--recipe", "blender_workbench.recipes.mesh_light:build_mesh_light_scene", "--camera-name", "mesh_light_camera"])'
+'import blender_workbench.promote as p; p.main(["--sweep", "examples/output/mesh_light_scout", "--pick", "mesh_fill_p1", "--recipe", "blender_workbench.recipes.mesh_light:build_mesh_light_scene", "--camera-name", "mesh_light_camera", "--save-blend"])'
 ```
+
+Use `--export-blend-only` on the same helper or on pickable examples when you want the GUI handoff without spending time on a selected PNG render.
 
 The default contact sheet is now a tiny square auto-grid. Use `tiny_grid`/`auto_tiny_grid` when you want lots of tiles, `micro_grid`/`auto_micro_grid` when labels need more room, `hero_pair` for larger before/after comparisons, `balanced_grid` for readable 3x3 studies, `square_moodboard` for palette and shape boards, and `filmstrip` only when sequence order matters more than square comparison.
 

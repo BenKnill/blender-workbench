@@ -31,6 +31,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Render a terrain environment grid, or promote one picked tile.")
     parser.add_argument("--pick", help="variant name, label, or 1-based index to render with the hero profile")
     parser.add_argument("--hero-samples", type=int, default=96, help="Cycles samples for --pick")
+    parser.add_argument("--save-blend", action="store_true", help="also save a selected .blend for GUI review")
+    parser.add_argument("--export-blend-only", action="store_true", help="save the selected .blend and skip image rendering")
     args, _unknown = parser.parse_known_args(_script_args(argv))
     return args
 
@@ -59,6 +61,8 @@ def main(argv: list[str] | None = None) -> None:
                 "Use this heavier render to judge horizon mood, strata readability, and foreground depth.",
             ],
             source_sweep_dir=OUT,
+            save_blend=args.save_blend or args.export_blend_only,
+            render_image=not args.export_blend_only,
         )
         return
 
