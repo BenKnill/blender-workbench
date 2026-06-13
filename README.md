@@ -50,7 +50,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `docs/rocket-plume.md`: recipe notes for broad, smoky, in-space engine plumes.
 - `tools/pdf_triage.py`: capture local PDF extraction/rendering capability and create learning-note stubs under `runs/`.
 - `tools/pdf_lesson_index.py`: maintain a structured PDF lesson index and next-skim queue.
-- `tools/learning_coverage.py`: validate/report source-prompt coverage and flag prompts with no scout or issue.
+- `tools/learning_coverage.py`: validate/report source-prompt coverage, flag prompts with no scout or issue, and audit stale post-merge status.
 - `tools/reference_manifest.py`: verify the adjacent `../reference_materials` shelf by checksum, size, and derived-resource fingerprints.
 - `tools/artifact_index.py`: scan current outputs and legacy study folders into a versioned artifact index/report.
 - `tools/workbench_doctor.py`: machine-readable and human-readable local capability preflight.

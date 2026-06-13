@@ -6,9 +6,10 @@ Run the checker before filing duplicate scout work:
 
 ```bash
 python3 tools/learning_coverage.py report --fail-uncovered
+python3 tools/learning_coverage.py audit --check-paths --check-issues
 ```
 
-When a source prompt becomes a new scout, docs page, issue, local reference study, or deliberate skip, update `docs/learning-coverage.json` in the same change.
+When a source prompt becomes a new scout, docs page, issue, local reference study, or deliberate skip, update `docs/learning-coverage.json` in the same change. After PR merges, run the freshness audit so rows marked `issue_open` do not silently stay stale after their linked issues close.
 
 | Coverage row | Source prompt | Status | Implemented scouts | Issue links | Artifact/docs cues |
 | --- | --- | --- | --- | --- | --- |
