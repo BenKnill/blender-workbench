@@ -56,6 +56,7 @@ Shape sweeps should usually happen before material polish. If the thumbnail is n
 - metal: roughness crossed with edge light strength
 - texture magnitude: clean, marked, craggy, overdone
 - texture scale: fine, medium, broad
+- procedural texture nodes: noise/wave/voronoi family, coordinate space, ramp contrast, palette intensity, bump, roughness coupling
 - procedural seed/phase: seed0, seed1, seed2, shifted texture phase
 
 Keep one deliberate `failure_anchor` in material sheets. It calibrates the eye and makes the good tile more legible.
@@ -103,6 +104,7 @@ Postprocess sweeps should reuse one raw render when the scene is already selecte
 - `examples/sunset_haze_scout.py` for an ordered dusk/moonrise/afterglow filmstrip using `SUNSET_HAZE`
 - `examples/transparency_scout.py` for a 5x5 alpha/roughness/IOR/thickness/tint stride sheet
 - `examples/light_texture_scout.py` for a concrete named light-jitter plus texture-magnitude board
+- `examples/procedural_texture_scout.py` for a BlenderArt issue 22 surface texture-node board before reusing a material preset
 - `examples/rocket_plume_texture_scout.py` for a dense plume density-texture board from smooth through overdone to whiteout
 - `examples/silhouette_shape_scout.py` for an unlabeled blind silhouette board, then `--labels` or `--pick` after the visual choice
 - `light_source_jitter` x `texture_magnitude` with `balanced_grid`

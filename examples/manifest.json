@@ -117,6 +117,25 @@
       "docs_asset": "docs/assets/layered-material-scout.svg"
     },
     {
+      "name": "procedural_texture_scout",
+      "script": "examples/procedural_texture_scout.py",
+      "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/procedural_texture_scout.py",
+      "required_capabilities": ["blender", "magick"],
+      "cost": {
+        "profile": "material_scout",
+        "engine": "EEVEE",
+        "runtime": "quick",
+        "mode": "grid_scout",
+        "requires_blender": true,
+        "tile_count": 11,
+        "tile_preset": "auto_square_moodboard",
+        "reuse_outputs": true
+      },
+      "outputs": ["examples/output/procedural_texture_scout/metadata.json", "examples/output/procedural_texture_scout/contact_sheet.png"],
+      "prerequisites": [],
+      "docs_asset": "docs/assets/procedural-texture-scout.svg"
+    },
+    {
       "name": "mesh_light_scout",
       "script": "examples/mesh_light_scout.py",
       "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/mesh_light_scout.py",
