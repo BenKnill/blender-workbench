@@ -1,4 +1,6 @@
 import json
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -132,6 +134,54 @@ class ArtifactIndexTests(unittest.TestCase):
         self.assertIn("artifact 1 has unknown status 'odd'", errors)
         self.assertIn("artifact 1 missing id", errors)
         self.assertIn("artifact 1 missing root", errors)
+
+    def test_cli_validate_reports_missing_index_without_traceback(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            missing = Path(tmp) / "artifacts/index.json"
+
+            result = subprocess.run(
+                [sys.executable, "tools/artifact_index.py", "validate", "--index", str(missing)],
+                capture_output=True,
+                text=True,
+            )
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("No ", result.stderr)
+        self.assertIn("validate --scan", result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+
+    def test_cli_validate_scan_works_without_persisted_index(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            sweep = root / "examples/output/demo"
+            sweep.mkdir(parents=True)
+            (sweep / "contact_sheet.png").write_text("image")
+            (sweep / "metadata.json").write_text(
+                json.dumps(
+                    {
+                        "title": "Demo Sweep",
+                        "workflow": {"stage": "sweep_grid", "status": "needs_selected_render"},
+                        "variants": [{"name": "wide", "raw": "examples/output/demo/wide.raw.png"}],
+                    }
+                )
+            )
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "tools/artifact_index.py",
+                    "validate",
+                    "--scan",
+                    "--root",
+                    str(root),
+                    str(root / "examples/output"),
+                ],
+                capture_output=True,
+                text=True,
+            )
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("scanned artifact index is valid", result.stdout)
 
 
 if __name__ == "__main__":

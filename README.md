@@ -105,11 +105,12 @@ Index generated and legacy artifacts when you need a repo-level map of sweeps, s
 
 ```bash
 python3 tools/artifact_index.py build --out artifacts/index.json
+python3 tools/artifact_index.py validate --scan
 python3 tools/artifact_index.py report --index artifacts/index.json
 python3 tools/artifact_index.py validate --index artifacts/index.json
 ```
 
-The report lists artifact type, status, preview path, and source cue. Legacy metadata is adapted into the index without rewriting the original study folders.
+The report lists artifact type, status, preview path, and source cue. Use `validate --scan` for a no-write freshness check before an index has been persisted; plain file validation prints a next action if `artifacts/index.json` has not been built yet. Legacy metadata is adapted into the index without rewriting the original study folders.
 
 Before opening a PR that adds or rewires an example `--pick` path, run a cheap selected-render smoke check:
 

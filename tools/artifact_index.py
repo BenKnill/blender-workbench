@@ -42,8 +42,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     report.add_argument("--root", type=Path, default=ROOT, help="repository root for relative paths")
     report.add_argument("--index", type=Path, help="read an existing index JSON instead of scanning")
 
-    validate = subparsers.add_parser("validate", help="validate an index JSON")
+    validate = subparsers.add_parser("validate", help="validate an index JSON or scanned artifact paths")
+    validate.add_argument("paths", nargs="*", type=Path, help="paths to scan when --scan is used")
     validate.add_argument("--index", type=Path, default=ROOT / "artifacts" / "index.json", help="index JSON path")
+    validate.add_argument("--root", type=Path, default=ROOT, help="repository root for relative paths when scanning")
+    validate.add_argument("--scan", action="store_true", help="scan paths and validate the in-memory index without writing it")
 
     return parser.parse_args(_script_args(argv))
 
@@ -72,11 +75,21 @@ def main(argv: list[str] | None = None) -> dict:
         print(format_artifact_report(index))
         return index
     if args.command == "validate":
-        index = _load_index(args.index)
+        if args.scan:
+            index = _scan(args.paths, root=args.root)
+            source = "scanned artifact index"
+        else:
+            if not args.index.exists():
+                raise SystemExit(
+                    f"No {args.index} found; run `python3 tools/artifact_index.py build --out {args.index}` "
+                    "or `python3 tools/artifact_index.py validate --scan`."
+                )
+            index = _load_index(args.index)
+            source = str(args.index)
         errors = validate_artifact_index(index)
         if errors:
             raise SystemExit("\n".join(errors))
-        print(f"{args.index} is valid")
+        print(f"{source} is valid")
         return index
     raise SystemExit(f"Unknown command {args.command}")
 
