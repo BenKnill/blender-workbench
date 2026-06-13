@@ -16,6 +16,7 @@ from .presets import RENDER_PRESETS, SWEEP_AXES, TILE_PRESETS, SweepAxis, one_ax
 from .primitives import add_soft_horizon_band, soft_band_alpha_profile
 from .promote import import_recipe_callable, load_sweep_variants, promote_from_metadata, select_metadata_variant
 from .promotion_status import PromotionStatus, format_promotion_report, promotion_statuses
+from .review_page import write_review_page
 from .sweep import (
     RenderConfig,
     RenderResult,
@@ -92,4 +93,5 @@ __all__ = [
     "two_axis_variants",
     "variants_from_sweep_metadata",
     "verify_selected_json",
+    "write_review_page",
 ]

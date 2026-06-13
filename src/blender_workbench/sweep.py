@@ -19,6 +19,7 @@ from .artifact_fingerprint import (
     render_cache_fingerprint,
     write_fingerprint_record,
 )
+from .review_page import write_review_page
 
 
 VARIANT_ROLES = (
@@ -935,6 +936,7 @@ def render_sweep(
         json.dumps(
             {
                 "fingerprint": sweep_fingerprint,
+                "title": title,
                 "render_config": settings_to_jsonable(cfg),
                 "contact_sheet": {
                     "columns": cfg.tile.columns_for_count(len(results)),
@@ -947,6 +949,7 @@ def render_sweep(
             indent=2,
         )
     )
+    write_review_page(out_dir, root=root)
     return results
 
 

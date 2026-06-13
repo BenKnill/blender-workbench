@@ -40,6 +40,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `tools/pdf_lesson_index.py`: maintain a structured PDF lesson index and next-skim queue.
 - `tools/reference_manifest.py`: verify the adjacent `../reference_materials` shelf by checksum, size, and derived-resource fingerprints.
 - `tools/workbench_doctor.py`: machine-readable and human-readable local capability preflight.
+- `tools/sweep_review_page.py`: generate static `review.html` pages for full-size sweep tile inspection.
 - `tools/example_pick_smoke.py`: opt-in low-sample Blender smoke checks for example `--pick` promotion paths.
 - `tools/sweep_promotion_status.py`: scan sweep outputs for grids that still need a visual pick and selected render.
 
@@ -229,6 +230,7 @@ This uses `blender_workbench.recipes.mesh_light` to compare emissive mesh size, 
 After inspecting the sheet, promote one tile:
 
 ```bash
+python3 tools/sweep_review_page.py examples/output/mesh_light_scout
 /Applications/Blender.app/Contents/MacOS/Blender --background --python examples/mesh_light_scout.py -- --pick mesh_fill_p1
 ```
 

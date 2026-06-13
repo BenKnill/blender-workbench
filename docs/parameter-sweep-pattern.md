@@ -8,10 +8,11 @@ Use this repo when a Blender idea needs fast visual comparison instead of one-of
 2. Write one `build_scene(settings)` function that fully rebuilds the scene.
 3. Render a low-cost sweep with fixed camera, resolution, and samples.
 4. Read the contact sheet before changing the scene.
-5. Pick the best tile by exact variant name or 1-based index.
-6. Render that pick with `render_selected_from_sweep(...)`.
-7. Save a `.blend` for GUI inspection when the viewport would reveal setup, camera, material, or light-placement mistakes faster than another PNG.
-8. Promote the selected settings into a named preset only after the heavier render or GUI handoff still works.
+5. Open `review.html` or run `python3 tools/sweep_review_page.py <sweep-dir>` for full-size tile inspection.
+6. Pick the best tile by exact variant name or 1-based index.
+7. Render that pick with `render_selected_from_sweep(...)`.
+8. Save a `.blend` for GUI inspection when the viewport would reveal setup, camera, material, or light-placement mistakes faster than another PNG.
+9. Promote the selected settings into a named preset only after the heavier render or GUI handoff still works.
 
 ## Sweep Design
 
@@ -46,6 +47,7 @@ Each manifest entry records the example command, expected output files, docs ass
 - Use `baseline` for neutral/reference tiles, `candidate` for normal sweep choices, `aesthetic_extreme` for useful overdone edges, and `negative_control` when the tile is deliberately wrong.
 - Put generated images under ignored output folders such as `examples/output/` or `runs/`.
 - Keep `metadata.json` next to the tiles so visual picks can become reproducible presets.
+- Use `review.html` for dense micro/tiny grids before trusting a thumbnail-scale winner.
 - Prefer small diagnostic renders, then spend samples on the winner with `RENDER_PRESETS["hero_check"]`.
 
 ## Selection Render
