@@ -55,7 +55,7 @@ Keep one deliberate failure anchor in material sheets. It calibrates the eye and
 - glow bloom: dry, rim, washed
 - camera jitter: tripod, breathing, loose
 - camera perspective: wide/close, normal/mid, portrait/far, tele/flat
-- camera orbit: front low, left/right mid, high three-quarter
+- scene depth cues: foreground anchors, background anchors, grid spacing, subject depth
 - caustics: light size, water roughness, pattern scale
 - space plume: blue-white emission, soft gray shell, low fire color
 - subsurface candy: opal, amber, ruby, sea-glass
@@ -66,7 +66,7 @@ Color sweeps should avoid one-note palettes. Put at least one cool/warm contrast
 
 - `plume_alpha_strength` x `plume_shape` with `micro_grid`
 - named texture cases with `auto_square_moodboard` and `square=True`
-- `examples/camera_perspective_scout.py` for a 5x5 lens/yaw/pitch/roll/depth stride sheet
+- `examples/camera_perspective_scout.py` for a same-view 5x5 lens/foreground/background/grid/subject stride sheet
 - `examples/gobo_lighting_scout.py` for projected shadow texture, gel color, and light softness
 - `examples/subsurface_scout.py` for translucent wax/jelly/opal material reads with thickness and backlight
 - `examples/transparency_scout.py` for a 5x5 alpha/roughness/IOR/thickness/tint stride sheet

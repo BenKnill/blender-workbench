@@ -175,25 +175,38 @@ class SweepTests(unittest.TestCase):
 
     def test_camera_perspective_recipe_exposes_lens_distance_board(self):
         variants = camera_perspective_variants(prefix="test")
-        settings = coerce_camera_perspective_settings({"camera_lens": 24, "camera_yaw": 12, "unused": True})
+        settings = coerce_camera_perspective_settings({"camera_lens": 24, "subject_y": 0.4, "unused": True})
         names = [variant.name for variant in variants]
 
         self.assertEqual(len(variants), 25)
         self.assertIn("test_lens_m2", names)
-        self.assertIn("test_roll_p2", names)
-        self.assertIn("test_depth_p2", names)
+        self.assertIn("test_fg_p2", names)
+        self.assertIn("test_bg_p2", names)
+        self.assertIn("test_grid_p2", names)
+        self.assertIn("test_subj_p2", names)
         self.assertIsInstance(settings, CameraPerspectiveSettings)
         self.assertEqual(settings.camera_lens, 24)
-        self.assertEqual(settings.camera_yaw, 12)
+        self.assertEqual(settings.subject_y, 0.4)
         self.assertFalse(hasattr(settings, "unused"))
+
+    def test_camera_perspective_recipe_keeps_same_view_by_default(self):
+        variants = camera_perspective_variants(prefix="test")
+
+        self.assertTrue(all(variant.settings["camera_yaw"] == 0 for variant in variants))
+        self.assertTrue(all(variant.settings["camera_roll"] == 0 for variant in variants))
+        self.assertEqual([variant.label.split("_")[0] for variant in variants[5:10]], ["fg"] * 5)
 
     def test_camera_perspective_recipe_accepts_stride_adjustment(self):
         timid = camera_perspective_variants(prefix="test", lens_stride=8)
         loud = camera_perspective_variants(prefix="test", lens_stride=40)
+        timid_depth = camera_perspective_variants(prefix="test", foreground_stride=0.12)
+        loud_depth = camera_perspective_variants(prefix="test", foreground_stride=0.6)
 
         self.assertLess(timid[0].settings["camera_lens"], timid[2].settings["camera_lens"])
         self.assertLess(loud[0].settings["camera_lens"], timid[0].settings["camera_lens"])
         self.assertGreater(loud[4].settings["camera_distance"], timid[4].settings["camera_distance"])
+        self.assertLess(loud_depth[5].settings["foreground_depth"], timid_depth[5].settings["foreground_depth"])
+        self.assertGreater(loud_depth[9].settings["foreground_depth"], timid_depth[9].settings["foreground_depth"])
 
     def test_transparency_recipe_exposes_dense_material_board(self):
         variants = transparency_variants(prefix="test")

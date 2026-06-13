@@ -11,7 +11,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `blender_workbench.materials`: small material helpers with explicit alpha and subsurface semantics.
 - `blender_workbench.presets`: starter axes, render profiles, and tile layouts for common visual experiments.
 - `blender_workbench.recipes`: optional domain recipes, including a fast rocket vacuum plume scout.
-- `examples/camera_perspective_scout.py`: matched-framing lens/distance/angle/pitch board.
+- `examples/camera_perspective_scout.py`: same-view lens and scene-depth cue stride board.
 - `examples/gobo_lighting_scout.py`: projected-shadow/gobo lighting board from the BlenderArt lighting resources.
 - `examples/subsurface_scout.py`: subsurface material board for wax, jelly, opal, roughness, and backlight.
 - `examples/transparency_scout.py`: transparency, transmission, roughness, IOR, tint, and thickness board.
@@ -100,7 +100,7 @@ render_sweep(
 )
 ```
 
-Good current axes include `light_source_jitter`, `light_source_size`, `texture_magnitude`, `texture_scale`, `glow_bloom`, `camera_jitter`, `camera_perspective`, `camera_orbit`, and `transparency_alpha`.
+Good current axes include `light_source_jitter`, `light_source_size`, `texture_magnitude`, `texture_scale`, `glow_bloom`, `camera_jitter`, `camera_perspective`, and `transparency_alpha`.
 
 For fast stride adjustment, build an axis around a center value:
 
@@ -126,7 +126,7 @@ Run the matched-framing camera scout:
 /Applications/Blender.app/Contents/MacOS/Blender --background --python examples/camera_perspective_scout.py
 ```
 
-This uses `blender_workbench.recipes.camera_perspective` to compare lens, yaw, pitch, roll, and room depth as a 5x5 stride sheet. Lens and distance are paired so the central subject stays similarly sized while the room perspective changes. If the sheet looks timid, increase `lens_stride`, `yaw_stride`, `pitch_stride`, `roll_stride`, or `depth_stride`.
+This uses `blender_workbench.recipes.camera_perspective` to compare lens, foreground anchors, background anchors, floor grid depth, and subject depth as a 5x5 stride sheet. The view stays fundamentally frontal; the scene changes under the view so you can smell toward useful depth parameters. If the sheet looks timid, increase `lens_stride`, `foreground_stride`, `background_stride`, `grid_stride`, or `subject_stride`.
 
 ![Camera perspective scout contact sheet](docs/assets/camera-perspective-scout.jpg)
 

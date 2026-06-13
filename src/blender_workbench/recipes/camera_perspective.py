@@ -16,14 +16,19 @@ CAMERA_PERSPECTIVE_CAMERA = "perspective_scout_camera"
 
 @dataclass(frozen=True)
 class CameraPerspectiveSettings:
-    camera_lens: float = 45.0
-    camera_distance: float = camera_distance_for_matching_framing(45.0)
+    camera_lens: float = 58.0
+    camera_distance: float = camera_distance_for_matching_framing(58.0, base_lens_mm=58.0, base_distance=4.6)
     camera_yaw: float = 0.0
-    camera_pitch: float = 10.0
+    camera_pitch: float = 12.0
     camera_roll: float = 0.0
     subject_scale: tuple[float, float, float] = (0.72, 0.72, 1.0)
+    subject_y: float = 0.28
+    subject_depth: float = 1.0
+    foreground_depth: float = 1.0
     foreground_marker_scale: float = 1.0
+    background_depth: float = 1.0
     background_marker_scale: float = 1.0
+    floor_grid_depth: float = 1.0
     room_depth: float = 4.6
     light_angle: float = -35.0
 
@@ -57,17 +62,16 @@ def camera_perspective_variants(
     steps: tuple[int, ...] = (-2, -1, 0, 1, 2),
     lens_center: float = 58.0,
     lens_stride: float = 36.0,
-    yaw_stride: float = 34.0,
-    pitch_center: float = 18.0,
-    pitch_stride: float = 13.0,
-    roll_stride: float = 13.0,
-    depth_stride: float = 1.05,
+    foreground_stride: float = 0.45,
+    background_stride: float = 0.45,
+    grid_stride: float = 0.46,
+    subject_stride: float = 0.36,
 ) -> list[SweepVariant]:
-    """Build a stride board for camera variables.
+    """Build a same-view stride board for perspective/depth variables.
 
-    Increase the stride values when the perspective sheet looks timid. The
-    distance is recalculated for every lens tile so the central subject stays
-    roughly comparable while the room perspective changes.
+    Increase the stride values when the sheet looks timid. The lens row uses
+    matched distance, while other rows keep the same camera view and alter the
+    scene's depth cues.
     """
     base = dataclasses.asdict(CameraPerspectiveSettings(camera_lens=lens_center, camera_distance=_matched(lens_center)))
     variants: list[SweepVariant] = []
@@ -81,7 +85,7 @@ def camera_perspective_variants(
                 name=name,
                 label=label,
                 settings=data,
-                note="stride scout: lens, distance, orbit, roll, and depth",
+                note="same-view stride scout: lens, foreground, background, grid, subject",
             )
         )
 
@@ -90,25 +94,44 @@ def camera_perspective_variants(
         add(f"lens_{_step_label(step)}", {"camera_lens": lens, "camera_distance": _matched(lens)})
 
     for step in steps:
-        add(f"yaw_{_step_label(step)}", {"camera_yaw": step * yaw_stride})
-
-    for step in steps:
-        pitch = _clamp(pitch_center + step * pitch_stride, -6.0, 52.0)
-        add(f"pitch_{_step_label(step)}", {"camera_pitch": pitch})
-
-    for step in steps:
-        add(f"roll_{_step_label(step)}", {"camera_roll": step * roll_stride})
-
-    for step in steps:
-        depth = _clamp(4.6 + step * depth_stride, 2.4, 8.0)
-        foreground = _clamp(1.0 - step * 0.28, 0.42, 1.75)
-        background = _clamp(1.0 + step * 0.18, 0.55, 1.55)
+        depth = _clamp(1.0 + step * foreground_stride, 0.18, 2.2)
         add(
-            f"depth_{_step_label(step)}",
+            f"fg_{_step_label(step)}",
             {
-                "room_depth": depth,
-                "foreground_marker_scale": foreground,
-                "background_marker_scale": background,
+                "foreground_depth": depth,
+                "foreground_marker_scale": _clamp(0.55 + depth * 0.54, 0.45, 1.85),
+            },
+        )
+
+    for step in steps:
+        depth = _clamp(1.0 + step * background_stride, 0.22, 2.35)
+        add(
+            f"bg_{_step_label(step)}",
+            {
+                "background_depth": depth,
+                "background_marker_scale": _clamp(1.35 - (depth - 1.0) * 0.32, 0.50, 1.62),
+                "room_depth": _clamp(4.6 + (depth - 1.0) * 1.55, 2.7, 7.0),
+            },
+        )
+
+    for step in steps:
+        grid = _clamp(1.0 + step * grid_stride, 0.25, 2.4)
+        add(
+            f"grid_{_step_label(step)}",
+            {
+                "floor_grid_depth": grid,
+                "room_depth": _clamp(4.6 * grid, 2.4, 8.0),
+            },
+        )
+
+    for step in steps:
+        subject = _clamp(1.0 + step * subject_stride, 0.30, 1.95)
+        add(
+            f"subj_{_step_label(step)}",
+            {
+                "subject_y": _clamp(0.28 + step * 0.24, -0.22, 0.92),
+                "subject_depth": subject,
+                "subject_scale": (0.72, 0.72 * subject, 1.0),
             },
         )
 
@@ -148,33 +171,48 @@ def _add_set(settings: CameraPerspectiveSettings) -> None:
     floor_obj.name = "perspective floor"
     floor_obj.data.materials.append(floor)
 
-    bpy.ops.mesh.primitive_plane_add(size=6.4, location=(0, 2.75, 1.8), rotation=(math.pi / 2, 0, 0))
+    wall_y = 2.05 + settings.background_depth * 0.72
+    bpy.ops.mesh.primitive_plane_add(size=6.4, location=(0, wall_y, 1.8), rotation=(math.pi / 2, 0, 0))
     wall_obj = bpy.context.object
     wall_obj.name = "back wall"
     wall_obj.data.materials.append(wall)
 
-    for x in [-1.2, -0.6, 0.0, 0.6, 1.2]:
-        _cube(f"floor depth stripe {x}", (x, 0.25, 0.012), (0.018, settings.room_depth, 0.012), dark)
-    for index, y in enumerate([-1.2, -0.4, 0.4, 1.2, 2.0]):
-        width = 2.9 - index * 0.22
-        _cube(f"floor cross stripe {index:02d}", (0, y, 0.018), (width, 0.015, 0.012), dark)
+    x_count = max(3, min(9, round(3 + settings.floor_grid_depth * 3)))
+    x_positions = [-1.45 + index * (2.9 / max(1, x_count - 1)) for index in range(x_count)]
+    for index, x in enumerate(x_positions):
+        _cube(f"floor depth stripe {index:02d}", (x, 0.25, 0.012), (0.018, settings.room_depth * settings.floor_grid_depth, 0.012), dark)
+    cross_count = max(3, min(11, round(3 + settings.floor_grid_depth * 4)))
+    for index in range(cross_count):
+        t = index / max(1, cross_count - 1)
+        scaled_y = (-1.25 + t * 3.25) * settings.floor_grid_depth
+        width = 3.0 - t * 1.35
+        _cube(f"floor cross stripe {index:02d}", (0, scaled_y, 0.018), (width, 0.015, 0.012), dark)
 
     for index, y in enumerate([-0.95, -0.25, 0.65, 1.55]):
-        marker_scale = settings.foreground_marker_scale if y < 0 else settings.background_marker_scale
+        is_foreground = y < 0
+        marker_scale = settings.foreground_marker_scale if is_foreground else settings.background_marker_scale
+        depth_scale = settings.foreground_depth if is_foreground else settings.background_depth
+        marker_y = y * depth_scale - (max(0.0, depth_scale - 1.0) * 0.25 if is_foreground else 0.0)
         height = (0.38 + index * 0.18) * marker_scale
-        x = -1.18 if index % 2 == 0 else 1.18
+        x_abs = 1.18
+        if is_foreground:
+            x_abs = _clamp(1.24 - max(0.0, depth_scale - 1.0) * 0.32, 0.78, 1.35)
+        else:
+            x_abs = _clamp(1.02 + max(0.0, depth_scale - 1.0) * 0.22, 0.86, 1.38)
+        x = -x_abs if index % 2 == 0 else x_abs
         mat = cool if y < 0 else warm
-        _cube(f"depth marker left {index:02d}", (x, y, height * 0.5), (0.16, 0.16, height), mat)
-        _cube(f"depth marker right {index:02d}", (-x, y + 0.16, height * 0.5), (0.16, 0.16, height), mat)
+        marker_width = 0.16 * (1.0 + max(0.0, depth_scale - 1.0) * (0.55 if is_foreground else 0.18))
+        _cube(f"depth marker left {index:02d}", (x, marker_y, height * 0.5), (marker_width, 0.16, height), mat)
+        _cube(f"depth marker right {index:02d}", (-x, marker_y + 0.16 * depth_scale, height * 0.5), (marker_width, 0.16, height), mat)
 
-    bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2, radius=0.72, location=(0.0, 0.28, 0.78))
+    bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2, radius=0.72, location=(0.0, settings.subject_y, 0.78))
     subject = bpy.context.object
     subject.name = "matched framing subject"
     subject.scale = settings.subject_scale
     subject.data.materials.append(subject_mat)
 
-    _cube("subject vertical ruler", (0.66, 0.22, 0.72), (0.035, 0.035, 0.72), dark)
-    _cube("subject ground ruler", (0.0, -0.18, 0.035), (0.72, 0.035, 0.035), dark)
+    _cube("subject vertical ruler", (0.66, settings.subject_y - 0.06, 0.72), (0.035, 0.035, 0.72), dark)
+    _cube("subject ground ruler", (0.0, settings.subject_y - 0.46, 0.035), (0.72, 0.035, 0.035), dark)
 
 
 def _add_lights(settings: CameraPerspectiveSettings) -> None:

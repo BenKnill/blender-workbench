@@ -14,7 +14,7 @@ This is a compact map from the local BlenderArt/resource shelf to workbench exer
 
 - `examples/gobo_lighting_scout.py`: turns textured light and shadow-play notes into a 16-tile projected-shadow board.
 - `examples/subsurface_scout.py`: turns SSS/translucency notes into wax, jelly, opal, thickness, backlight, and core-light comparisons.
-- `examples/camera_perspective_scout.py`: turns pack-shot and virtual-set camera lessons into matched lens/distance sweeps.
+- `examples/camera_perspective_scout.py`: turns pack-shot and virtual-set camera lessons into same-view lens and scene-depth-cue sweeps.
 - `examples/transparency_scout.py`: turns alpha/glass/refraction notes into alpha, transmission, roughness, IOR, tint, and pane-thickness comparisons.
 
 ## Workbench Lessons
@@ -22,5 +22,6 @@ This is a compact map from the local BlenderArt/resource shelf to workbench exer
 - Do not use the default glow postprocess for every recipe. It helps plumes, but it can obscure material, shadow, and camera diagnostics.
 - Tiny boards need short labels or adaptive label sizing. Long descriptive variant names belong in metadata, not necessarily on the tile.
 - Perspective is a first-class variable. Pair lens and distance when you want similar composition with different spatial feeling.
+- Yaw and roll usually change the shot instead of tuning the scene. For parameter smelling, keep the view steady and alter foreground, background, grid, and subject depth cues.
 - Transparent materials need structured backgrounds. Without stripes/checkers/depth markers, alpha and IOR sweeps look deceptively identical.
 - Same-y boards usually mean the stride is too small. Use 5x5 stride sheets with one variable per row before adding more hand-picked named cases.

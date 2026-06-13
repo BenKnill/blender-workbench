@@ -213,7 +213,7 @@ CAMERA_PERSPECTIVE = SweepAxis(
 
 CAMERA_ORBIT = SweepAxis(
     name="camera_orbit",
-    note="orbit angle and pitch reveal whether a setup is only working from one view",
+    note="shot-selection axis; avoid for same-scene parameter tuning unless changing view is the point",
     values=(
         ("front_low", {"camera_yaw": 0.0, "camera_pitch": 5.0}),
         ("left_mid", {"camera_yaw": -18.0, "camera_pitch": 11.0}),

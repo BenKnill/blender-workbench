@@ -29,7 +29,7 @@ config = replace(
 - Prefer `micro_grid` for broad scouting and `balanced_grid` for readable 3x3 comparisons.
 - Turn postprocessing off when testing shape or framing: `render_sweep(..., postprocess=None)`.
 - Reuse tiles during layout churn with `replace(config, reuse_existing=True)`.
-- Keep camera perspective scouts cheap: the variable is usually lens/distance/framing, not samples.
+- Keep camera perspective scouts cheap: the variable is usually lens or scene depth cues, not samples.
 - Keep `build_scene(settings)` cheap: avoid simulations, huge mesh generation, high subdivision, and expensive boolean stacks in the first pass.
 - Add detail in stages: silhouette, material, lighting, camera, then heavier bake.
 - When a numeric sweep looks timid, increase the `stride_axis(...)` stride and rerun. When every tile fails, reduce the stride or add failure anchors at the extremes.

@@ -37,8 +37,8 @@ def main() -> None:
         postprocess=None,
         title="Camera Perspective Scout",
         notes=[
-            "5x5 stride sheet: lens, yaw, pitch, roll, and room depth.",
-            "Increase lens_stride, yaw_stride, pitch_stride, roll_stride, or depth_stride if the sheet looks timid.",
+            "5x5 same-view stride sheet: lens, foreground anchors, background anchors, grid depth, and subject depth.",
+            "Increase lens_stride, foreground_stride, background_stride, grid_stride, or subject_stride if the sheet looks timid.",
             "Inspired by BlenderArt pack-shot and virtual-set camera setup lessons.",
         ],
         square=True,
