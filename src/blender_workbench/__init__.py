@@ -13,6 +13,7 @@ from .postprocess import (
 from .presets import RENDER_PRESETS, SWEEP_AXES, TILE_PRESETS, SweepAxis, one_axis_variants, stride_axis, two_axis_variants
 from .primitives import add_soft_horizon_band, soft_band_alpha_profile
 from .promote import import_recipe_callable, load_sweep_variants, promote_from_metadata, select_metadata_variant
+from .promotion_status import PromotionStatus, format_promotion_report, promotion_statuses
 from .sweep import (
     RenderConfig,
     RenderResult,
@@ -60,6 +61,9 @@ __all__ = [
     "postprocess_look_variants",
     "render_postprocess_sweep",
     "promote_from_metadata",
+    "PromotionStatus",
+    "format_promotion_report",
+    "promotion_statuses",
     "preflight_examples",
     "render_selected_from_sweep",
     "render_selected_variant",
