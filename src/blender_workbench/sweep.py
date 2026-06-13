@@ -4,6 +4,7 @@ import dataclasses
 import json
 import shutil
 import subprocess
+import time
 from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -26,6 +27,10 @@ class RenderResult:
     settings: Any
     label: str | None = None
     note: str | None = None
+    build_seconds: float | None = None
+    render_seconds: float | None = None
+    postprocess_seconds: float | None = None
+    skipped_existing: bool = False
 
 
 @dataclass(frozen=True)
@@ -61,9 +66,66 @@ class TileSpec:
 class RenderConfig:
     resolution_x: int = 960
     resolution_y: int = 630
+    engine: str = "CYCLES"
     samples: int = 72
+    use_denoising: bool = True
+    use_persistent_data: bool = True
+    max_bounces: int | None = 6
+    view_transform: str = "Filmic"
+    look: str = "High Contrast"
+    exposure: float = 0.0
+    gamma: float = 1.0
+    reuse_existing: bool = False
     camera_name: str | None = None
     tile: TileSpec = field(default_factory=TileSpec)
+
+    @classmethod
+    def shape_scout(cls) -> "RenderConfig":
+        return cls(
+            resolution_x=520,
+            resolution_y=340,
+            engine="BLENDER_WORKBENCH",
+            samples=1,
+            use_denoising=False,
+            view_transform="Standard",
+            look="Medium High Contrast",
+            tile=TileSpec.micro_grid(columns=8),
+        )
+
+    @classmethod
+    def material_scout(cls) -> "RenderConfig":
+        return cls(
+            resolution_x=640,
+            resolution_y=420,
+            engine="EEVEE",
+            samples=12,
+            use_denoising=False,
+            view_transform="Filmic",
+            look="Medium High Contrast",
+            tile=TileSpec.micro_grid(columns=6),
+        )
+
+    @classmethod
+    def cycles_preview(cls) -> "RenderConfig":
+        return cls(
+            resolution_x=760,
+            resolution_y=500,
+            engine="CYCLES",
+            samples=32,
+            max_bounces=4,
+            tile=TileSpec.balanced_grid(),
+        )
+
+    @classmethod
+    def hero_check(cls) -> "RenderConfig":
+        return cls(
+            resolution_x=1280,
+            resolution_y=840,
+            engine="CYCLES",
+            samples=96,
+            max_bounces=8,
+            tile=TileSpec.hero_pair(),
+        )
 
 
 def settings_to_jsonable(settings: Any) -> Any:
@@ -96,19 +158,64 @@ def grid_variants(
     return variants
 
 
-def configure_cycles(resolution_x: int, resolution_y: int, samples: int) -> None:
+def _engine_candidates(requested: str) -> tuple[str, ...]:
+    aliases = {
+        "EEVEE": ("BLENDER_EEVEE_NEXT", "BLENDER_EEVEE"),
+        "BLENDER_EEVEE_NEXT": ("BLENDER_EEVEE_NEXT", "BLENDER_EEVEE"),
+        "WORKBENCH": ("BLENDER_WORKBENCH",),
+    }
+    return aliases.get(requested, (requested,))
+
+
+def _set_render_engine(scene: Any, requested: str) -> str:
+    for engine in [*_engine_candidates(requested), "CYCLES", "BLENDER_EEVEE", "BLENDER_WORKBENCH"]:
+        try:
+            scene.render.engine = engine
+            return engine
+        except TypeError:
+            continue
+    scene.render.engine = requested
+    return requested
+
+
+def _set_if_present(obj: Any, name: str, value: Any) -> None:
+    if hasattr(obj, name):
+        setattr(obj, name, value)
+
+
+def configure_render(config: RenderConfig) -> str:
     import bpy
 
     scene = bpy.context.scene
-    scene.render.engine = "CYCLES"
-    scene.cycles.samples = samples
-    scene.cycles.use_denoising = True
-    scene.render.resolution_x = resolution_x
-    scene.render.resolution_y = resolution_y
+    engine = _set_render_engine(scene, config.engine)
+    scene.render.resolution_x = config.resolution_x
+    scene.render.resolution_y = config.resolution_y
     scene.render.image_settings.file_format = "PNG"
     scene.render.image_settings.color_mode = "RGB"
-    scene.view_settings.view_transform = "Filmic"
-    scene.view_settings.look = "High Contrast"
+    scene.view_settings.view_transform = config.view_transform
+    scene.view_settings.look = config.look
+    scene.view_settings.exposure = config.exposure
+    scene.view_settings.gamma = config.gamma
+
+    if engine == "CYCLES" and hasattr(scene, "cycles"):
+        scene.cycles.samples = config.samples
+        _set_if_present(scene.cycles, "use_denoising", config.use_denoising)
+        _set_if_present(scene.cycles, "use_persistent_data", config.use_persistent_data)
+        if config.max_bounces is not None:
+            _set_if_present(scene.cycles, "max_bounces", config.max_bounces)
+    elif engine.startswith("BLENDER_EEVEE") and hasattr(scene, "eevee"):
+        _set_if_present(scene.eevee, "taa_render_samples", config.samples)
+        _set_if_present(scene.eevee, "taa_samples", config.samples)
+    elif engine == "BLENDER_WORKBENCH" and hasattr(scene, "display"):
+        shading = getattr(scene.display, "shading", None)
+        if shading:
+            _set_if_present(shading, "light", "STUDIO")
+            _set_if_present(shading, "color_type", "MATERIAL")
+    return engine
+
+
+def configure_cycles(resolution_x: int, resolution_y: int, samples: int) -> None:
+    configure_render(RenderConfig(resolution_x=resolution_x, resolution_y=resolution_y, engine="CYCLES", samples=samples))
 
 
 def postprocess_glow_contrast(raw: Path, finished: Path) -> bool:
@@ -259,17 +366,47 @@ def render_sweep(
     out_dir.mkdir(parents=True, exist_ok=True)
 
     results: list[RenderResult] = []
+    sweep_started = time.perf_counter()
     for variant in variants:
-        build_scene(variant.settings)
-        configure_cycles(cfg.resolution_x, cfg.resolution_y, cfg.samples)
-        if cfg.camera_name:
-            bpy.context.scene.camera = bpy.data.objects[cfg.camera_name]
         raw = out_dir / f"{variant.name}.raw.png"
         finished = out_dir / f"{variant.name}.finished.png"
+        wrote_finished = finished.exists()
+        if cfg.reuse_existing and raw.exists():
+            postprocess_started = time.perf_counter()
+            ran_postprocess = False
+            if not wrote_finished and postprocess:
+                ran_postprocess = True
+                wrote_finished = postprocess(raw, finished)
+            postprocess_seconds = time.perf_counter() - postprocess_started if ran_postprocess else 0.0
+            results.append(
+                RenderResult(
+                    name=variant.name,
+                    raw=str(raw.relative_to(root)),
+                    finished=str(finished.relative_to(root)) if wrote_finished else None,
+                    settings=settings_to_jsonable(variant.settings),
+                    label=variant.label,
+                    note=variant.note,
+                    postprocess_seconds=postprocess_seconds,
+                    skipped_existing=True,
+                )
+            )
+            print(f"Reusing sweep variant {variant.name}")
+            continue
+
+        build_started = time.perf_counter()
+        build_scene(variant.settings)
+        build_seconds = time.perf_counter() - build_started
+        engine = configure_render(cfg)
+        if cfg.camera_name:
+            bpy.context.scene.camera = bpy.data.objects[cfg.camera_name]
         bpy.context.scene.render.filepath = str(raw)
-        print(f"Rendering sweep variant {variant.name}")
+        print(f"Rendering sweep variant {variant.name} ({engine}, {cfg.samples} samples)")
+        render_started = time.perf_counter()
         bpy.ops.render.render(write_still=True)
+        render_seconds = time.perf_counter() - render_started
+        postprocess_started = time.perf_counter()
         wrote_finished = postprocess(raw, finished) if postprocess else False
+        postprocess_seconds = time.perf_counter() - postprocess_started
         results.append(
             RenderResult(
                 name=variant.name,
@@ -278,10 +415,22 @@ def render_sweep(
                 settings=settings_to_jsonable(variant.settings),
                 label=variant.label,
                 note=variant.note,
+                build_seconds=build_seconds,
+                render_seconds=render_seconds,
+                postprocess_seconds=postprocess_seconds,
             )
         )
 
     write_contact_sheet(results, root, out_dir / "contact_sheet.png", cfg.tile)
     write_readme(out_dir, title, results, notes)
-    (out_dir / "metadata.json").write_text(json.dumps({"variants": [dataclasses.asdict(result) for result in results]}, indent=2))
+    (out_dir / "metadata.json").write_text(
+        json.dumps(
+            {
+                "render_config": settings_to_jsonable(cfg),
+                "total_seconds": time.perf_counter() - sweep_started,
+                "variants": [dataclasses.asdict(result) for result in results],
+            },
+            indent=2,
+        )
+    )
     return results

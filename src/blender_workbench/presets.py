@@ -4,7 +4,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
 
-from .sweep import SweepVariant, TileSpec, grid_variants
+from .sweep import RenderConfig, SweepVariant, TileSpec, grid_variants
 
 
 @dataclass(frozen=True)
@@ -129,4 +129,11 @@ TILE_PRESETS = {
     "micro_grid": TileSpec.micro_grid(),
     "square_moodboard": TileSpec.square_moodboard(),
     "filmstrip": TileSpec.filmstrip(),
+}
+
+RENDER_PRESETS = {
+    "shape_scout": RenderConfig.shape_scout(),
+    "material_scout": RenderConfig.material_scout(),
+    "cycles_preview": RenderConfig.cycles_preview(),
+    "hero_check": RenderConfig.hero_check(),
 }

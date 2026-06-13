@@ -1,7 +1,7 @@
 import unittest
 
-from blender_workbench.presets import SWEEP_AXES, TILE_PRESETS, one_axis_variants, two_axis_variants
-from blender_workbench.sweep import SweepVariant, grid_variants, settings_to_jsonable
+from blender_workbench.presets import RENDER_PRESETS, SWEEP_AXES, TILE_PRESETS, one_axis_variants, two_axis_variants
+from blender_workbench.sweep import RenderConfig, SweepVariant, grid_variants, settings_to_jsonable
 
 
 class SweepTests(unittest.TestCase):
@@ -22,7 +22,9 @@ class SweepTests(unittest.TestCase):
     def test_presets_offer_tile_and_axis_defaults(self):
         self.assertIn("plume_alpha_strength", SWEEP_AXES)
         self.assertIn("micro_grid", TILE_PRESETS)
+        self.assertIn("shape_scout", RENDER_PRESETS)
         self.assertGreaterEqual(TILE_PRESETS["micro_grid"].columns, 6)
+        self.assertLessEqual(RENDER_PRESETS["shape_scout"].samples, 1)
 
     def test_axis_helpers_merge_base_settings(self):
         variants = one_axis_variants(SWEEP_AXES["plume_shape"], base={"fixed_camera": True}, prefix="demo")
@@ -42,6 +44,19 @@ class SweepTests(unittest.TestCase):
         self.assertEqual(variants[0].settings["samples"], 32)
         self.assertIn("shell_alpha", variants[0].settings)
         self.assertIn("width", variants[0].settings)
+
+    def test_render_config_profiles_are_ordered_by_cost(self):
+        self.assertEqual(RenderConfig.shape_scout().engine, "BLENDER_WORKBENCH")
+        self.assertEqual(RenderConfig.material_scout().engine, "EEVEE")
+        self.assertLess(RenderConfig.shape_scout().resolution_x, RenderConfig.hero_check().resolution_x)
+        self.assertLess(RenderConfig.cycles_preview().samples, RenderConfig.hero_check().samples)
+
+    def test_settings_to_jsonable_serializes_render_config(self):
+        config = RenderConfig.cycles_preview()
+        data = settings_to_jsonable(config)
+
+        self.assertEqual(data["engine"], "CYCLES")
+        self.assertIn("tile", data)
 
 
 if __name__ == "__main__":

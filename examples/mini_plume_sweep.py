@@ -2,14 +2,15 @@ from __future__ import annotations
 
 import math
 import sys
+from dataclasses import replace
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from blender_workbench.materials import principled_material, transparent_emission_material
-from blender_workbench.presets import TILE_PRESETS
-from blender_workbench.sweep import RenderConfig, SweepVariant, render_sweep
+from blender_workbench.presets import RENDER_PRESETS, TILE_PRESETS
+from blender_workbench.sweep import SweepVariant, render_sweep
 
 
 OUT = ROOT / "examples" / "output" / "mini_plume_sweep"
@@ -85,12 +86,13 @@ VARIANTS = [
 
 
 def main() -> None:
+    config = replace(RENDER_PRESETS["cycles_preview"], camera_name="camera_profile", tile=TILE_PRESETS["hero_pair"])
     render_sweep(
         variants=VARIANTS,
         build_scene=build_scene,
         out_dir=OUT,
         root=ROOT,
-        config=RenderConfig(resolution_x=760, resolution_y=500, samples=48, camera_name="camera_profile", tile=TILE_PRESETS["hero_pair"]),
+        config=config,
         title="Mini Vacuum Plume Sweep",
         notes=["Small example for the workbench API; use it as a pattern, not a finished visual."],
     )

@@ -2,6 +2,8 @@
 
 This is a starter menu for fast Blender exploration. Use it to choose a sweep shape before writing a scene.
 
+Start with the cheapest render profile that can answer the visual question. Shape questions usually belong in `shape_scout`; material questions in `material_scout`; lighting questions in `cycles_preview`.
+
 ## Tile Layouts
 
 - `hero_pair`: two large tiles for before/after, winner/failure, reference/attempt.
