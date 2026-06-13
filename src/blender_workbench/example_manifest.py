@@ -3,15 +3,25 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
+
+
+COST_BUCKET_ORDER = {
+    "instant": 0,
+    "quick": 1,
+    "medium": 2,
+    "heavy": 3,
+    "unknown": 99,
+}
 
 
 @dataclass(frozen=True)
 class ExamplePreflight:
     name: str
     command: str
+    cost: dict[str, Any]
     runnable: bool
     missing_prerequisites: tuple[dict[str, str], ...]
     outputs_present: tuple[str, ...]
@@ -53,6 +63,31 @@ def select_examples(examples: list[dict[str, Any]], names: list[str] | None = No
     return selected
 
 
+def cost_bucket_rank(bucket: str) -> int:
+    try:
+        return COST_BUCKET_ORDER[bucket]
+    except KeyError as error:
+        raise ValueError(f"Unknown cost bucket: {bucket}") from error
+
+
+def normalized_cost(example: dict[str, Any]) -> dict[str, Any]:
+    raw = example.get("cost") or {}
+    if not isinstance(raw, dict):
+        raise ValueError(f"Example {example.get('name', '<unknown>')} cost must be an object")
+    cost = {
+        "profile": raw.get("profile", "unknown"),
+        "engine": raw.get("engine", "unknown"),
+        "runtime": raw.get("runtime", "unknown"),
+        "mode": raw.get("mode", "grid_scout"),
+        "requires_blender": bool(raw.get("requires_blender", True)),
+        "tile_count": raw.get("tile_count"),
+        "tile_preset": raw.get("tile_preset"),
+        "reuse_outputs": bool(raw.get("reuse_outputs", True)),
+    }
+    cost_bucket_rank(str(cost["runtime"]))
+    return cost
+
+
 def preflight_example(example: dict[str, Any], *, root: Path | None = None) -> ExamplePreflight:
     root = root or Path.cwd()
     prerequisites = example.get("prerequisites", [])
@@ -78,6 +113,7 @@ def preflight_example(example: dict[str, Any], *, root: Path | None = None) -> E
     return ExamplePreflight(
         name=example["name"],
         command=example["command"],
+        cost=normalized_cost(example),
         runnable=not missing_prerequisites,
         missing_prerequisites=tuple(missing_prerequisites),
         outputs_present=outputs_present,
@@ -92,9 +128,20 @@ def preflight_examples(
     manifest_path: Path | None = None,
     root: Path | None = None,
     names: list[str] | None = None,
+    ready_only: bool = False,
+    max_cost: str | None = None,
+    sort_by_cost: bool = False,
 ) -> list[ExamplePreflight]:
     examples = select_examples(load_manifest(manifest_path, root=root), names)
-    return [preflight_example(example, root=root) for example in examples]
+    results = [preflight_example(example, root=root) for example in examples]
+    if ready_only:
+        results = [result for result in results if result.runnable]
+    if max_cost is not None:
+        threshold = cost_bucket_rank(max_cost)
+        results = [result for result in results if cost_bucket_rank(str(result.cost["runtime"])) <= threshold]
+    if sort_by_cost:
+        results = sorted(results, key=lambda result: (cost_bucket_rank(str(result.cost["runtime"])), result.name))
+    return results
 
 
 def format_preflight_report(results: list[ExamplePreflight]) -> str:
@@ -103,7 +150,15 @@ def format_preflight_report(results: list[ExamplePreflight]) -> str:
         status = "ready" if result.runnable else "blocked"
         output_status = f"{len(result.outputs_present)} outputs present, {len(result.outputs_missing)} missing"
         docs_status = "docs asset present" if result.docs_asset_present else "docs asset missing"
-        lines.append(f"- {result.name}: {status}; {output_status}; {docs_status}")
+        cost = result.cost
+        runtime = cost.get("runtime", "unknown")
+        profile = cost.get("profile", "unknown")
+        engine = cost.get("engine", "unknown")
+        mode = cost.get("mode", "unknown")
+        blender = "Blender" if cost.get("requires_blender", True) else "no Blender"
+        tile_count = cost.get("tile_count")
+        tile_text = f"; {tile_count} tiles" if tile_count is not None else ""
+        lines.append(f"- {result.name}: {status}; cost {runtime}/{profile}/{engine}/{mode}/{blender}{tile_text}; {output_status}; {docs_status}")
         lines.append(f"  command: {result.command}")
         for missing in result.missing_prerequisites:
             lines.append(f"  missing: {missing['path']}")
@@ -119,15 +174,25 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--manifest", type=Path, help="manifest path, default examples/manifest.json")
     parser.add_argument("--root", type=Path, default=Path.cwd(), help="repository root")
     parser.add_argument("--name", action="append", help="example name to report; repeat for multiple examples")
+    parser.add_argument("--ready-only", action="store_true", help="only include examples whose prerequisites are present")
+    parser.add_argument("--max-cost", choices=("instant", "quick", "medium", "heavy"), help="only include examples at or below this runtime bucket")
+    parser.add_argument("--sort-by-cost", action="store_true", help="sort examples by runtime bucket before name")
     parser.add_argument("--json", action="store_true", help="print machine-readable preflight JSON")
     return parser.parse_args(_script_args(argv))
 
 
 def main(argv: list[str] | None = None) -> list[ExamplePreflight]:
     args = parse_args(argv)
-    results = preflight_examples(manifest_path=args.manifest, root=args.root, names=args.name)
+    results = preflight_examples(
+        manifest_path=args.manifest,
+        root=args.root,
+        names=args.name,
+        ready_only=args.ready_only,
+        max_cost=args.max_cost,
+        sort_by_cost=args.sort_by_cost,
+    )
     if args.json:
-        print(json.dumps([result.__dict__ for result in results], indent=2))
+        print(json.dumps([asdict(result) for result in results], indent=2))
     else:
         print(format_preflight_report(results))
     return results

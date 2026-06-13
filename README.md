@@ -62,9 +62,10 @@ Check example prerequisites before running a docs refresh or dependent example:
 ```bash
 python3 tools/example_preflight.py
 python3 tools/example_preflight.py --name postprocess_look_scout
+python3 tools/example_preflight.py --ready-only --max-cost quick --sort-by-cost
 ```
 
-For dependent examples, the report prints the exact upstream command needed to create missing generated inputs.
+For dependent examples, the report prints the exact upstream command needed to create missing generated inputs. Cost-aware reports show runtime bucket, render profile, engine, mode, and tile count so agents can choose a cheap scout before starting heavier Cycles work.
 
 Before opening a PR that adds or rewires an example `--pick` path, run a cheap selected-render smoke check:
 

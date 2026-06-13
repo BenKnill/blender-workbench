@@ -5,6 +5,16 @@
       "name": "camera_perspective_scout",
       "script": "examples/camera_perspective_scout.py",
       "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/camera_perspective_scout.py",
+      "cost": {
+        "profile": "cycles_preview",
+        "engine": "CYCLES",
+        "runtime": "quick",
+        "mode": "grid_scout",
+        "requires_blender": true,
+        "tile_count": 25,
+        "tile_preset": "auto_tiny_grid",
+        "reuse_outputs": true
+      },
       "outputs": ["examples/output/camera_perspective_scout/metadata.json", "examples/output/camera_perspective_scout/contact_sheet.png"],
       "prerequisites": [],
       "docs_asset": "docs/assets/camera-perspective-scout.jpg"
@@ -13,6 +23,16 @@
       "name": "gobo_lighting_scout",
       "script": "examples/gobo_lighting_scout.py",
       "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/gobo_lighting_scout.py",
+      "cost": {
+        "profile": "cycles_preview",
+        "engine": "CYCLES",
+        "runtime": "quick",
+        "mode": "grid_scout",
+        "requires_blender": true,
+        "tile_count": 16,
+        "tile_preset": "auto_tiny_grid",
+        "reuse_outputs": true
+      },
       "outputs": ["examples/output/gobo_lighting_scout/metadata.json", "examples/output/gobo_lighting_scout/contact_sheet.png"],
       "prerequisites": [],
       "docs_asset": "docs/assets/gobo-lighting-scout.jpg"
@@ -21,6 +41,16 @@
       "name": "light_texture_scout",
       "script": "examples/light_texture_scout.py",
       "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/light_texture_scout.py",
+      "cost": {
+        "profile": "material_scout",
+        "engine": "EEVEE",
+        "runtime": "quick",
+        "mode": "grid_scout",
+        "requires_blender": true,
+        "tile_count": 7,
+        "tile_preset": "auto_square_moodboard",
+        "reuse_outputs": true
+      },
       "outputs": ["examples/output/light_texture_scout/metadata.json", "examples/output/light_texture_scout/contact_sheet.png"],
       "prerequisites": [],
       "docs_asset": "docs/assets/light-texture-scout.jpg"
@@ -29,6 +59,16 @@
       "name": "mesh_light_scout",
       "script": "examples/mesh_light_scout.py",
       "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/mesh_light_scout.py",
+      "cost": {
+        "profile": "cycles_preview",
+        "engine": "CYCLES",
+        "runtime": "medium",
+        "mode": "grid_scout",
+        "requires_blender": true,
+        "tile_count": 25,
+        "tile_preset": "auto_tiny_grid",
+        "reuse_outputs": true
+      },
       "outputs": ["examples/output/mesh_light_scout/metadata.json", "examples/output/mesh_light_scout/contact_sheet.png"],
       "prerequisites": [],
       "docs_asset": "docs/assets/mesh-light-scout.jpg"
@@ -37,6 +77,16 @@
       "name": "mini_plume_sweep",
       "script": "examples/mini_plume_sweep.py",
       "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/mini_plume_sweep.py",
+      "cost": {
+        "profile": "cycles_preview",
+        "engine": "CYCLES",
+        "runtime": "quick",
+        "mode": "grid_scout",
+        "requires_blender": true,
+        "tile_count": 4,
+        "tile_preset": "hero_pair",
+        "reuse_outputs": true
+      },
       "outputs": ["examples/output/mini_plume_sweep/metadata.json", "examples/output/mini_plume_sweep/contact_sheet.png"],
       "prerequisites": [],
       "docs_asset": "docs/assets/mini-plume-sweep.jpg"
@@ -45,6 +95,16 @@
       "name": "postprocess_look_scout",
       "script": "examples/postprocess_look_scout.py",
       "command": "python3 examples/postprocess_look_scout.py",
+      "cost": {
+        "profile": "postprocess_sweep",
+        "engine": "PYTHON_IMAGEMAGICK",
+        "runtime": "instant",
+        "mode": "postprocess_sweep",
+        "requires_blender": false,
+        "tile_count": 9,
+        "tile_preset": "auto_square_moodboard",
+        "reuse_outputs": true
+      },
       "outputs": ["examples/output/postprocess_look_scout/metadata.json", "examples/output/postprocess_look_scout/contact_sheet.png"],
       "prerequisites": [
         {
@@ -59,6 +119,16 @@
       "name": "rocket_plume_scout",
       "script": "examples/rocket_plume_scout.py",
       "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/rocket_plume_scout.py",
+      "cost": {
+        "profile": "cycles_preview",
+        "engine": "CYCLES",
+        "runtime": "quick",
+        "mode": "grid_scout",
+        "requires_blender": true,
+        "tile_count": 9,
+        "tile_preset": "micro_grid",
+        "reuse_outputs": true
+      },
       "outputs": ["examples/output/rocket_plume_scout/metadata.json", "examples/output/rocket_plume_scout/contact_sheet.png"],
       "prerequisites": [],
       "docs_asset": "docs/assets/rocket-plume-scout.jpg"
@@ -67,6 +137,16 @@
       "name": "rocket_plume_texture_scout",
       "script": "examples/rocket_plume_texture_scout.py",
       "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/rocket_plume_texture_scout.py",
+      "cost": {
+        "profile": "cycles_preview",
+        "engine": "CYCLES",
+        "runtime": "quick",
+        "mode": "grid_scout",
+        "requires_blender": true,
+        "tile_count": 16,
+        "tile_preset": "auto_tiny_grid",
+        "reuse_outputs": true
+      },
       "outputs": ["examples/output/rocket_plume_texture_scout/metadata.json", "examples/output/rocket_plume_texture_scout/contact_sheet.png"],
       "prerequisites": [],
       "docs_asset": "docs/assets/rocket-plume-texture-scout.jpg"
@@ -75,6 +155,16 @@
       "name": "silhouette_shape_scout",
       "script": "examples/silhouette_shape_scout.py",
       "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/silhouette_shape_scout.py",
+      "cost": {
+        "profile": "shape_scout",
+        "engine": "BLENDER_WORKBENCH",
+        "runtime": "instant",
+        "mode": "grid_scout",
+        "requires_blender": true,
+        "tile_count": 6,
+        "tile_preset": "auto_tiny_grid",
+        "reuse_outputs": true
+      },
       "outputs": ["examples/output/silhouette_shape_scout/metadata.json", "examples/output/silhouette_shape_scout/contact_sheet.png"],
       "prerequisites": [],
       "docs_asset": "docs/assets/silhouette-shape-scout.jpg"
@@ -83,6 +173,16 @@
       "name": "soft_atmosphere_scout",
       "script": "examples/soft_atmosphere_scout.py",
       "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/soft_atmosphere_scout.py",
+      "cost": {
+        "profile": "cycles_preview",
+        "engine": "CYCLES",
+        "runtime": "quick",
+        "mode": "grid_scout",
+        "requires_blender": true,
+        "tile_count": 12,
+        "tile_preset": "auto_tiny_grid",
+        "reuse_outputs": true
+      },
       "outputs": ["examples/output/soft_atmosphere_scout/metadata.json", "examples/output/soft_atmosphere_scout/contact_sheet.png"],
       "prerequisites": [],
       "docs_asset": "docs/assets/soft-atmosphere-scout.jpg"
@@ -91,6 +191,16 @@
       "name": "subsurface_scout",
       "script": "examples/subsurface_scout.py",
       "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/subsurface_scout.py",
+      "cost": {
+        "profile": "cycles_preview",
+        "engine": "CYCLES",
+        "runtime": "medium",
+        "mode": "grid_scout",
+        "requires_blender": true,
+        "tile_count": 16,
+        "tile_preset": "auto_tiny_grid",
+        "reuse_outputs": true
+      },
       "outputs": ["examples/output/subsurface_scout/metadata.json", "examples/output/subsurface_scout/contact_sheet.png"],
       "prerequisites": [],
       "docs_asset": "docs/assets/subsurface-scout.jpg"
@@ -107,6 +217,16 @@
       "name": "terrain_environment_scout",
       "script": "examples/terrain_environment_scout.py",
       "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/terrain_environment_scout.py",
+      "cost": {
+        "profile": "cycles_preview",
+        "engine": "CYCLES",
+        "runtime": "medium",
+        "mode": "grid_scout",
+        "requires_blender": true,
+        "tile_count": 25,
+        "tile_preset": "auto_tiny_grid",
+        "reuse_outputs": true
+      },
       "outputs": ["examples/output/terrain_environment_scout/metadata.json", "examples/output/terrain_environment_scout/contact_sheet.png"],
       "prerequisites": [],
       "docs_asset": "docs/assets/terrain-environment-scout.jpg"
@@ -115,6 +235,16 @@
       "name": "transparency_scout",
       "script": "examples/transparency_scout.py",
       "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/transparency_scout.py",
+      "cost": {
+        "profile": "cycles_preview",
+        "engine": "CYCLES",
+        "runtime": "medium",
+        "mode": "grid_scout",
+        "requires_blender": true,
+        "tile_count": 25,
+        "tile_preset": "auto_tiny_grid",
+        "reuse_outputs": true
+      },
       "outputs": ["examples/output/transparency_scout/metadata.json", "examples/output/transparency_scout/contact_sheet.png"],
       "prerequisites": [],
       "docs_asset": "docs/assets/transparency-scout.jpg"
