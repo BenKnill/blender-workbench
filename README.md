@@ -37,6 +37,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `tools/pdf_triage.py`: capture local PDF extraction/rendering capability and create learning-note stubs under `runs/`.
 - `tools/reference_manifest.py`: verify the adjacent `../reference_materials` shelf by checksum, size, and derived-resource fingerprints.
 - `tools/example_pick_smoke.py`: opt-in low-sample Blender smoke checks for example `--pick` promotion paths.
+- `tools/sweep_promotion_status.py`: scan sweep outputs for grids that still need a visual pick and selected render.
 
 ## Quick Start
 
@@ -72,11 +73,12 @@ For dependent examples, the report prints the exact upstream command needed to c
 Before opening a PR that adds or rewires an example `--pick` path, run a cheap selected-render smoke check:
 
 ```bash
+python3 tools/sweep_promotion_status.py --require-promoted
 python3 tools/example_pick_smoke.py --name soft_atmosphere_scout
 python3 tools/example_pick_smoke.py --name soft_atmosphere_scout --run --hero-samples 4
 ```
 
-The first command prints the planned Blender command from existing `metadata.json`; the second runs it and verifies `selected.json`, source-sweep provenance, and rendered output files.
+The promotion-status command surfaces grids that still need a visual pick or have stale selected-render provenance. The smoke helper prints the planned Blender command from existing `metadata.json`; with `--run`, it verifies `selected.json`, source-sweep provenance, and rendered output files.
 
 ## Agent Loop
 
