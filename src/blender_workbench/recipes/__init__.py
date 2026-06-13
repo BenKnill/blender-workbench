@@ -7,6 +7,15 @@ from .camera_perspective import (
     camera_perspective_variants,
     coerce_camera_perspective_settings,
 )
+from .depth_of_field import (
+    DEPTH_OF_FIELD_CAMERA,
+    DepthOfFieldSettings,
+    build_depth_of_field_scene,
+    coerce_depth_of_field_settings,
+    depth_of_field_descriptor,
+    depth_of_field_variants,
+    focus_plane_targets,
+)
 from .gobo_lighting import GOBO_CAMERA, GoboLightingSettings, build_gobo_lighting_scene, coerce_gobo_settings, gobo_lighting_variants
 from .layered_material import (
     LAYERED_MATERIAL_CAMERA,
@@ -88,6 +97,8 @@ from .transparency import (
 __all__ = [
     "CAMERA_PERSPECTIVE_CAMERA",
     "CameraPerspectiveSettings",
+    "DEPTH_OF_FIELD_CAMERA",
+    "DepthOfFieldSettings",
     "GOBO_CAMERA",
     "GoboLightingSettings",
     "LAYERED_MATERIAL_CAMERA",
@@ -115,6 +126,7 @@ __all__ = [
     "TRANSPARENCY_CAMERA",
     "TransparencySettings",
     "build_camera_perspective_scene",
+    "build_depth_of_field_scene",
     "build_gobo_lighting_scene",
     "build_layered_material_scene",
     "build_metal_edge_light_scene",
@@ -130,6 +142,7 @@ __all__ = [
     "build_transparency_scene",
     "camera_perspective_variants",
     "coerce_camera_perspective_settings",
+    "coerce_depth_of_field_settings",
     "coerce_gobo_settings",
     "coerce_layered_material_settings",
     "coerce_metal_edge_light_settings",
@@ -143,6 +156,9 @@ __all__ = [
     "coerce_sunset_haze_settings",
     "coerce_terrain_environment_settings",
     "coerce_transparency_settings",
+    "depth_of_field_descriptor",
+    "depth_of_field_variants",
+    "focus_plane_targets",
     "gobo_lighting_variants",
     "layered_material_variants",
     "layered_material_weight_summary",

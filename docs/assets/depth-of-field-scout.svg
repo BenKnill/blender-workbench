@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-labelledby="title desc">
+  <title id="title">Depth of field scout diagram</title>
+  <desc id="desc">Foreground slats, a sharp subject, background focus markers, and bright bokeh dots arranged along camera depth.</desc>
+  <rect width="960" height="540" fill="#10131a"/>
+  <path d="M100 455 L860 455 L716 230 L244 230 Z" fill="#252a32"/>
+  <g fill="#0c0e13">
+    <rect x="222" y="238" width="18" height="214"/>
+    <rect x="312" y="252" width="16" height="200"/>
+    <rect x="632" y="252" width="16" height="200"/>
+    <rect x="720" y="238" width="18" height="214"/>
+  </g>
+  <g fill="#233a62">
+    <rect x="204" y="220" width="54" height="12"/>
+    <rect x="294" y="234" width="50" height="10"/>
+    <rect x="614" y="234" width="50" height="10"/>
+    <rect x="702" y="220" width="54" height="12"/>
+  </g>
+  <ellipse cx="480" cy="306" rx="92" ry="126" fill="#bc8e55"/>
+  <ellipse cx="456" cy="252" rx="28" ry="18" fill="#e0c58a"/>
+  <g fill="#171c25">
+    <rect x="536" y="250" width="12" height="118"/>
+    <rect x="520" y="256" width="62" height="8"/>
+    <rect x="520" y="300" width="62" height="8"/>
+    <rect x="520" y="344" width="62" height="8"/>
+  </g>
+  <rect x="168" y="112" width="624" height="152" rx="8" fill="#1b202a" stroke="#515b68" stroke-width="2"/>
+  <g opacity="0.85">
+    <rect x="210" y="174" width="18" height="60" fill="#72715d"/>
+    <rect x="274" y="156" width="18" height="78" fill="#89805d"/>
+    <rect x="338" y="184" width="18" height="50" fill="#5f6d78"/>
+    <rect x="402" y="146" width="18" height="88" fill="#9b8057"/>
+    <rect x="466" y="166" width="18" height="68" fill="#748895"/>
+    <rect x="530" y="152" width="18" height="82" fill="#a08054"/>
+    <rect x="594" y="188" width="18" height="46" fill="#687b89"/>
+    <rect x="658" y="160" width="18" height="74" fill="#967a52"/>
+    <rect x="722" y="176" width="18" height="58" fill="#74828b"/>
+  </g>
+  <g fill="#ffd083" opacity="0.95">
+    <circle cx="248" cy="132" r="9"/>
+    <circle cx="394" cy="118" r="12"/>
+    <circle cx="532" cy="134" r="10"/>
+    <circle cx="696" cy="124" r="13"/>
+  </g>
+  <g stroke="#dfe7f2" stroke-width="3" fill="none" opacity="0.75">
+    <path d="M154 410 C278 328, 374 304, 480 306"/>
+    <path d="M480 306 C580 300, 660 246, 736 152"/>
+  </g>
+  <text x="146" y="490" fill="#e7edf7" font-family="Arial, sans-serif" font-size="28">foreground blur | focus subject | background bokeh</text>
+</svg>

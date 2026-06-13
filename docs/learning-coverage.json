@@ -16,17 +16,19 @@
           "examples/gobo_lighting_scout.py",
           "examples/mesh_light_scout.py",
           "examples/metal_edge_light_scout.py",
-          "examples/camera_perspective_scout.py"
+          "examples/camera_perspective_scout.py",
+          "examples/depth_of_field_scout.py"
         ],
         "docs": ["docs/learning-notes.md", "docs/sweep-catalog.md"],
         "issues": [15, 17],
         "artifacts": [
           "docs/assets/gobo-lighting-scout.jpg",
           "docs/assets/mesh-light-scout.jpg",
-          "docs/assets/metal-edge-light-scout.svg"
+          "docs/assets/metal-edge-light-scout.svg",
+          "docs/assets/depth-of-field-scout.svg"
         ]
       },
-      "notes": "Core lighting and hard-surface edge-light scouts exist; depth-of-field remains issue-backed."
+      "notes": "Core lighting, hard-surface edge-light, and depth-of-field scouts exist; use the focus-blur board before copying camera DOF values."
     },
     {
       "id": "blenderart16-material-transparency-smoke",

@@ -74,6 +74,7 @@ Keep one deliberate `failure_anchor` in material sheets. It calibrates the eye a
 - glow bloom: dry, rim, washed
 - camera jitter: tripod, breathing, loose
 - camera perspective: wide/close, normal/mid, portrait/far, tele/flat
+- depth of field: foreground/subject/background focus, f-stop, matched lens, foreground occluders, background markers, bokeh highlights
 - scene depth cues: foreground anchors, background anchors, grid spacing, subject depth
 - caustics: light size, water roughness, pattern scale
 - space plume: blue-white emission, soft gray shell, low fire color
@@ -102,6 +103,7 @@ Postprocess sweeps should reuse one raw render when the scene is already selecte
 - `plume_alpha_strength` x `plume_shape` with `micro_grid`
 - named texture cases with `auto_square_moodboard` and `square=True`
 - `examples/camera_perspective_scout.py` for a same-view 5x5 lens/foreground/background/grid/subject stride sheet
+- `examples/depth_of_field_scout.py` for focal blur focus-plane, f-stop, lens, occluder, marker, and bokeh cases before copying camera DOF settings
 - `examples/gobo_lighting_scout.py` for projected shadow texture, gel color, and light softness
 - `examples/layered_material_scout.py` for a BlenderArt issue 16 style component board before committing to a finished skin/SSS shader
 - `examples/metal_edge_light_scout.py` for hard-surface metal roughness, bevel, scratch, and rim-light reads

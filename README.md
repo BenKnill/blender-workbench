@@ -18,6 +18,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `blender_workbench.recipes`: optional domain recipes, including a fast rocket vacuum plume scout.
 - `blender_workbench.render_passes`: render fixed-scene pass diagnostic sheets before compositor or final-look sweeps.
 - `examples/camera_perspective_scout.py`: same-view lens and scene-depth cue stride board.
+- `examples/depth_of_field_scout.py`: focal blur board for focus plane, f-stop, lens, foreground occluders, background markers, and bokeh highlights.
 - `examples/gobo_lighting_scout.py`: projected-shadow/gobo lighting board from the BlenderArt lighting resources.
 - `examples/layered_material_scout.py`: component-level skin/SSS board for diffuse, shallow/deep scatter, specular, wet highlight, and bump weights.
 - `examples/metal_edge_light_scout.py`: hard-surface metal board for roughness, bevels, scratches, and rim/edge lighting.
@@ -354,6 +355,19 @@ Run the matched-framing camera scout:
 This uses `blender_workbench.recipes.camera_perspective` to compare lens, foreground anchors, background anchors, floor grid depth, and subject depth as a 5x5 stride sheet. The view stays fundamentally frontal; the scene changes under the view so you can smell toward useful depth parameters. If the sheet looks timid, increase `lens_stride`, `foreground_stride`, `background_stride`, `grid_stride`, or `subject_stride`.
 
 ![Camera perspective scout contact sheet](docs/assets/camera-perspective-scout.jpg)
+
+## Learning Recipe: Depth Of Field
+
+Run the focal-blur scout:
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/depth_of_field_scout.py
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/depth_of_field_scout.py -- --pick subject_shallow
+```
+
+This uses `blender_workbench.recipes.depth_of_field` to compare foreground, subject, and background focus planes, aperture strength, matched-framing lens changes, foreground occluders, background marker density, and bokeh highlights. Use it when focus correctness and blur readability are the question; `camera_perspective_scout.py` stays about lens and depth-cue composition.
+
+![Depth of field scout diagram](docs/assets/depth-of-field-scout.svg)
 
 ## Learning Recipe: Gobo Lighting
 
