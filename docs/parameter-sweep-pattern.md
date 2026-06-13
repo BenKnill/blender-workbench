@@ -25,6 +25,16 @@ Good sweep axes are visual and isolated:
 
 Avoid mixing too many axes in one grid. A 2x3 or 3x3 sheet is often more useful than a huge matrix because the eye can still compare cause and effect.
 
+## Example Preflight
+
+Before refreshing docs assets or running a dependent example, check the manifest:
+
+```bash
+python3 tools/example_preflight.py
+```
+
+Each manifest entry records the example command, expected output files, docs asset, and generated-input prerequisites. If a dependency is missing, the preflight report prints the upstream command to create it instead of letting the example fail later with a bare `FileNotFoundError`.
+
 ## Contact Sheet Rules
 
 - Keep the camera locked unless framing is the parameter under test.
