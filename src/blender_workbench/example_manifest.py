@@ -10,6 +10,7 @@ from typing import Any, Callable
 
 from .artifact_fingerprint import fingerprint_status
 from .capabilities import expand_required_tools, resolve_tool_path
+from .fixtures import FixtureStatus, fixture_statuses
 
 
 COST_BUCKET_ORDER = {
@@ -32,6 +33,8 @@ class ExamplePreflight:
     required_tools: tuple[str, ...]
     missing_tools: tuple[str, ...]
     tool_paths: dict[str, str | None]
+    fixture_statuses: tuple[FixtureStatus, ...]
+    missing_fixtures: tuple[FixtureStatus, ...]
     missing_prerequisites: tuple[dict[str, str], ...]
     output_statuses: dict[str, str]
     outputs_present: tuple[str, ...]
@@ -163,8 +166,13 @@ def preflight_example(
     required_tools = expand_required_tools(required_capabilities)
     tool_paths = _tool_paths(required_tools, which=which, path_exists=path_exists) if check_tools else {}
     missing_tools = tuple(tool for tool, path in tool_paths.items() if not path)
+    fixtures = tuple(str(name) for name in example.get("fixtures", []) if str(name))
+    fixture_results = fixture_statuses(fixtures, root=root) if fixtures else ()
+    missing_fixtures = tuple(status for status in fixture_results if not status.present)
     if missing_prerequisites:
         status = "blocked_missing_prereq"
+    elif missing_fixtures:
+        status = "blocked_missing_fixture"
     elif missing_tools:
         status = "blocked_missing_tool"
     else:
@@ -179,6 +187,8 @@ def preflight_example(
         required_tools=required_tools,
         missing_tools=missing_tools,
         tool_paths=tool_paths,
+        fixture_statuses=fixture_results,
+        missing_fixtures=missing_fixtures,
         missing_prerequisites=tuple(missing_prerequisites),
         output_statuses=output_statuses,
         outputs_present=outputs_present,
@@ -242,6 +252,10 @@ def format_preflight_report(results: list[ExamplePreflight]) -> str:
             )
         if result.required_capabilities:
             lines.append(f"  required capabilities: {', '.join(result.required_capabilities)}")
+        if result.fixture_statuses:
+            lines.append("  fixtures: " + ", ".join(f"{item.name}={item.detail}" for item in result.fixture_statuses))
+        if result.missing_fixtures:
+            lines.append("  missing fixtures: " + ", ".join(item.name for item in result.missing_fixtures))
         if result.missing_tools:
             lines.append(f"  missing tools: {', '.join(result.missing_tools)}")
         for missing in result.missing_prerequisites:

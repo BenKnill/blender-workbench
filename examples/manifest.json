@@ -74,6 +74,7 @@
         "reuse_outputs": true
       },
       "outputs": ["examples/output/mesh_light_scout/metadata.json", "examples/output/mesh_light_scout/contact_sheet.png"],
+      "fixtures": ["studio_tabletop"],
       "prerequisites": [],
       "docs_asset": "docs/assets/mesh-light-scout.jpg"
     },
@@ -213,6 +214,7 @@
         "reuse_outputs": true
       },
       "outputs": ["examples/output/subsurface_scout/metadata.json", "examples/output/subsurface_scout/contact_sheet.png"],
+      "fixtures": ["material_test_props"],
       "prerequisites": [],
       "docs_asset": "docs/assets/subsurface-scout.jpg"
     },
@@ -251,6 +253,7 @@
         "reuse_outputs": true
       },
       "outputs": ["examples/output/terrain_environment_scout/metadata.json", "examples/output/terrain_environment_scout/contact_sheet.png"],
+      "fixtures": ["horizon_depth_stage"],
       "prerequisites": [],
       "docs_asset": "docs/assets/terrain-environment-scout.jpg"
     },
@@ -270,6 +273,7 @@
         "reuse_outputs": true
       },
       "outputs": ["examples/output/transparency_scout/metadata.json", "examples/output/transparency_scout/contact_sheet.png"],
+      "fixtures": ["structured_transparency_background"],
       "prerequisites": [],
       "docs_asset": "docs/assets/transparency-scout.jpg"
     }

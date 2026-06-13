@@ -12,6 +12,7 @@ from .camera import add_orbit_camera, camera_distance_for_matching_framing, look
 from .capabilities import collect_capability_report, expand_required_tools, format_capability_report
 from .example_manifest import ExamplePreflight, format_preflight_report, load_manifest, preflight_examples
 from .example_pick_smoke import PickSmokePlan, PickSmokeResult, pick_smoke_plans, run_pick_smoke, verify_selected_json
+from .fixtures import FixtureStatus, fixture_builder, fixture_statuses, load_fixture_registry, validate_fixture_registry
 from .handoff import build_handoff_prompt_card, format_handoff_markdown, prompt_card_from_reference_prompt, write_handoff_card
 from .image_diagnostics import analyze_sweep_images, format_diagnostics_readme
 from .learning_coverage import format_learning_coverage_report, uncovered_learning_prompts, validate_learning_coverage
@@ -72,6 +73,9 @@ __all__ = [
     "collect_capability_report",
     "coerce_postprocess_look_settings",
     "ExamplePreflight",
+    "FixtureStatus",
+    "fixture_builder",
+    "fixture_statuses",
     "format_artifact_report",
     "format_diagnostics_readme",
     "format_preflight_report",
@@ -97,6 +101,7 @@ __all__ = [
     "expand_required_tools",
     "import_recipe_callable",
     "load_manifest",
+    "load_fixture_registry",
     "load_review_log",
     "load_sweep_variants",
     "look_at",
@@ -140,6 +145,7 @@ __all__ = [
     "stride_axis",
     "two_axis_variants",
     "validate_artifact_index",
+    "validate_fixture_registry",
     "uncovered_learning_prompts",
     "validate_learning_coverage",
     "variants_from_sweep_metadata",

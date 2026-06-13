@@ -19,6 +19,7 @@ from .artifact_fingerprint import (
     render_cache_fingerprint,
     write_fingerprint_record,
 )
+from .fixtures import fixture_provenance
 from .handoff import write_handoff_card
 from .image_diagnostics import analyze_sweep_images, format_diagnostics_readme, write_diagnostics
 from .review_page import write_review_page
@@ -1297,6 +1298,7 @@ def render_sweep(
     notes: list[str] | None = None,
     promotion_command: str | None = None,
     reference_targets: Iterable[ReferenceTarget | Mapping[str, Any]] | None = None,
+    fixtures: Iterable[str] | None = None,
     square: bool = False,
 ) -> list[RenderResult]:
     """Render a sequence of variants from one scene-builder function.
@@ -1312,6 +1314,7 @@ def render_sweep(
     root = root or Path.cwd()
     out_dir.mkdir(parents=True, exist_ok=True)
     target_list = coerce_reference_targets(reference_targets)
+    fixture_metadata = fixture_provenance(fixtures or (), root=root) if fixtures else []
 
     results: list[RenderResult] = []
     sweep_started = time.perf_counter()
@@ -1342,6 +1345,7 @@ def render_sweep(
         "sweep_metadata",
         {
             "render_config": settings_to_jsonable(cfg),
+            "fixtures": fixture_metadata,
             "variants": [
                 {
                     "name": result.name,
@@ -1366,6 +1370,7 @@ def render_sweep(
                 "reference_targets": reference_targets_to_metadata(target_list),
                 "workflow": _sweep_workflow_metadata(results, promotion_command),
                 "diagnostics": diagnostics,
+                "fixtures": fixture_metadata,
                 "total_seconds": time.perf_counter() - sweep_started,
                 "variants": [dataclasses.asdict(result) for result in results],
             },

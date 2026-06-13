@@ -31,6 +31,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `examples/rocket_plume_texture_scout.py`: dense plume texture board from smooth through overdone to whiteout.
 - `examples/silhouette_shape_scout.py`: blind unlabeled shape-first board for silhouette judgment.
 - `examples/manifest.json`: runnable-example manifest for clean-checkout preflights and docs refresh order.
+- `fixtures/registry.json`: reusable scene fixture registry for scout builders and fixture preflight.
 - `docs/parameter-sweep-pattern.md`: the short operating pattern for future agents.
 - `docs/performance.md`: defaults for fast basics-first exploration.
 - `docs/learning-notes.md`: short map from local BlenderArt resources to implemented sweep ideas.
@@ -86,6 +87,8 @@ python3 tools/workbench_doctor.py
 For dependent examples, the report prints the exact upstream command needed to create missing generated inputs. Cost-aware reports show runtime bucket, render profile, engine, mode, and tile count so agents can choose a cheap scout before starting heavier Cycles work.
 
 `--check-tools` upgrades example status from file-only readiness to `ready`, `blocked_missing_prereq`, or `blocked_missing_tool` using each manifest entry's `required_capabilities`. `workbench_doctor.py` gives the broader machine receipt for Blender, ImageMagick postprocess/contact sheets, video-reference tooling, PDF triage backends, and Python importability.
+
+Fixture dependencies are different from generated example prerequisites. `fixtures/registry.json` describes reusable builder or append/link scene pieces such as transparency backgrounds, studio tables, horizon depth stages, and material props. Example preflight reports missing fixtures separately so agents do not confuse absent source fixtures with missing rendered outputs.
 
 Index generated and legacy artifacts when you need a repo-level map of sweeps, selected renders, galleries, and reference studies:
 

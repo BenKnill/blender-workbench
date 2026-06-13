@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "updated": "2026-06-13",
+  "purpose": "Reusable scene fixtures for scouts. These are source fixtures, distinct from generated example outputs.",
+  "fixtures": [
+    {
+      "name": "structured_transparency_background",
+      "version": 1,
+      "kind": "python_builder",
+      "builder": "blender_workbench.fixtures:build_structured_transparency_background",
+      "source": "workbench_python",
+      "link_mode": "builder",
+      "single_user": true,
+      "description": "Stripe/grid/depth-marker background for glass, alpha, and refraction scouts.",
+      "expected_objects": ["stripe wall", "floor grid", "depth markers"],
+      "expected_cameras": [],
+      "expected_lights": [],
+      "dependencies": []
+    },
+    {
+      "name": "studio_tabletop",
+      "version": 1,
+      "kind": "python_builder",
+      "builder": "blender_workbench.fixtures:build_studio_tabletop_fixture",
+      "source": "workbench_python",
+      "link_mode": "builder",
+      "single_user": true,
+      "description": "Pack-shot table, wall/floor sweep, and soft-light context for material or product scouts.",
+      "expected_objects": ["tabletop", "background wall", "scale markers"],
+      "expected_cameras": ["fixture_camera"],
+      "expected_lights": ["key softbox", "fill light"],
+      "dependencies": []
+    },
+    {
+      "name": "horizon_depth_stage",
+      "version": 1,
+      "kind": "python_builder",
+      "builder": "blender_workbench.fixtures:build_horizon_depth_stage",
+      "source": "workbench_python",
+      "link_mode": "builder",
+      "single_user": true,
+      "description": "Foreground/midground/horizon structure for terrain, haze, atmosphere, and camera-depth scouts.",
+      "expected_objects": ["foreground anchors", "midground markers", "horizon plane"],
+      "expected_cameras": ["fixture_camera"],
+      "expected_lights": ["low sun key"],
+      "dependencies": []
+    },
+    {
+      "name": "material_test_props",
+      "version": 1,
+      "kind": "python_builder",
+      "builder": "blender_workbench.fixtures:build_material_test_props",
+      "source": "workbench_python",
+      "link_mode": "builder",
+      "single_user": true,
+      "description": "Sphere, slab, bead, chrome ball, and scale props for material-component boards.",
+      "expected_objects": ["matte sphere", "slab", "bead", "chrome ball", "scale ticks"],
+      "expected_cameras": ["fixture_camera"],
+      "expected_lights": [],
+      "dependencies": []
+    }
+  ]
+}
