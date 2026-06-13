@@ -1,5 +1,12 @@
 """Reusable helpers for Blender parameter-sweep visual workbenches."""
 
+from .artifact_index import (
+    ArtifactDescriptor,
+    build_artifact_index,
+    format_artifact_report,
+    scan_artifacts,
+    validate_artifact_index,
+)
 from .artifact_fingerprint import fingerprint_status, make_artifact_fingerprint, render_cache_fingerprint
 from .camera import add_orbit_camera, camera_distance_for_matching_framing, look_at, orbit_location
 from .capabilities import collect_capability_report, expand_required_tools, format_capability_report
@@ -39,11 +46,14 @@ from .sweep import (
 __all__ = [
     "add_orbit_camera",
     "add_soft_horizon_band",
+    "ArtifactDescriptor",
+    "build_artifact_index",
     "camera_distance_for_matching_framing",
     "fingerprint_status",
     "collect_capability_report",
     "coerce_postprocess_look_settings",
     "ExamplePreflight",
+    "format_artifact_report",
     "format_preflight_report",
     "format_capability_report",
     "RenderConfig",
@@ -86,11 +96,13 @@ __all__ = [
     "render_selected_variant",
     "render_sweep",
     "run_pick_smoke",
+    "scan_artifacts",
     "select_metadata_variant",
     "select_variant",
     "soft_band_alpha_profile",
     "stride_axis",
     "two_axis_variants",
+    "validate_artifact_index",
     "variants_from_sweep_metadata",
     "verify_selected_json",
     "write_review_page",

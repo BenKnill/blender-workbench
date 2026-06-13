@@ -39,6 +39,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `tools/pdf_triage.py`: capture local PDF extraction/rendering capability and create learning-note stubs under `runs/`.
 - `tools/pdf_lesson_index.py`: maintain a structured PDF lesson index and next-skim queue.
 - `tools/reference_manifest.py`: verify the adjacent `../reference_materials` shelf by checksum, size, and derived-resource fingerprints.
+- `tools/artifact_index.py`: scan current outputs and legacy study folders into a versioned artifact index/report.
 - `tools/workbench_doctor.py`: machine-readable and human-readable local capability preflight.
 - `tools/sweep_review_page.py`: generate static `review.html` pages for full-size sweep tile inspection.
 - `tools/example_pick_smoke.py`: opt-in low-sample Blender smoke checks for example `--pick` promotion paths.
@@ -81,6 +82,16 @@ python3 tools/workbench_doctor.py
 For dependent examples, the report prints the exact upstream command needed to create missing generated inputs. Cost-aware reports show runtime bucket, render profile, engine, mode, and tile count so agents can choose a cheap scout before starting heavier Cycles work.
 
 `--check-tools` upgrades example status from file-only readiness to `ready`, `blocked_missing_prereq`, or `blocked_missing_tool` using each manifest entry's `required_capabilities`. `workbench_doctor.py` gives the broader machine receipt for Blender, ImageMagick postprocess/contact sheets, video-reference tooling, PDF triage backends, and Python importability.
+
+Index generated and legacy artifacts when you need a repo-level map of sweeps, selected renders, galleries, and reference studies:
+
+```bash
+python3 tools/artifact_index.py build --out artifacts/index.json
+python3 tools/artifact_index.py report --index artifacts/index.json
+python3 tools/artifact_index.py validate --index artifacts/index.json
+```
+
+The report lists artifact type, status, preview path, and source cue. Legacy metadata is adapted into the index without rewriting the original study folders.
 
 Before opening a PR that adds or rewires an example `--pick` path, run a cheap selected-render smoke check:
 
