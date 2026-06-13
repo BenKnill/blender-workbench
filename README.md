@@ -20,6 +20,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `examples/mesh_light_scout.py`: same-view emissive mesh/softbox lighting stride board.
 - `examples/soft_atmosphere_scout.py`: feathered haze/light-card tuning board for edge falloff, alpha, glow, and noise.
 - `examples/subsurface_scout.py`: subsurface material board for wax, jelly, opal, roughness, and backlight.
+- `examples/sunset_haze_scout.py`: ordered filmstrip for static dusk, moonrise, and afterglow haze.
 - `examples/terrain_environment_scout.py`: same-view landscape/environment mood board for relief, strata, haze, backlight, and foreground scale.
 - `examples/transparency_scout.py`: transparency, transmission, roughness, IOR, tint, and thickness board.
 - `examples/mini_plume_sweep.py`: a compact Blender script showing the intended workflow.
@@ -290,6 +291,18 @@ Run the translucent material scout:
 This uses `blender_workbench.recipes.subsurface` to compare subsurface color, scattering radius, material thickness, roughness, backlight, and core light. It deliberately keeps the postprocess off so the sheet reads as a material/lighting test rather than a bloom test.
 
 ![Subsurface scout contact sheet](docs/assets/subsurface-scout.jpg)
+
+## Learning Recipe: Sunset Haze
+
+Run the ordered dusk/afterglow filmstrip:
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/sunset_haze_scout.py
+```
+
+This uses the existing `SUNSET_HAZE` axis between flat, over-orange, and washout failure anchors. It is for static atmosphere setup before long-exposure moon trail work.
+
+![Sunset haze scout contact sheet](docs/assets/sunset-haze-scout.jpg)
 
 ## Learning Recipe: Transparency
 

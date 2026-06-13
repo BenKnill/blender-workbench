@@ -19,6 +19,7 @@ When adding a new source PDF, run `python3 tools/pdf_triage.py <pdf>` first. It 
 - `examples/silhouette_shape_scout.py`: turns the shape-before-material lesson into an unlabeled blind board with metadata pick handles.
 - `examples/soft_atmosphere_scout.py`: turns hard-card failure notes into a feathered haze/light-card board for falloff width, alpha, glow, procedural breakup, and warmth.
 - `examples/subsurface_scout.py`: turns SSS/translucency notes into wax, jelly, opal, thickness, backlight, and core-light comparisons.
+- `examples/sunset_haze_scout.py`: turns the cataloged `SUNSET_HAZE` axis into an ordered static atmosphere filmstrip before moon-trail work.
 - `examples/terrain_environment_scout.py`: turns issue 39 landscape/Europa and virtual-environment prompts into same-view relief, strata, haze, backlight, and foreground-scale comparisons.
 - `examples/postprocess_look_scout.py`: turns issue 39 compositing/finishing prompts into a one-source glow, contrast, saturation, warmth, and vignette sheet.
 - `examples/camera_perspective_scout.py`: turns pack-shot and virtual-set camera lessons into same-view lens and scene-depth-cue sweeps.
@@ -38,3 +39,4 @@ When adding a new source PDF, run `python3 tools/pdf_triage.py <pdf>` first. It 
 - Compositing choices deserve their own sweep surface. Reusing one raw render for look variants is much cheaper than rerendering the scene for every glow or color-grade idea.
 - Soft card primitives need their own diagnostic board because hard edges, over-opaque alpha, and noisy breakup fail differently at selected-render scale.
 - Blind silhouette boards are useful before names, materials, or lighting bias the pick; metadata must still preserve the exact tile handles.
+- Ordered haze filmstrips are better than unrelated mood tiles when the goal is smelling time-of-day progression.
