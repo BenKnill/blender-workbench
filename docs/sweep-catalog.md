@@ -85,6 +85,7 @@ Postprocess sweeps should reuse one raw render when the scene is already selecte
 - `examples/postprocess_look_scout.py` for a one-source finishing-look sheet
 - `examples/soft_atmosphere_scout.py` for a soft-card edge/falloff/alpha/glow/noise board
 - `examples/subsurface_scout.py` for translucent wax/jelly/opal material reads with thickness and backlight
+- `examples/sunset_haze_scout.py` for an ordered dusk/moonrise/afterglow filmstrip using `SUNSET_HAZE`
 - `examples/transparency_scout.py` for a 5x5 alpha/roughness/IOR/thickness/tint stride sheet
 - `examples/light_texture_scout.py` for a concrete named light-jitter plus texture-magnitude board
 - `examples/rocket_plume_texture_scout.py` for a dense plume density-texture board from smooth through overdone to whiteout

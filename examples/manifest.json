@@ -80,6 +80,14 @@
       "docs_asset": "docs/assets/subsurface-scout.jpg"
     },
     {
+      "name": "sunset_haze_scout",
+      "script": "examples/sunset_haze_scout.py",
+      "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/sunset_haze_scout.py",
+      "outputs": ["examples/output/sunset_haze_scout/metadata.json", "examples/output/sunset_haze_scout/contact_sheet.png"],
+      "prerequisites": [],
+      "docs_asset": "docs/assets/sunset-haze-scout.jpg"
+    },
+    {
       "name": "terrain_environment_scout",
       "script": "examples/terrain_environment_scout.py",
       "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/terrain_environment_scout.py",

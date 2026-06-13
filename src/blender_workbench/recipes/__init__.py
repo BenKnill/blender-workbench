@@ -31,6 +31,7 @@ from .subsurface import (
     coerce_subsurface_settings,
     subsurface_variants,
 )
+from .sunset_haze import SUNSET_HAZE_CAMERA, SunsetHazeSettings, build_sunset_haze_scene, coerce_sunset_haze_settings, sunset_haze_variants
 from .terrain_environment import (
     TERRAIN_ENVIRONMENT_CAMERA,
     TerrainEnvironmentSettings,
@@ -59,6 +60,8 @@ __all__ = [
     "SoftAtmosphereSettings",
     "SUBSURFACE_CAMERA",
     "SubsurfaceSettings",
+    "SUNSET_HAZE_CAMERA",
+    "SunsetHazeSettings",
     "TERRAIN_ENVIRONMENT_CAMERA",
     "TerrainEnvironmentSettings",
     "TRANSPARENCY_CAMERA",
@@ -69,6 +72,7 @@ __all__ = [
     "build_rocket_plume_scene",
     "build_soft_atmosphere_scene",
     "build_subsurface_scene",
+    "build_sunset_haze_scene",
     "build_terrain_environment_scene",
     "build_transparency_scene",
     "camera_perspective_variants",
@@ -78,6 +82,7 @@ __all__ = [
     "coerce_rocket_plume_settings",
     "coerce_soft_atmosphere_settings",
     "coerce_subsurface_settings",
+    "coerce_sunset_haze_settings",
     "coerce_terrain_environment_settings",
     "coerce_transparency_settings",
     "gobo_lighting_variants",
@@ -86,6 +91,7 @@ __all__ = [
     "rocket_plume_texture_variants",
     "soft_atmosphere_variants",
     "subsurface_variants",
+    "sunset_haze_variants",
     "terrain_environment_variants",
     "transparency_variants",
 ]
