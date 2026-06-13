@@ -54,6 +54,7 @@ Shape sweeps should usually happen before material polish. If the thumbnail is n
 - subsurface: radius crossed with color
 - layered skin/SSS components: diffuse, epidermal/deep scatter, backscatter, broad specular, wet specular, bump, balanced mix, and failure anchors
 - metal: roughness crossed with edge light strength
+- hard-surface metal: bevel scale, scratches, anisotropy, rim size/strength/color, key/fill ratio
 - texture magnitude: clean, marked, craggy, overdone
 - texture scale: fine, medium, broad
 - procedural texture nodes: noise/wave/voronoi family, coordinate space, ramp contrast, palette intensity, bump, roughness coupling
@@ -103,6 +104,7 @@ Postprocess sweeps should reuse one raw render when the scene is already selecte
 - `examples/camera_perspective_scout.py` for a same-view 5x5 lens/foreground/background/grid/subject stride sheet
 - `examples/gobo_lighting_scout.py` for projected shadow texture, gel color, and light softness
 - `examples/layered_material_scout.py` for a BlenderArt issue 16 style component board before committing to a finished skin/SSS shader
+- `examples/metal_edge_light_scout.py` for hard-surface metal roughness, bevel, scratch, and rim-light reads
 - `examples/mesh_light_scout.py` for a same-view 5x5 emissive mesh size/distance/height/fill/gel sheet
 - `examples/terrain_environment_scout.py` for a same-view 5x5 landscape relief/strata/haze/backlight/foreground sheet
 - `examples/render_pass_diagnostic_scout.py` for fixed-scene pass diagnostics before compositor look sweeps

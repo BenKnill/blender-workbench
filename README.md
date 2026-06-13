@@ -20,6 +20,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `examples/camera_perspective_scout.py`: same-view lens and scene-depth cue stride board.
 - `examples/gobo_lighting_scout.py`: projected-shadow/gobo lighting board from the BlenderArt lighting resources.
 - `examples/layered_material_scout.py`: component-level skin/SSS board for diffuse, shallow/deep scatter, specular, wet highlight, and bump weights.
+- `examples/metal_edge_light_scout.py`: hard-surface metal board for roughness, bevels, scratches, and rim/edge lighting.
 - `examples/mesh_light_scout.py`: same-view emissive mesh/softbox lighting stride board.
 - `examples/soft_atmosphere_scout.py`: feathered haze/light-card tuning board for edge falloff, alpha, glow, and noise.
 - `examples/subsurface_scout.py`: subsurface material board for wax, jelly, opal, roughness, and backlight.
@@ -151,6 +152,13 @@ Use render-pass diagnostic sheets before final-look or compositor sweeps when th
 
 ```bash
 /Applications/Blender.app/Contents/MacOS/Blender --background --python examples/render_pass_diagnostic_scout.py
+```
+
+Use metal edge-light boards when a hard-surface material needs both shader and lighting judgment. `examples/metal_edge_light_scout.py` keeps diagnostic forms fixed while varying roughness, bevel scale, scratch strength, rim size/strength/color, key/fill, and failure anchors:
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/metal_edge_light_scout.py
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/metal_edge_light_scout.py -- --pick satin_balanced
 ```
 
 Use frame-sampled filmstrips when the visual question is temporal: animated texture masks, driver scale/direction, plume billow evolution, camera path checkpoints, path-following objects, or pose stepping. `render_frame_sweep(...)` builds one animated scene, samples specific frames, and records frame number, fps/time, driver values, render config, and output paths in `metadata.json`:

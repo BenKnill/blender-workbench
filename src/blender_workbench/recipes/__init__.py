@@ -16,6 +16,13 @@ from .layered_material import (
     layered_material_variants,
     layered_material_weight_summary,
 )
+from .metal_edge_light import (
+    METAL_EDGE_LIGHT_CAMERA,
+    MetalEdgeLightSettings,
+    build_metal_edge_light_scene,
+    coerce_metal_edge_light_settings,
+    metal_edge_light_variants,
+)
 from .mesh_light import MESH_LIGHT_CAMERA, MeshLightSettings, build_mesh_light_scene, coerce_mesh_light_settings, mesh_light_variants
 from .procedural_texture import (
     PROCEDURAL_TEXTURE_CAMERA,
@@ -77,6 +84,8 @@ __all__ = [
     "GoboLightingSettings",
     "LAYERED_MATERIAL_CAMERA",
     "LayeredMaterialSettings",
+    "METAL_EDGE_LIGHT_CAMERA",
+    "MetalEdgeLightSettings",
     "MESH_LIGHT_CAMERA",
     "MeshLightSettings",
     "PROCEDURAL_TEXTURE_CAMERA",
@@ -98,6 +107,7 @@ __all__ = [
     "build_camera_perspective_scene",
     "build_gobo_lighting_scene",
     "build_layered_material_scene",
+    "build_metal_edge_light_scene",
     "build_mesh_light_scene",
     "build_procedural_texture_scene",
     "build_rocket_plume_scene",
@@ -111,6 +121,7 @@ __all__ = [
     "coerce_camera_perspective_settings",
     "coerce_gobo_settings",
     "coerce_layered_material_settings",
+    "coerce_metal_edge_light_settings",
     "coerce_mesh_light_settings",
     "coerce_procedural_texture_settings",
     "coerce_rocket_plume_settings",
@@ -123,6 +134,7 @@ __all__ = [
     "gobo_lighting_variants",
     "layered_material_variants",
     "layered_material_weight_summary",
+    "metal_edge_light_variants",
     "mesh_light_variants",
     "procedural_texture_descriptor",
     "procedural_texture_variants",

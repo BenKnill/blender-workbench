@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 420" role="img" aria-label="Metal edge light scout">
+  <rect width="960" height="420" fill="#15171b"/>
+  <rect x="90" y="78" width="390" height="244" fill="#24272f"/>
+  <rect x="480" y="78" width="390" height="244" fill="#c9c4b6"/>
+  <rect x="120" y="290" width="720" height="48" fill="#30323a"/>
+  <g fill="#8f8b82" stroke="#eef3ff" stroke-width="5">
+    <rect x="270" y="172" width="134" height="108" rx="10" transform="rotate(-5 337 226)"/>
+    <rect x="520" y="154" width="72" height="142" rx="16"/>
+    <rect x="640" y="138" width="30" height="170" rx="7" transform="rotate(10 655 223)"/>
+    <ellipse cx="206" cy="242" rx="64" ry="42"/>
+  </g>
+  <g fill="none" stroke-linecap="round" stroke-width="10">
+    <path d="M760 64 C704 118 684 174 678 236" stroke="#9ec3ff"/>
+    <path d="M794 348 C704 302 612 280 504 262" stroke="#ffd28c"/>
+    <path d="M130 62 C208 118 272 160 332 188" stroke="#f4f7ff"/>
+    <path d="M126 358 C214 314 288 286 370 270" stroke="#707780"/>
+  </g>
+  <g opacity="0.35" stroke="#f6f8ff" stroke-width="3">
+    <path d="M534 166 H584"/>
+    <path d="M534 196 H584"/>
+    <path d="M534 226 H584"/>
+    <path d="M534 256 H584"/>
+  </g>
+  <g fill="#f3efe6" font-family="Helvetica, Arial, sans-serif" font-size="22">
+    <text x="94" y="52">key</text>
+    <text x="752" y="52">rim</text>
+    <text x="752" y="382">edge size</text>
+    <text x="86" y="382">roughness</text>
+    <text x="410" y="384">bevel / scratches</text>
+  </g>
+</svg>

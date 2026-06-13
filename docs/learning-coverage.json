@@ -15,13 +15,18 @@
         "examples": [
           "examples/gobo_lighting_scout.py",
           "examples/mesh_light_scout.py",
+          "examples/metal_edge_light_scout.py",
           "examples/camera_perspective_scout.py"
         ],
         "docs": ["docs/learning-notes.md", "docs/sweep-catalog.md"],
         "issues": [15, 17],
-        "artifacts": ["docs/assets/gobo-lighting-scout.jpg", "docs/assets/mesh-light-scout.jpg"]
+        "artifacts": [
+          "docs/assets/gobo-lighting-scout.jpg",
+          "docs/assets/mesh-light-scout.jpg",
+          "docs/assets/metal-edge-light-scout.svg"
+        ]
       },
-      "notes": "Depth-of-field and hard-surface edge-light follow-ups remain issue-backed even though the core lighting scouts exist."
+      "notes": "Core lighting and hard-surface edge-light scouts exist; depth-of-field remains issue-backed."
     },
     {
       "id": "blenderart16-material-transparency-smoke",
@@ -102,12 +107,12 @@
       "lesson": "Use as art-direction language and turn concrete material/light-object ideas into small scouts or issues.",
       "status": "issue_open",
       "links": {
-        "examples": [],
+        "examples": ["examples/metal_edge_light_scout.py"],
         "docs": ["docs/learning-notes.md", "docs/source-translation-ledger.json"],
         "issues": [14, 17, 23, 32],
-        "artifacts": []
+        "artifacts": ["docs/assets/metal-edge-light-scout.svg"]
       },
-      "notes": "No dedicated scout exists yet; diffuser, hard-surface, layered material, and reference-guided scout issues cover the next work."
+      "notes": "Hard-surface metal has a dedicated scout; diffuser, layered material, and reference-guided scout issues cover the remaining work."
     },
     {
       "id": "spacex-plume-frame-references",
