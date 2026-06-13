@@ -22,6 +22,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `examples/layered_material_scout.py`: component-level skin/SSS board for diffuse, shallow/deep scatter, specular, wet highlight, and bump weights.
 - `examples/mesh_light_scout.py`: same-view emissive mesh/softbox lighting stride board.
 - `examples/soft_atmosphere_scout.py`: feathered haze/light-card tuning board for edge falloff, alpha, glow, and noise.
+- `examples/smoke_billboard_scout.py`: general transparent-card smoke board for alpha, edge feather, noise, fake scatter, layer count, spacing, and parallax.
 - `examples/subsurface_scout.py`: subsurface material board for wax, jelly, opal, roughness, and backlight.
 - `examples/sunset_haze_scout.py`: ordered filmstrip for static dusk, moonrise, and afterglow haze.
 - `examples/terrain_environment_scout.py`: same-view landscape/environment mood board for relief, strata, haze, backlight, and foreground scale.
@@ -145,6 +146,13 @@ Use procedural texture-node boards when the material question is surface shader 
 ```bash
 /Applications/Blender.app/Contents/MacOS/Blender --background --python examples/procedural_texture_scout.py
 /Applications/Blender.app/Contents/MacOS/Blender --background --python examples/procedural_texture_scout.py -- --pick noise_medium_marked
+```
+
+Use smoke/alpha-billboard boards when the question is cheap scene mist, card sorting, falloff, or depth readability rather than rocket plume structure or slow volumetrics. `examples/smoke_billboard_scout.py` keeps foreground markers, a midground subject, background value steps, and a back/rim light fixed while the card stack changes:
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/smoke_billboard_scout.py
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/smoke_billboard_scout.py -- --pick soft_mist
 ```
 
 Use render-pass diagnostic sheets before final-look or compositor sweeps when the question is "what is this render made of?" `examples/render_pass_diagnostic_scout.py` keeps the scene fixed, writes pass-labeled tiles, records unavailable pass outputs as warnings, and makes shadow/AO/depth/normal/emission/alpha problems visible before grading hides them:

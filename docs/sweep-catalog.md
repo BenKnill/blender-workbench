@@ -49,7 +49,7 @@ Shape sweeps should usually happen before material polish. If the thumbnail is n
 
 - transparent emission: alpha crossed with strength
 - transparent glass: alpha, transmission, roughness, IOR, tint, pane thickness
-- smoke: density crossed with anisotropy
+- smoke billboards: alpha/density, edge feather, noise scale, fake forward scatter, layer count, spacing, and parallax
 - glass or water: roughness crossed with caustic scale
 - subsurface: radius crossed with color
 - layered skin/SSS components: diffuse, epidermal/deep scatter, backscatter, broad specular, wet specular, bump, balanced mix, and failure anchors
@@ -108,6 +108,7 @@ Postprocess sweeps should reuse one raw render when the scene is already selecte
 - `examples/render_pass_diagnostic_scout.py` for fixed-scene pass diagnostics before compositor look sweeps
 - `examples/postprocess_look_scout.py` for a one-source finishing-look sheet
 - `examples/soft_atmosphere_scout.py` for a soft-card edge/falloff/alpha/glow/noise board
+- `examples/smoke_billboard_scout.py` for a general smoke-card alpha, edge feather, noise, fake scatter, and parallax board before volumetrics
 - `examples/subsurface_scout.py` for finished translucent wax/jelly/opal material reads with thickness and backlight
 - `examples/sunset_haze_scout.py` for an ordered dusk/moonrise/afterglow filmstrip using `SUNSET_HAZE`
 - `examples/transparency_scout.py` for a 5x5 alpha/roughness/IOR/thickness/tint stride sheet

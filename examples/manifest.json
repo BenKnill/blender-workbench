@@ -257,6 +257,25 @@
       "docs_asset": "docs/assets/rocket-plume-texture-scout.jpg"
     },
     {
+      "name": "smoke_billboard_scout",
+      "script": "examples/smoke_billboard_scout.py",
+      "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/smoke_billboard_scout.py",
+      "required_capabilities": ["blender", "magick"],
+      "cost": {
+        "profile": "cycles_preview",
+        "engine": "CYCLES",
+        "runtime": "quick",
+        "mode": "grid_scout",
+        "requires_blender": true,
+        "tile_count": 11,
+        "tile_preset": "auto_square_moodboard",
+        "reuse_outputs": true
+      },
+      "outputs": ["examples/output/smoke_billboard_scout/metadata.json", "examples/output/smoke_billboard_scout/contact_sheet.png"],
+      "prerequisites": [],
+      "docs_asset": "docs/assets/smoke-billboard-scout.svg"
+    },
+    {
       "name": "silhouette_shape_scout",
       "script": "examples/silhouette_shape_scout.py",
       "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/silhouette_shape_scout.py",
