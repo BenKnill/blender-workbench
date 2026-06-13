@@ -31,12 +31,21 @@
       "lesson": "Separate material-read scouts from atmospheric card and smoke exercises so thumbnails reveal different failure modes.",
       "status": "issue_open",
       "links": {
-        "examples": ["examples/subsurface_scout.py", "examples/transparency_scout.py", "examples/soft_atmosphere_scout.py"],
+        "examples": [
+          "examples/layered_material_scout.py",
+          "examples/subsurface_scout.py",
+          "examples/transparency_scout.py",
+          "examples/soft_atmosphere_scout.py"
+        ],
         "docs": ["docs/learning-notes.md"],
         "issues": [14, 16, 23],
-        "artifacts": ["docs/assets/subsurface-scout.jpg", "docs/assets/transparency-scout.jpg"]
+        "artifacts": [
+          "docs/assets/layered-material-scout.svg",
+          "docs/assets/subsurface-scout.jpg",
+          "docs/assets/transparency-scout.jpg"
+        ]
       },
-      "notes": "SSS and transparency are implemented; alpha-billboard smoke and layered material components still need dedicated issue work."
+      "notes": "SSS, transparency, and layered material component diagnosis are implemented; alpha-billboard smoke and translucent diffuser light objects still need dedicated issue work."
     },
     {
       "id": "blenderart22-texture-environment-node-prompts",

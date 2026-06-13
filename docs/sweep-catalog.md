@@ -52,6 +52,7 @@ Shape sweeps should usually happen before material polish. If the thumbnail is n
 - smoke: density crossed with anisotropy
 - glass or water: roughness crossed with caustic scale
 - subsurface: radius crossed with color
+- layered skin/SSS components: diffuse, epidermal/deep scatter, backscatter, broad specular, wet specular, bump, balanced mix, and failure anchors
 - metal: roughness crossed with edge light strength
 - texture magnitude: clean, marked, craggy, overdone
 - texture scale: fine, medium, broad
@@ -93,11 +94,12 @@ Postprocess sweeps should reuse one raw render when the scene is already selecte
 - named texture cases with `auto_square_moodboard` and `square=True`
 - `examples/camera_perspective_scout.py` for a same-view 5x5 lens/foreground/background/grid/subject stride sheet
 - `examples/gobo_lighting_scout.py` for projected shadow texture, gel color, and light softness
+- `examples/layered_material_scout.py` for a BlenderArt issue 16 style component board before committing to a finished skin/SSS shader
 - `examples/mesh_light_scout.py` for a same-view 5x5 emissive mesh size/distance/height/fill/gel sheet
 - `examples/terrain_environment_scout.py` for a same-view 5x5 landscape relief/strata/haze/backlight/foreground sheet
 - `examples/postprocess_look_scout.py` for a one-source finishing-look sheet
 - `examples/soft_atmosphere_scout.py` for a soft-card edge/falloff/alpha/glow/noise board
-- `examples/subsurface_scout.py` for translucent wax/jelly/opal material reads with thickness and backlight
+- `examples/subsurface_scout.py` for finished translucent wax/jelly/opal material reads with thickness and backlight
 - `examples/sunset_haze_scout.py` for an ordered dusk/moonrise/afterglow filmstrip using `SUNSET_HAZE`
 - `examples/transparency_scout.py` for a 5x5 alpha/roughness/IOR/thickness/tint stride sheet
 - `examples/light_texture_scout.py` for a concrete named light-jitter plus texture-magnitude board

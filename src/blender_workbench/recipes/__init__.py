@@ -8,6 +8,14 @@ from .camera_perspective import (
     coerce_camera_perspective_settings,
 )
 from .gobo_lighting import GOBO_CAMERA, GoboLightingSettings, build_gobo_lighting_scene, coerce_gobo_settings, gobo_lighting_variants
+from .layered_material import (
+    LAYERED_MATERIAL_CAMERA,
+    LayeredMaterialSettings,
+    build_layered_material_scene,
+    coerce_layered_material_settings,
+    layered_material_variants,
+    layered_material_weight_summary,
+)
 from .mesh_light import MESH_LIGHT_CAMERA, MeshLightSettings, build_mesh_light_scene, coerce_mesh_light_settings, mesh_light_variants
 from .rocket_plume import (
     ROCKET_PLUME_CAMERA,
@@ -59,6 +67,8 @@ __all__ = [
     "CameraPerspectiveSettings",
     "GOBO_CAMERA",
     "GoboLightingSettings",
+    "LAYERED_MATERIAL_CAMERA",
+    "LayeredMaterialSettings",
     "MESH_LIGHT_CAMERA",
     "MeshLightSettings",
     "ROCKET_PLUME_CAMERA",
@@ -77,6 +87,7 @@ __all__ = [
     "TransparencySettings",
     "build_camera_perspective_scene",
     "build_gobo_lighting_scene",
+    "build_layered_material_scene",
     "build_mesh_light_scene",
     "build_rocket_plume_scene",
     "build_silhouette_shape_scene",
@@ -88,6 +99,7 @@ __all__ = [
     "camera_perspective_variants",
     "coerce_camera_perspective_settings",
     "coerce_gobo_settings",
+    "coerce_layered_material_settings",
     "coerce_mesh_light_settings",
     "coerce_rocket_plume_settings",
     "coerce_silhouette_shape_settings",
@@ -97,6 +109,8 @@ __all__ = [
     "coerce_terrain_environment_settings",
     "coerce_transparency_settings",
     "gobo_lighting_variants",
+    "layered_material_variants",
+    "layered_material_weight_summary",
     "mesh_light_variants",
     "rocket_plume_scout_variants",
     "rocket_plume_texture_variants",

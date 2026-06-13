@@ -18,6 +18,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `blender_workbench.recipes`: optional domain recipes, including a fast rocket vacuum plume scout.
 - `examples/camera_perspective_scout.py`: same-view lens and scene-depth cue stride board.
 - `examples/gobo_lighting_scout.py`: projected-shadow/gobo lighting board from the BlenderArt lighting resources.
+- `examples/layered_material_scout.py`: component-level skin/SSS board for diffuse, shallow/deep scatter, specular, wet highlight, and bump weights.
 - `examples/mesh_light_scout.py`: same-view emissive mesh/softbox lighting stride board.
 - `examples/soft_atmosphere_scout.py`: feathered haze/light-card tuning board for edge falloff, alpha, glow, and noise.
 - `examples/subsurface_scout.py`: subsurface material board for wax, jelly, opal, roughness, and backlight.
@@ -128,6 +129,13 @@ Examples can opt in with recipe-specific expectations:
 ```
 
 When enabled through `render_sweep(..., scene_expectations=...)`, warnings are non-fatal by default and are recorded under `scene_sanity` in `metadata.json`. Use `strict_scene_sanity=True` or an example's `--strict-scene` path for CI-style failures.
+
+Use layered material component boards when the question is not "which finished SSS material looks best?" but "which layer is doing the work?" `examples/layered_material_scout.py` keeps camera, lights, shape, and background fixed while exposing diffuse, epidermal/deep scatter, backscatter, broad specular, wet specular, and bump weights in metadata:
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/layered_material_scout.py
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/layered_material_scout.py -- --pick balanced_skin
+```
 
 Use frame-sampled filmstrips when the visual question is temporal: animated texture masks, driver scale/direction, plume billow evolution, camera path checkpoints, path-following objects, or pose stepping. `render_frame_sweep(...)` builds one animated scene, samples specific frames, and records frame number, fps/time, driver values, render config, and output paths in `metadata.json`:
 
