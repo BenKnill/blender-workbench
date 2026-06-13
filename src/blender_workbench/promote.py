@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from blender_workbench.presets import RENDER_PRESETS
+from blender_workbench.review_log import selected_pick_from_review
 from blender_workbench.sweep import (
     RenderConfig,
     RenderResult,
@@ -101,7 +102,7 @@ def import_recipe_callable(spec: str) -> Callable[[Any], None]:
 def promote_from_metadata(
     *,
     sweep_dir: Path,
-    pick: str | int,
+    pick: str | int | None = None,
     build_scene: Callable[[Any], None],
     out_dir: Path | None = None,
     root: Path | None = None,
@@ -117,6 +118,10 @@ def promote_from_metadata(
 ) -> RenderResult:
     source_sweep_dir = metadata_path_for_sweep(sweep_dir).parent
     variants = load_sweep_variants(sweep_dir)
+    if pick is None:
+        pick = selected_pick_from_review(source_sweep_dir)
+        if pick is None:
+            raise ValueError(f"No pick provided and {source_sweep_dir / 'review.json'} has no promotable winner")
     selected = select_variant(variants, pick)
     cfg = config or RENDER_PRESETS["hero_check"]
     if camera_name is not None:
@@ -150,7 +155,7 @@ def promote_from_metadata(
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Promote one existing sweep tile from metadata.json into a selected render.")
     parser.add_argument("--sweep", type=Path, required=True, help="sweep output directory or metadata.json path")
-    parser.add_argument("--pick", required=True, help="variant name, label, or 1-based index")
+    parser.add_argument("--pick", help="variant name, label, or 1-based index; defaults to review.json winner")
     parser.add_argument("--recipe", required=True, help="scene builder callable, written as module:callable")
     parser.add_argument("--out", type=Path, help="selected-render output directory")
     parser.add_argument("--root", type=Path, help="repository/root path for relative metadata paths")

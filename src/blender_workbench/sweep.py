@@ -1264,7 +1264,7 @@ def render_selected_variant(
 def render_selected_from_sweep(
     *,
     sweep_dir: Path,
-    pick: str | int,
+    pick: str | int | None = None,
     build_scene: Callable[[Any], None],
     out_dir: Path | None = None,
     root: Path | None = None,
@@ -1279,6 +1279,12 @@ def render_selected_from_sweep(
 ) -> RenderResult:
     """Promote one tile from a prior sweep grid into a heavier selected render."""
     sweep_dir = Path(sweep_dir)
+    if pick is None:
+        from .review_log import selected_pick_from_review
+
+        pick = selected_pick_from_review(sweep_dir)
+        if pick is None:
+            raise ValueError(f"No pick provided and {sweep_dir / 'review.json'} has no promotable winner")
     variant_list = variants_from_sweep_metadata(sweep_dir)
     selected = select_variant(variant_list, pick)
     target_out_dir = out_dir or sweep_dir / "selected" / _safe_output_name(selected.name)

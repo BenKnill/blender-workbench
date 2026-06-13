@@ -43,7 +43,10 @@ def _reviewed_names(review_path: Path) -> set[str]:
     except json.JSONDecodeError:
         return set()
     names: set[str] = set()
-    for key in ("reviewed", "picks", "rejects"):
+    winner = payload.get("winner") if isinstance(payload, dict) else None
+    if isinstance(winner, str):
+        names.add(winner)
+    for key in ("reviewed", "picks", "promising", "rejects", "failure_anchors"):
         value = payload.get(key) if isinstance(payload, dict) else None
         if isinstance(value, list):
             for item in value:

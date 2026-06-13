@@ -9,11 +9,12 @@ Use this repo when a Blender idea needs fast visual comparison instead of one-of
 3. Render a low-cost sweep with fixed camera, resolution, and samples.
 4. Read the contact sheet before changing the scene.
 5. Open `review.html` or run `python3 tools/sweep_review_page.py <sweep-dir>` for full-size tile inspection.
-6. Pick the best tile by exact variant name or 1-based index.
-7. Render that pick with `render_selected_from_sweep(...)`.
-8. For procedural noise, texture, jitter, billows, or placement, run `render_selected_replicates_from_sweep(...)` across several seeds/phases.
-9. Save a `.blend` for GUI inspection when the viewport would reveal setup, camera, material, or light-placement mistakes faster than another PNG.
-10. Promote the selected settings into a named preset only after the heavier render or GUI handoff still works.
+6. Write `review.json` with `python3 tools/review_sweep.py <sweep-dir> --winner <name>` or record `--next-action reject_grid`.
+7. Pick the best tile by exact variant name, 1-based index, or recorded review winner.
+8. Render that pick with `render_selected_from_sweep(...)`.
+9. For procedural noise, texture, jitter, billows, or placement, run `render_selected_replicates_from_sweep(...)` across several seeds/phases.
+10. Save a `.blend` for GUI inspection when the viewport would reveal setup, camera, material, or light-placement mistakes faster than another PNG.
+11. Promote the selected settings into a named preset only after the heavier render or GUI handoff still works.
 
 ## Sweep Design
 
@@ -49,6 +50,7 @@ Each manifest entry records the example command, expected output files, docs ass
 - Put generated images under ignored output folders such as `examples/output/` or `runs/`.
 - Keep `metadata.json` next to the tiles so visual picks can become reproducible presets.
 - Use `review.html` for dense micro/tiny grids before trusting a thumbnail-scale winner.
+- Use `review.json` to record winners, alternates, rejects, failure anchors, and the next stride/axis action.
 - Use stable fields such as `variation_seed`, `noise_phase`, or `texture_offset` when randomness or procedural coordinates affect the result.
 - Prefer small diagnostic renders, then spend samples on the winner with `RENDER_PRESETS["hero_check"]`.
 
@@ -90,6 +92,22 @@ render_selected_replicates_from_sweep(
 ```
 
 The replicate pass writes `replicates.json`, `README.md`, and a `replicates.png` strip when images are rendered. `survived_replicates` starts as unknown; mark it only after the core visual read survives the seed/phase changes.
+
+## Visual Review Logs
+
+After inspecting the contact sheet or `review.html`, write a structured review without launching Blender:
+
+```bash
+python3 tools/review_sweep.py examples/output/rocket_plume_texture_scout \
+  --winner texture_overdone \
+  --promising texture_billow_ribs \
+  --reject texture_whiteout_fail=too_opaque \
+  --failure-anchor texture_whiteout_fail \
+  --next-action render_selected \
+  --next "keep billow contrast high; halve shell alpha stride next run"
+```
+
+The helper writes `review.json`, appends a Visual Review section to the sweep README, and refreshes `review.html`. If a winner is recorded, `render_selected_from_sweep(sweep_dir=OUT, build_scene=build_scene)` can omit `pick`; if the grid is rejected, use `--next-action reject_grid` and record the stride or axis change in `--next`.
 
 ## Pick Smoke Checks
 
