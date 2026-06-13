@@ -7,9 +7,11 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 ## What This Provides
 
 - `blender_workbench.sweep`: render a list/grid of variants, write raw/finished PNGs, metadata, README, and a contact sheet.
-- `blender_workbench.materials`: small material helpers with explicit alpha semantics.
+- `blender_workbench.materials`: small material helpers with explicit alpha and subsurface semantics.
 - `blender_workbench.presets`: starter axes, render profiles, and tile layouts for common visual experiments.
 - `blender_workbench.recipes`: optional domain recipes, including a fast rocket vacuum plume scout.
+- `examples/gobo_lighting_scout.py`: projected-shadow/gobo lighting board from the BlenderArt lighting resources.
+- `examples/subsurface_scout.py`: subsurface material board for wax, jelly, opal, roughness, and backlight.
 - `examples/mini_plume_sweep.py`: a compact Blender script showing the intended workflow.
 - `examples/light_texture_scout.py`: named light-jitter and texture-magnitude board.
 - `examples/rocket_plume_scout.py`: a stronger plume use case built on the general sweep API.
@@ -111,6 +113,30 @@ texture_stride = stride_axis(
 If the sheet is too subtle, double `stride`; if every tile is chaos, halve it.
 
 ![Light texture scout contact sheet](docs/assets/light-texture-scout.jpg)
+
+## Learning Recipe: Gobo Lighting
+
+Run the projected-shadow lighting scout:
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/gobo_lighting_scout.py
+```
+
+This uses `blender_workbench.recipes.gobo_lighting` to compare shadow hardness, blocker distance, gobo pattern, and warm/cool gel color as a dense square tile board.
+
+![Gobo lighting scout contact sheet](docs/assets/gobo-lighting-scout.jpg)
+
+## Learning Recipe: Subsurface
+
+Run the translucent material scout:
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/subsurface_scout.py
+```
+
+This uses `blender_workbench.recipes.subsurface` to compare subsurface color, scattering radius, material thickness, roughness, backlight, and core light. It deliberately keeps the postprocess off so the sheet reads as a material/lighting test rather than a bloom test.
+
+![Subsurface scout contact sheet](docs/assets/subsurface-scout.jpg)
 
 ## Featured Recipe: Rocket Plume
 

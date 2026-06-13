@@ -1,12 +1,14 @@
 import unittest
 
 from blender_workbench.presets import RENDER_PRESETS, SWEEP_AXES, TILE_PRESETS, one_axis_variants, stride_axis, two_axis_variants
+from blender_workbench.recipes.gobo_lighting import GoboLightingSettings, coerce_gobo_settings, gobo_lighting_variants
 from blender_workbench.recipes.rocket_plume import (
     RocketPlumeSettings,
     coerce_rocket_plume_settings,
     rocket_plume_scout_variants,
     rocket_plume_texture_variants,
 )
+from blender_workbench.recipes.subsurface import SubsurfaceSettings, coerce_subsurface_settings, subsurface_variants
 from blender_workbench.sweep import RenderConfig, SweepVariant, TileSpec, grid_variants, named_variants, settings_to_jsonable
 
 
@@ -129,6 +131,29 @@ class SweepTests(unittest.TestCase):
         self.assertGreater(variants[-1].settings["density_wisp_count"], variants[0].settings["density_wisp_count"])
         self.assertGreater(variants[-1].settings["density_clump_count"], variants[0].settings["density_clump_count"])
         self.assertIn("filament_wiggle", variants[-1].settings)
+
+    def test_gobo_recipe_exposes_dense_lighting_board(self):
+        variants = gobo_lighting_variants(prefix="test")
+        settings = coerce_gobo_settings({"pattern": "dots", "light_size": 0.4, "unused": True})
+
+        self.assertEqual(len(variants), 16)
+        self.assertIsInstance(settings, GoboLightingSettings)
+        self.assertEqual(settings.pattern, "dots")
+        self.assertEqual(settings.light_size, 0.4)
+        self.assertFalse(hasattr(settings, "unused"))
+
+    def test_subsurface_recipe_exposes_dense_material_board(self):
+        variants = subsurface_variants(prefix="test")
+        settings = coerce_subsurface_settings({"subsurface_weight": 0.5, "core_light_energy": 99, "unused": True})
+        names = [variant.name for variant in variants]
+
+        self.assertEqual(len(variants), 16)
+        self.assertIn("test_matte_fail", names)
+        self.assertIn("test_overdone", names)
+        self.assertIsInstance(settings, SubsurfaceSettings)
+        self.assertEqual(settings.subsurface_weight, 0.5)
+        self.assertEqual(settings.core_light_energy, 99)
+        self.assertFalse(hasattr(settings, "unused"))
 
 
 if __name__ == "__main__":

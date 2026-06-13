@@ -61,6 +61,8 @@ Color sweeps should avoid one-note palettes. Put at least one cool/warm contrast
 
 - `plume_alpha_strength` x `plume_shape` with `micro_grid`
 - named texture cases with `auto_square_moodboard` and `square=True`
+- `examples/gobo_lighting_scout.py` for projected shadow texture, gel color, and light softness
+- `examples/subsurface_scout.py` for translucent wax/jelly/opal material reads with thickness and backlight
 - `examples/light_texture_scout.py` for a concrete named light-jitter plus texture-magnitude board
 - `examples/rocket_plume_texture_scout.py` for a dense plume density-texture board from smooth through overdone to whiteout
 - `light_source_jitter` x `texture_magnitude` with `balanced_grid`

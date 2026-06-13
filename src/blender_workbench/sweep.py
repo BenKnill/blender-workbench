@@ -43,6 +43,7 @@ class TileSpec:
     background: str = "black"
     show_notes: bool = False
     label_max_chars: int | None = 12
+    label_point_size: int | None = None
 
     @classmethod
     def hero_pair(cls) -> "TileSpec":
@@ -62,11 +63,11 @@ class TileSpec:
 
     @classmethod
     def tiny_grid(cls, columns: int = 10) -> "TileSpec":
-        return cls(width=88, height=88, columns=columns, label_height=12, label_max_chars=10)
+        return cls(width=88, height=88, columns=columns, label_height=12, label_max_chars=14)
 
     @classmethod
     def auto_tiny_grid(cls) -> "TileSpec":
-        return cls(width=88, height=88, columns=None, label_height=12, label_max_chars=10)
+        return cls(width=88, height=88, columns=None, label_height=12, label_max_chars=14)
 
     @classmethod
     def square_moodboard(cls, columns: int = 5) -> "TileSpec":
@@ -317,6 +318,12 @@ def _label_font_args() -> list[str]:
     return []
 
 
+def _label_point_size(tile: TileSpec) -> int:
+    if tile.label_point_size is not None:
+        return tile.label_point_size
+    return max(8, min(13, tile.label_height - 2))
+
+
 def write_contact_sheet(results: list[RenderResult], root: Path, out_path: Path, tile: TileSpec) -> None:
     magick = shutil.which("magick")
     if not magick or not results:
@@ -364,7 +371,7 @@ def write_contact_sheet(results: list[RenderResult], root: Path, out_path: Path,
             "-gravity",
             "center",
             "-pointsize",
-            "13",
+            str(_label_point_size(tile)),
             "-annotate",
             "+0+0",
             label,
