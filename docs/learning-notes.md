@@ -14,6 +14,7 @@ This is a compact map from the local BlenderArt/resource shelf to workbench exer
 
 - `examples/gobo_lighting_scout.py`: turns textured light and shadow-play notes into a 16-tile projected-shadow board.
 - `examples/mesh_light_scout.py`: turns mesh-light and studio softbox notes into a same-view emissive size, distance, height, fill, and gel/shape board.
+- `examples/soft_atmosphere_scout.py`: turns hard-card failure notes into a feathered haze/light-card board for falloff width, alpha, glow, procedural breakup, and warmth.
 - `examples/subsurface_scout.py`: turns SSS/translucency notes into wax, jelly, opal, thickness, backlight, and core-light comparisons.
 - `examples/terrain_environment_scout.py`: turns issue 39 landscape/Europa and virtual-environment prompts into same-view relief, strata, haze, backlight, and foreground-scale comparisons.
 - `examples/camera_perspective_scout.py`: turns pack-shot and virtual-set camera lessons into same-view lens and scene-depth-cue sweeps.
@@ -30,3 +31,4 @@ This is a compact map from the local BlenderArt/resource shelf to workbench exer
 - Visible light geometry is a useful diagnostic object, not only a renderer feature. Mesh-light boards should show both illumination on the subject and the light source's shape/gel behavior when possible.
 - Environment boards need foreground, midground, and horizon diagnostics in the same tile. Terrain relief alone is too abstract unless haze, strata, and silhouette scale are visible together.
 - Selected renders are better at exposing hard card edges than tiny contact sheets. Use reusable feathered primitives for horizon glow, haze sheets, and stylized light cards.
+- Soft card primitives need their own diagnostic board because hard edges, over-opaque alpha, and noisy breakup fail differently at selected-render scale.
