@@ -118,6 +118,13 @@ Before promoting a transparent, volumetric, SSS, caustic, denoised, or postproce
 
 The comparison writes `profile_comparison/<pick>/profile_comparison.json` and `profile_comparison.png` with source sweep provenance, the chosen pick, each render config, postprocess state, warnings, and output paths. Use it when a cheap Workbench, Eevee, or low-sample Cycles sheet might change under `hero_check` because of alpha sorting, denoising, transparent bounces, volumetrics, caustics, or glow.
 
+Use a multi-camera robustness board after a scene/material/light candidate already works from one view and the question becomes shot coverage. `examples/virtual_set_camera_scout.py` keeps scene settings fixed, renders named cameras, records lens/distance/yaw/pitch/target metadata per tile, and includes a deliberate failure camera:
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/virtual_set_camera_scout.py
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/virtual_set_camera_scout.py -- --pick vset_wide_establishing
+```
+
 ## Agent Loop
 
 1. Define a small dataclass or dict of meaningful parameters.
@@ -129,7 +136,8 @@ The comparison writes `profile_comparison/<pick>/profile_comparison.json` and `p
 7. Render the chosen tile with `render_selected_from_sweep(...)` before folding it into the main scene.
 8. For noise, texture, jitter, or placement-heavy winners, run `render_selected_replicates_from_sweep(...)` across a few seeds/phases before promotion.
 9. For profile-sensitive winners, run `render_profile_comparison_from_sweep(...)` or an example's `--compare-profiles` path before promotion.
-10. When viewport inspection would help, add `save_blend=True` or use an example's `--save-blend` / `--export-blend-only` path and open the saved `.blend`.
+10. For later-stage set QA, run a multi-camera board before assuming one good view means the scene survives a shot list.
+11. When viewport inspection would help, add `save_blend=True` or use an example's `--save-blend` / `--export-blend-only` path and open the saved `.blend`.
 
 ## Design Bias
 
