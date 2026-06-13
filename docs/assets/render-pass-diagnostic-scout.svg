@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 420" role="img" aria-label="Render pass diagnostic contact sheet">
+  <rect width="960" height="420" fill="#15171d"/>
+  <g transform="translate(54 58)">
+    <rect width="158" height="116" fill="#2e313b" stroke="#667082" stroke-width="3"/>
+    <circle cx="78" cy="64" r="34" fill="#d9985e"/>
+    <text x="79" y="148" fill="#f1eadb" font-family="Helvetica, Arial, sans-serif" font-size="18" text-anchor="middle">combined</text>
+  </g>
+  <g transform="translate(230 58)">
+    <rect width="158" height="116" fill="#1d1f27" stroke="#667082" stroke-width="3"/>
+    <path d="M24 86 C56 42 110 34 136 82" fill="none" stroke="#151515" stroke-width="24" opacity="0.85"/>
+    <text x="79" y="148" fill="#f1eadb" font-family="Helvetica, Arial, sans-serif" font-size="18" text-anchor="middle">shadow</text>
+  </g>
+  <g transform="translate(406 58)">
+    <rect width="158" height="116" fill="#353741" stroke="#667082" stroke-width="3"/>
+    <circle cx="78" cy="64" r="34" fill="#6e6e6e"/>
+    <path d="M50 90 C68 102 96 102 110 88" fill="none" stroke="#222" stroke-width="10"/>
+    <text x="79" y="148" fill="#f1eadb" font-family="Helvetica, Arial, sans-serif" font-size="18" text-anchor="middle">AO</text>
+  </g>
+  <g transform="translate(582 58)">
+    <rect width="158" height="116" fill="#202734" stroke="#667082" stroke-width="3"/>
+    <path d="M24 96 L134 24" stroke="#dfd8c0" stroke-width="12"/>
+    <path d="M24 76 L134 104" stroke="#7eb5ff" stroke-width="10"/>
+    <text x="79" y="148" fill="#f1eadb" font-family="Helvetica, Arial, sans-serif" font-size="18" text-anchor="middle">normal</text>
+  </g>
+  <g transform="translate(758 58)">
+    <rect width="158" height="116" fill="#11151d" stroke="#667082" stroke-width="3"/>
+    <path d="M26 92 C64 40 108 36 134 86" fill="none" stroke="#ff7a36" stroke-width="16"/>
+    <text x="79" y="148" fill="#f1eadb" font-family="Helvetica, Arial, sans-serif" font-size="18" text-anchor="middle">emission</text>
+  </g>
+  <g transform="translate(142 238)">
+    <rect width="158" height="116" fill="#20242e" stroke="#667082" stroke-width="3"/>
+    <linearGradient id="depth" x1="0" x2="1">
+      <stop offset="0" stop-color="#f0f0f0"/>
+      <stop offset="1" stop-color="#232323"/>
+    </linearGradient>
+    <rect x="22" y="24" width="114" height="68" fill="url(#depth)"/>
+    <text x="79" y="148" fill="#f1eadb" font-family="Helvetica, Arial, sans-serif" font-size="18" text-anchor="middle">depth</text>
+  </g>
+  <g transform="translate(318 238)">
+    <rect width="158" height="116" fill="#232733" stroke="#667082" stroke-width="3"/>
+    <circle cx="78" cy="62" r="34" fill="#77715c"/>
+    <text x="79" y="148" fill="#f1eadb" font-family="Helvetica, Arial, sans-serif" font-size="18" text-anchor="middle">diffuse</text>
+  </g>
+  <g transform="translate(494 238)">
+    <rect width="158" height="116" fill="#171b22" stroke="#667082" stroke-width="3"/>
+    <path d="M34 84 C62 36 98 34 124 80" fill="none" stroke="#e9edf4" stroke-width="12"/>
+    <text x="79" y="148" fill="#f1eadb" font-family="Helvetica, Arial, sans-serif" font-size="18" text-anchor="middle">glossy</text>
+  </g>
+  <g transform="translate(670 238)">
+    <rect width="158" height="116" fill="#202a36" stroke="#667082" stroke-width="3"/>
+    <rect x="52" y="22" width="54" height="76" fill="#8ec6ff" opacity="0.44"/>
+    <text x="79" y="148" fill="#f1eadb" font-family="Helvetica, Arial, sans-serif" font-size="18" text-anchor="middle">alpha</text>
+  </g>
+</svg>

@@ -80,14 +80,19 @@
       "links": {
         "examples": [
           "examples/terrain_environment_scout.py",
+          "examples/render_pass_diagnostic_scout.py",
           "examples/postprocess_look_scout.py",
           "examples/camera_perspective_scout.py"
         ],
         "docs": ["docs/learning-notes.md", "docs/source-translation-ledger.json"],
         "issues": [21, 24, 28, 32],
-        "artifacts": ["docs/assets/terrain-environment-scout.jpg", "docs/assets/postprocess-look-scout.jpg"]
+        "artifacts": [
+          "docs/assets/terrain-environment-scout.jpg",
+          "docs/assets/render-pass-diagnostic-scout.svg",
+          "docs/assets/postprocess-look-scout.jpg"
+        ]
       },
-      "notes": "Implemented boards cover terrain, camera, and look sweeps; pass diagnostics, reference-guided targets, and multi-camera robustness remain open."
+      "notes": "Implemented boards cover terrain, camera, pass diagnostics, and look sweeps; reference-guided targets and multi-camera robustness remain open."
     },
     {
       "id": "blenderart42-diffuser-hard-surface-material",

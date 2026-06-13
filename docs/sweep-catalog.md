@@ -80,6 +80,13 @@ Keep one deliberate `failure_anchor` in material sheets. It calibrates the eye a
 
 Color sweeps should avoid one-note palettes. Put at least one cool/warm contrast or neutral anchor in the grid.
 
+## Render Pass Diagnostics
+
+- pass diagnostic: combined, shadow, AO, diffuse, glossy, emission, depth/Z, normal, alpha
+- use `examples/render_pass_diagnostic_scout.py` before compositor/final-look sweeps when a grade might hide source pass problems
+
+Pass diagnostics keep the scene fixed and reveal whether shape comes from lights, AO, shadow, surface color, emission, depth, or alpha structure. They are not finishing looks; use them before `examples/postprocess_look_scout.py`.
+
 ## Postprocess Sweeps
 
 - finishing look: neutral, warm glow, cool mist, high contrast, soft haze, desaturated print, vivid, vignette, overdone
@@ -98,6 +105,7 @@ Postprocess sweeps should reuse one raw render when the scene is already selecte
 - `examples/layered_material_scout.py` for a BlenderArt issue 16 style component board before committing to a finished skin/SSS shader
 - `examples/mesh_light_scout.py` for a same-view 5x5 emissive mesh size/distance/height/fill/gel sheet
 - `examples/terrain_environment_scout.py` for a same-view 5x5 landscape relief/strata/haze/backlight/foreground sheet
+- `examples/render_pass_diagnostic_scout.py` for fixed-scene pass diagnostics before compositor look sweeps
 - `examples/postprocess_look_scout.py` for a one-source finishing-look sheet
 - `examples/soft_atmosphere_scout.py` for a soft-card edge/falloff/alpha/glow/noise board
 - `examples/subsurface_scout.py` for finished translucent wax/jelly/opal material reads with thickness and backlight

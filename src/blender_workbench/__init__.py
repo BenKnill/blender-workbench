@@ -28,6 +28,18 @@ from .presets import RENDER_PRESETS, SWEEP_AXES, TILE_PRESETS, SweepAxis, one_ax
 from .primitives import add_soft_horizon_band, soft_band_alpha_profile
 from .promote import import_recipe_callable, load_sweep_variants, promote_from_metadata, select_metadata_variant
 from .promotion_status import PromotionStatus, format_promotion_report, promotion_statuses
+from .render_passes import (
+    PassDiagnosticReport,
+    PassSpec,
+    PassTile,
+    coerce_pass_specs,
+    default_pass_specs,
+    format_pass_diagnostic_readme,
+    render_pass_diagnostic_sheet,
+    write_pass_diagnostic_metadata,
+    write_pass_diagnostic_outputs,
+    write_pass_diagnostic_readme,
+)
 from .review_log import load_review_log, review_summary, selected_pick_from_review, write_review_log
 from .review_page import write_review_page
 from .scene_sanity import (
@@ -100,7 +112,11 @@ __all__ = [
     "format_capability_report",
     "format_handoff_markdown",
     "format_learning_coverage_report",
+    "format_pass_diagnostic_readme",
     "format_scout_plan",
+    "PassDiagnosticReport",
+    "PassSpec",
+    "PassTile",
     "RenderConfig",
     "RenderResult",
     "FrameSample",
@@ -113,9 +129,11 @@ __all__ = [
     "TileSpec",
     "VARIANT_ROLES",
     "configure_render",
+    "coerce_pass_specs",
     "coerce_profile_comparison_profiles",
     "coerce_frame_samples",
     "coerce_reference_targets",
+    "default_pass_specs",
     "default_profile_comparison_profiles",
     "format_reference_targets_readme",
     "grid_variants",
@@ -152,6 +170,7 @@ __all__ = [
     "prompt_card_from_reference_prompt",
     "preflight_examples",
     "profile_drift_warnings",
+    "render_pass_diagnostic_sheet",
     "render_frame_sweep",
     "render_profile_comparison",
     "render_profile_comparison_from_sweep",
@@ -186,6 +205,9 @@ __all__ = [
     "format_scene_sanity_report",
     "run_scene_sanity",
     "summarize_scene_sanity",
+    "write_pass_diagnostic_metadata",
+    "write_pass_diagnostic_outputs",
+    "write_pass_diagnostic_readme",
     "write_profile_comparison_readme",
     "write_reference_attempt_pair",
     "write_review_log",
