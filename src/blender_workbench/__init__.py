@@ -13,6 +13,7 @@ from .capabilities import collect_capability_report, expand_required_tools, form
 from .example_manifest import ExamplePreflight, format_preflight_report, load_manifest, preflight_examples
 from .example_pick_smoke import PickSmokePlan, PickSmokeResult, pick_smoke_plans, run_pick_smoke, verify_selected_json
 from .handoff import build_handoff_prompt_card, format_handoff_markdown, prompt_card_from_reference_prompt, write_handoff_card
+from .image_diagnostics import analyze_sweep_images, format_diagnostics_readme
 from .learning_coverage import format_learning_coverage_report, uncovered_learning_prompts, validate_learning_coverage
 from .new_scout import ScoutPlan, build_scout_plan, format_scout_plan, write_scout_scaffold
 from .postprocess import (
@@ -51,11 +52,13 @@ from .sweep import (
     render_sweep,
     select_variant,
     variants_from_sweep_metadata,
+    write_sweep_diagnostics,
 )
 
 __all__ = [
     "add_orbit_camera",
     "add_soft_horizon_band",
+    "analyze_sweep_images",
     "ArtifactDescriptor",
     "build_artifact_index",
     "build_handoff_prompt_card",
@@ -66,6 +69,7 @@ __all__ = [
     "coerce_postprocess_look_settings",
     "ExamplePreflight",
     "format_artifact_report",
+    "format_diagnostics_readme",
     "format_preflight_report",
     "format_capability_report",
     "format_handoff_markdown",
@@ -138,4 +142,5 @@ __all__ = [
     "write_handoff_card",
     "write_review_log",
     "write_scout_scaffold",
+    "write_sweep_diagnostics",
 ]

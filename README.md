@@ -134,6 +134,9 @@ python3 tools/new_scout.py --name caustic_water --docs-title "Caustic Water Scou
 The dry run lists the recipe module, example script, tests, docs asset, manifest entry, and selected-render path.
 Add `--write` only when you want template files created; existing files are left untouched unless `--force` is passed.
 
+Each sweep writes `diagnostics.json` and a short README section with brightness, contrast, and tile-distance warnings.
+Treat these diagnostics as a fast guardrail for timid or unreadable boards; they steer reruns, but they do not choose an aesthetic winner.
+
 ## Starter Defaults
 
 Useful imports for new experiments:
