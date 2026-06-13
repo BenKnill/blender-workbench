@@ -19,6 +19,7 @@ from .artifact_fingerprint import (
     render_cache_fingerprint,
     write_fingerprint_record,
 )
+from .handoff import write_handoff_card
 from .review_page import write_review_page
 
 
@@ -836,6 +837,7 @@ def write_selected_readme(
     notes: list[str] | None = None,
     source_sweep_dir: Path | None = None,
     root: Path | None = None,
+    handoff_path: str | None = None,
 ) -> None:
     lines = [
         f"# {title}",
@@ -885,6 +887,8 @@ def write_selected_readme(
     if notes:
         lines.extend(["", "Notes:", ""])
         lines.extend(f"- {note}" for note in notes)
+    if handoff_path:
+        lines.extend(["", "Handoff:", "", f"- `{handoff_path}` records the prompt card for the next artist or agent."])
     lines.extend(["", "`selected.json` contains the chosen settings, render config, and provenance.", ""])
     (out_dir / "README.md").write_text("\n".join(lines))
 
@@ -1171,6 +1175,7 @@ def render_selected_variant(
     postprocess: Callable[[Path, Path], bool] | None = postprocess_glow_contrast,
     title: str = "Selected Blender Render",
     notes: list[str] | None = None,
+    handoff_notes: Mapping[str, Any] | None = None,
     source_sweep_dir: Path | None = None,
     save_blend: bool = False,
     render_image: bool = True,
@@ -1204,7 +1209,6 @@ def render_selected_variant(
         save_blend_path=blend_path,
         render_image=render_image,
     )
-    write_selected_readme(out_dir, title, selected, result, notes=notes, source_sweep_dir=source_sweep_dir, root=root)
     source_value = _relative_or_absolute(source_sweep_dir, root) if source_sweep_dir else None
     source_fingerprint = _source_sweep_fingerprint(source_sweep_dir)
     selected_fingerprint = make_artifact_fingerprint(
@@ -1252,6 +1256,24 @@ def render_selected_variant(
             "render_image": render_image,
             "source_sweep": source_value,
         }
+    payload["handoff"] = write_handoff_card(
+        out_dir=out_dir,
+        selected_payload=payload,
+        root=root,
+        title=f"{title} Handoff",
+        handoff_notes=handoff_notes,
+        source_sweep_dir=source_sweep_dir,
+    )
+    write_selected_readme(
+        out_dir,
+        title,
+        selected,
+        result,
+        notes=notes,
+        source_sweep_dir=source_sweep_dir,
+        root=root,
+        handoff_path="handoff.md",
+    )
     (out_dir / "selected.json").write_text(
         json.dumps(
             payload,
@@ -1272,6 +1294,7 @@ def render_selected_from_sweep(
     postprocess: Callable[[Path, Path], bool] | None = postprocess_glow_contrast,
     title: str = "Selected Blender Render",
     notes: list[str] | None = None,
+    handoff_notes: Mapping[str, Any] | None = None,
     source_sweep_dir: Path | None = None,
     save_blend: bool = False,
     render_image: bool = True,
@@ -1298,6 +1321,7 @@ def render_selected_from_sweep(
         postprocess=postprocess,
         title=title,
         notes=notes,
+        handoff_notes=handoff_notes,
         source_sweep_dir=source_sweep_dir or sweep_dir,
         save_blend=save_blend,
         render_image=render_image,

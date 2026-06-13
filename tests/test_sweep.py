@@ -388,7 +388,23 @@ class SweepTests(unittest.TestCase):
             out_dir = root / "examples/output/demo/selected/wide_shell"
             source_sweep = root / "examples/output/demo"
             source_sweep.mkdir(parents=True)
-            (source_sweep / "metadata.json").write_text(json.dumps({"fingerprint": {"schema": 1, "fingerprint": "source123"}}))
+            (source_sweep / "metadata.json").write_text(
+                json.dumps(
+                    {
+                        "fingerprint": {"schema": 1, "fingerprint": "source123"},
+                        "title": "Demo Sweep",
+                        "workflow": {
+                            "pick_handles": [
+                                {
+                                    "name": "wide_shell",
+                                    "promotion_command": "blender --background --python examples/demo.py -- --pick wide_shell",
+                                },
+                                {"name": "flat_fail", "role": "failure_anchor", "note": "lost the silhouette"},
+                            ]
+                        },
+                    }
+                )
+            )
             sweep_module._render_variant = fake_render_variant
             try:
                 result = render_selected_variant(
@@ -400,6 +416,12 @@ class SweepTests(unittest.TestCase):
                     config=RenderConfig(camera_name="DemoCamera"),
                     postprocess=None,
                     source_sweep_dir=source_sweep,
+                    handoff_notes={
+                        "preserve": ["Keep the hard rim legible."],
+                        "improve_after": ["Refine surface detail after silhouette works."],
+                        "failure_modes": ["Avoid the flat_fail silhouette collapse."],
+                        "reference_targets": ["refs/demo.png"],
+                    },
                     save_blend=True,
                     render_image=False,
                 )
@@ -407,6 +429,8 @@ class SweepTests(unittest.TestCase):
                 sweep_module._render_variant = original_render_variant
 
             payload = json.loads((out_dir / "selected.json").read_text())
+            prompt_card = json.loads((out_dir / "prompt_card.json").read_text())
+            handoff = (out_dir / "handoff.md").read_text()
             readme = (out_dir / "README.md").read_text()
 
         self.assertEqual(result.blend, "examples/output/demo/selected/wide_shell/wide_shell.blend")
@@ -420,8 +444,22 @@ class SweepTests(unittest.TestCase):
         self.assertEqual(payload["blend_export"]["path"], "examples/output/demo/selected/wide_shell/wide_shell.blend")
         self.assertEqual(payload["blend_export"]["camera_name"], "DemoCamera")
         self.assertFalse(payload["blend_export"]["render_image"])
+        self.assertEqual(payload["handoff"]["markdown"], "examples/output/demo/selected/wide_shell/handoff.md")
+        self.assertEqual(payload["handoff"]["prompt_card"], "examples/output/demo/selected/wide_shell/prompt_card.json")
+        self.assertEqual(prompt_card["selected"]["name"], "wide_shell")
+        self.assertEqual(prompt_card["source"]["sweep_title"], "Demo Sweep")
+        self.assertIn("Keep the hard rim legible.", prompt_card["preserve"])
+        self.assertIn("Refine surface detail after silhouette works.", prompt_card["improve_after"])
+        self.assertIn("Avoid the flat_fail silhouette collapse.", prompt_card["failure_modes"])
+        self.assertEqual(prompt_card["reference_targets"], ["refs/demo.png"])
+        self.assertEqual(prompt_card["regenerate_command"], "blender --background --python examples/demo.py -- --pick wide_shell")
+        self.assertEqual(prompt_card["rejected_neighboring_tiles"][0]["name"], "flat_fail")
         self.assertIn("No image render was requested", readme)
         self.assertIn("Open for GUI review", readme)
+        self.assertIn("Handoff", readme)
+        self.assertIn("handoff.md", readme)
+        self.assertIn("Use this render or study as a structure reference, not final art", handoff)
+        self.assertIn("Keep the hard rim legible", handoff)
         self.assertIn("open -a Blender examples/output/demo/selected/wide_shell/wide_shell.blend", readme)
 
     def test_selected_replicates_write_metadata_without_blender(self):
