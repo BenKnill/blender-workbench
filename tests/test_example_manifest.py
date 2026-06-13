@@ -5,12 +5,14 @@ from pathlib import Path
 
 from blender_workbench.artifact_fingerprint import make_artifact_fingerprint, write_fingerprint_record
 from blender_workbench.example_manifest import (
+    example_dependency_names,
     format_preflight_report,
     load_manifest,
     normalized_cost,
     normalized_required_capabilities,
     preflight_examples,
     select_examples,
+    sort_examples_by_dependencies,
 )
 
 
@@ -84,6 +86,55 @@ class ExampleManifestTests(unittest.TestCase):
         self.assertIn("cost instant/shape_scout/BLENDER_WORKBENCH/grid_scout/Blender; 1 tiles", report)
         self.assertIn("upstream: run upstream", report)
         self.assertIn("output freshness: present_fresh=1", report)
+
+    def test_preflight_can_order_and_report_example_dependencies(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            manifest = {
+                "examples": [
+                    {
+                        "name": "dependent",
+                        "script": "examples/dependent.py",
+                        "command": "run dependent",
+                        "outputs": [],
+                        "prerequisites": [
+                            {
+                                "path": "examples/output/upstream/raw.png",
+                                "command": "run upstream",
+                                "note": "needed raw image",
+                            }
+                        ],
+                        "docs_asset": "docs/assets/missing.jpg",
+                        "cost": {"profile": "shape_scout", "engine": "PYTHON", "runtime": "instant", "mode": "postprocess"},
+                    },
+                    {
+                        "name": "upstream",
+                        "script": "examples/upstream.py",
+                        "command": "run upstream",
+                        "outputs": ["examples/output/upstream/raw.png"],
+                        "prerequisites": [],
+                        "docs_asset": "docs/assets/missing.jpg",
+                        "cost": {"profile": "shape_scout", "engine": "BLENDER_WORKBENCH", "runtime": "quick", "mode": "grid_scout"},
+                    },
+                ]
+            }
+            manifest_path = root / "manifest.json"
+            manifest_path.write_text(json.dumps(manifest))
+
+            results = preflight_examples(manifest_path=manifest_path, root=root, dependency_order=True)
+            report = format_preflight_report(results)
+            sorted_examples = sort_examples_by_dependencies(manifest["examples"])
+            dependencies = example_dependency_names(
+                manifest["examples"][0],
+                output_producers={"examples/output/upstream/raw.png": "upstream"},
+            )
+
+        self.assertEqual([example["name"] for example in sorted_examples], ["upstream", "dependent"])
+        self.assertEqual([result.name for result in results], ["upstream", "dependent"])
+        self.assertEqual(dependencies, ("upstream",))
+        self.assertEqual(results[1].dependencies, ("upstream",))
+        self.assertIn("dependencies: upstream", report)
+        self.assertIn("upstream: run upstream", report)
 
     def test_preflight_reports_stale_and_unverified_outputs(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -252,6 +303,11 @@ class ExampleManifestTests(unittest.TestCase):
             postprocess["prerequisites"][0]["command"],
             "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/terrain_environment_scout.py -- --pick terrain_relief_p2",
         )
+        self.assertEqual(postprocess["prerequisites"][0]["upstream_example"], "terrain_environment_scout")
+        postprocess_preflight = preflight_examples(root=root, names=["postprocess_look_scout"])[0]
+        self.assertEqual(postprocess_preflight.dependencies, ("terrain_environment_scout",))
+        ordered_names = [result.name for result in preflight_examples(root=root, dependency_order=True)]
+        self.assertLess(ordered_names.index("terrain_environment_scout"), ordered_names.index("postprocess_look_scout"))
 
     def test_real_manifest_lists_every_top_level_example_script(self):
         root = Path.cwd()

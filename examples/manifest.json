@@ -250,6 +250,7 @@
       "prerequisites": [
         {
           "path": "examples/output/terrain_environment_scout/selected/terrain_relief_p2/terrain_relief_p2.hero.raw.png",
+          "upstream_example": "terrain_environment_scout",
           "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/terrain_environment_scout.py -- --pick terrain_relief_p2",
           "note": "source raw render for the finishing-look board"
         }

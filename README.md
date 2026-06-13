@@ -88,6 +88,7 @@ Check example prerequisites before running a docs refresh or dependent example:
 ```bash
 python3 tools/example_preflight.py
 python3 tools/example_preflight.py --name postprocess_look_scout
+python3 tools/example_preflight.py --dependency-order
 python3 tools/example_preflight.py --ready-only --max-cost quick --sort-by-cost
 python3 tools/example_preflight.py --check-tools --json
 python3 tools/workbench_doctor.py
@@ -95,7 +96,7 @@ python3 tools/workbench_doctor.py
 
 For dependent examples, the report prints the exact upstream command needed to create missing generated inputs. Cost-aware reports show runtime bucket, render profile, engine, mode, and tile count so agents can choose a cheap scout before starting heavier Cycles work.
 
-`--check-tools` upgrades example status from file-only readiness to `ready`, `blocked_missing_prereq`, or `blocked_missing_tool` using each manifest entry's `required_capabilities`. `workbench_doctor.py` gives the broader machine receipt for Blender, ImageMagick postprocess/contact sheets, video-reference tooling, PDF triage backends, and Python importability.
+`--dependency-order` prints generated-input producers before dependent examples and lists upstream example names beside the exact prerequisite commands. `--check-tools` upgrades example status from file-only readiness to `ready`, `blocked_missing_prereq`, or `blocked_missing_tool` using each manifest entry's `required_capabilities`. `workbench_doctor.py` gives the broader machine receipt for Blender, ImageMagick postprocess/contact sheets, video-reference tooling, PDF triage backends, and Python importability.
 
 Fixture dependencies are different from generated example prerequisites. `fixtures/registry.json` describes reusable builder or append/link scene pieces such as transparency backgrounds, studio tables, horizon depth stages, and material props. Example preflight reports missing fixtures separately so agents do not confuse absent source fixtures with missing rendered outputs.
 
