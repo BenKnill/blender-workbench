@@ -22,6 +22,8 @@ For named cases, prefer `named_variants(...)` plus `render_sweep(..., square=Tru
 
 For numeric parameters, use `stride_axis(...)` when you expect to adjust the sweep width repeatedly. If the resulting sheet looks timid, increase `stride`; if every tile fails, reduce it.
 
+Use the generated `review.html` page for dense `micro_grid` and `tiny_grid` boards before promoting a winner; full-size raw/finished tiles reveal edge, alpha, label, and noise artifacts that thumbnails hide.
+
 For recipe-specific stride boards, prefer named stride kwargs such as `lens_stride`, `ior_stride`, or `thickness_stride`. A 5x5 sheet works well when each row isolates one variable and each column is the same `m2, m1, base, p1, p2` step pattern.
 
 ## Shape Sweeps

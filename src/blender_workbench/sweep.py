@@ -12,6 +12,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from .review_page import write_review_page
+
 
 VARIANT_ROLES = (
     "candidate",
@@ -873,6 +875,7 @@ def render_sweep(
     (out_dir / "metadata.json").write_text(
         json.dumps(
             {
+                "title": title,
                 "render_config": settings_to_jsonable(cfg),
                 "contact_sheet": {
                     "columns": cfg.tile.columns_for_count(len(results)),
@@ -885,6 +888,7 @@ def render_sweep(
             indent=2,
         )
     )
+    write_review_page(out_dir, root=root)
     return results
 
 
