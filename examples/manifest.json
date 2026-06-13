@@ -161,6 +161,25 @@
       "docs_asset": "docs/assets/postprocess-look-scout.jpg"
     },
     {
+      "name": "render_pass_diagnostic_scout",
+      "script": "examples/render_pass_diagnostic_scout.py",
+      "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/render_pass_diagnostic_scout.py",
+      "required_capabilities": ["blender", "magick"],
+      "cost": {
+        "profile": "cycles_preview",
+        "engine": "CYCLES",
+        "runtime": "quick",
+        "mode": "pass_diagnostic",
+        "requires_blender": true,
+        "tile_count": 10,
+        "tile_preset": "filmstrip",
+        "reuse_outputs": true
+      },
+      "outputs": ["examples/output/render_pass_diagnostic_scout/metadata.json", "examples/output/render_pass_diagnostic_scout/contact_sheet.png"],
+      "prerequisites": [],
+      "docs_asset": "docs/assets/render-pass-diagnostic-scout.svg"
+    },
+    {
       "name": "rocket_plume_scout",
       "script": "examples/rocket_plume_scout.py",
       "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/rocket_plume_scout.py",

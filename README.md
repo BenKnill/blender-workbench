@@ -16,6 +16,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `blender_workbench.presets`: starter axes, render profiles, and tile layouts for common visual experiments.
 - `blender_workbench.promote`: promote a picked tile from an existing `metadata.json` without rerendering the full sheet.
 - `blender_workbench.recipes`: optional domain recipes, including a fast rocket vacuum plume scout.
+- `blender_workbench.render_passes`: render fixed-scene pass diagnostic sheets before compositor or final-look sweeps.
 - `examples/camera_perspective_scout.py`: same-view lens and scene-depth cue stride board.
 - `examples/gobo_lighting_scout.py`: projected-shadow/gobo lighting board from the BlenderArt lighting resources.
 - `examples/mesh_light_scout.py`: same-view emissive mesh/softbox lighting stride board.
@@ -26,6 +27,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `examples/transparency_scout.py`: transparency, transmission, roughness, IOR, tint, and thickness board.
 - `examples/mini_plume_sweep.py`: a compact Blender script showing the intended workflow.
 - `examples/postprocess_look_scout.py`: one raw render processed into a finishing-look contact sheet.
+- `examples/render_pass_diagnostic_scout.py`: fixed-scene pass board for combined, shadow, AO, diffuse, glossy, emission, depth, normal, and alpha reads.
 - `examples/light_texture_scout.py`: named light-jitter and texture-magnitude board.
 - `examples/rocket_plume_scout.py`: a stronger plume use case built on the general sweep API.
 - `examples/rocket_plume_texture_scout.py`: dense plume texture board from smooth through overdone to whiteout.
@@ -128,6 +130,12 @@ Examples can opt in with recipe-specific expectations:
 ```
 
 When enabled through `render_sweep(..., scene_expectations=...)`, warnings are non-fatal by default and are recorded under `scene_sanity` in `metadata.json`. Use `strict_scene_sanity=True` or an example's `--strict-scene` path for CI-style failures.
+
+Use render-pass diagnostic sheets before final-look or compositor sweeps when the question is "what is this render made of?" `examples/render_pass_diagnostic_scout.py` keeps the scene fixed, writes pass-labeled tiles, records unavailable pass outputs as warnings, and makes shadow/AO/depth/normal/emission/alpha problems visible before grading hides them:
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/render_pass_diagnostic_scout.py
+```
 
 Use frame-sampled filmstrips when the visual question is temporal: animated texture masks, driver scale/direction, plume billow evolution, camera path checkpoints, path-following objects, or pose stepping. `render_frame_sweep(...)` builds one animated scene, samples specific frames, and records frame number, fps/time, driver values, render config, and output paths in `metadata.json`:
 
