@@ -3,7 +3,14 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from blender_workbench.example_manifest import format_preflight_report, load_manifest, normalized_cost, preflight_examples, select_examples
+from blender_workbench.example_manifest import (
+    format_preflight_report,
+    load_manifest,
+    normalized_cost,
+    normalized_required_capabilities,
+    preflight_examples,
+    select_examples,
+)
 
 
 class ExampleManifestTests(unittest.TestCase):
@@ -61,11 +68,13 @@ class ExampleManifestTests(unittest.TestCase):
             report = format_preflight_report(results)
 
         self.assertTrue(results[0].runnable)
+        self.assertEqual(results[0].status, "ready")
         self.assertEqual(results[0].outputs_present, ("examples/output/ready/metadata.json",))
         self.assertFalse(results[1].runnable)
+        self.assertEqual(results[1].status, "blocked_missing_prereq")
         self.assertEqual(results[1].missing_prerequisites[0]["command"], "run upstream")
         self.assertEqual(results[0].cost["runtime"], "instant")
-        self.assertIn("blocked: blocked", report)
+        self.assertIn("blocked: blocked_missing_prereq", report)
         self.assertIn("cost instant/shape_scout/BLENDER_WORKBENCH/grid_scout/Blender; 1 tiles", report)
         self.assertIn("upstream: run upstream", report)
 
@@ -109,10 +118,58 @@ class ExampleManifestTests(unittest.TestCase):
 
         self.assertEqual([result.name for result in results], ["instant_ready"])
 
+    def test_preflight_reports_missing_tools_when_enabled(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            manifest = {
+                "examples": [
+                    {
+                        "name": "tool_blocked",
+                        "command": "run tool blocked",
+                        "outputs": [],
+                        "prerequisites": [],
+                        "required_capabilities": ["blender", "magick"],
+                        "cost": {"profile": "shape_scout", "engine": "BLENDER_WORKBENCH", "runtime": "instant", "mode": "grid_scout"},
+                    }
+                ]
+            }
+            manifest_path = root / "manifest.json"
+            manifest_path.write_text(json.dumps(manifest))
+
+            results = preflight_examples(
+                manifest_path=manifest_path,
+                root=root,
+                check_tools=True,
+                which=lambda name: f"/fake/{name}" if name == "blender" else None,
+                path_exists=lambda _path: False,
+            )
+            report = format_preflight_report(results)
+
+        self.assertFalse(results[0].runnable)
+        self.assertEqual(results[0].status, "blocked_missing_tool")
+        self.assertEqual(results[0].required_tools, ("blender", "magick"))
+        self.assertEqual(results[0].missing_tools, ("magick",))
+        self.assertIn("missing tools: magick", report)
+
     def test_cost_metadata_validates_runtime_bucket(self):
         self.assertEqual(normalized_cost({"name": "demo", "cost": {"runtime": "quick"}})["runtime"], "quick")
         with self.assertRaisesRegex(ValueError, "Unknown cost bucket"):
             normalized_cost({"name": "demo", "cost": {"runtime": "glacial"}})
+
+    def test_required_capabilities_fall_back_to_cost_when_absent(self):
+        self.assertEqual(
+            normalized_required_capabilities({"name": "demo", "cost": {"runtime": "quick", "requires_blender": True}}),
+            ("blender", "magick"),
+        )
+        self.assertEqual(
+            normalized_required_capabilities(
+                {
+                    "name": "demo",
+                    "cost": {"runtime": "instant", "engine": "PYTHON_IMAGEMAGICK", "requires_blender": False},
+                }
+            ),
+            ("postprocess_only",),
+        )
 
     def test_select_examples_rejects_unknown_names(self):
         examples = [{"name": "one"}, {"name": "two"}]
@@ -134,7 +191,9 @@ class ExampleManifestTests(unittest.TestCase):
             self.assertIn(cost["runtime"], {"instant", "quick", "medium", "heavy"})
             self.assertIn("profile", cost)
             self.assertIn("engine", cost)
+            self.assertIn("required_capabilities", example)
         postprocess = next(example for example in examples if example["name"] == "postprocess_look_scout")
+        self.assertEqual(postprocess["required_capabilities"], ["postprocess_only"])
         self.assertEqual(
             postprocess["prerequisites"][0]["command"],
             "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/terrain_environment_scout.py -- --pick terrain_relief_p2",

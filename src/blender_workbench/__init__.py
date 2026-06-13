@@ -1,6 +1,7 @@
 """Reusable helpers for Blender parameter-sweep visual workbenches."""
 
 from .camera import add_orbit_camera, camera_distance_for_matching_framing, look_at, orbit_location
+from .capabilities import collect_capability_report, expand_required_tools, format_capability_report
 from .example_manifest import ExamplePreflight, format_preflight_report, load_manifest, preflight_examples
 from .example_pick_smoke import PickSmokePlan, PickSmokeResult, pick_smoke_plans, run_pick_smoke, verify_selected_json
 from .postprocess import (
@@ -32,9 +33,11 @@ __all__ = [
     "add_orbit_camera",
     "add_soft_horizon_band",
     "camera_distance_for_matching_framing",
+    "collect_capability_report",
     "coerce_postprocess_look_settings",
     "ExamplePreflight",
     "format_preflight_report",
+    "format_capability_report",
     "RenderConfig",
     "RenderResult",
     "RENDER_PRESETS",
@@ -45,6 +48,7 @@ __all__ = [
     "TileSpec",
     "configure_render",
     "grid_variants",
+    "expand_required_tools",
     "import_recipe_callable",
     "load_manifest",
     "load_sweep_variants",

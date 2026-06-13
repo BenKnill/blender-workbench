@@ -33,9 +33,11 @@ Before refreshing docs assets or running a dependent example, check the manifest
 ```bash
 python3 tools/example_preflight.py
 python3 tools/example_preflight.py --ready-only --max-cost quick --sort-by-cost
+python3 tools/example_preflight.py --check-tools
+python3 tools/workbench_doctor.py
 ```
 
-Each manifest entry records the example command, expected output files, docs asset, generated-input prerequisites, and cost metadata. If a dependency is missing, the preflight report prints the upstream command to create it instead of letting the example fail later with a bare `FileNotFoundError`. Use `--max-cost quick` when the next useful move should be a cheap scout rather than a medium or heavy render session.
+Each manifest entry records the example command, expected output files, docs asset, generated-input prerequisites, required capabilities, and cost metadata. If a dependency is missing, the preflight report prints the upstream command to create it instead of letting the example fail later with a bare `FileNotFoundError`. Use `--check-tools` when the distinction between `blocked_missing_prereq` and `blocked_missing_tool` matters before launching Blender or postprocess work. Use `--max-cost quick` when the next useful move should be a cheap scout rather than a medium or heavy render session.
 
 ## Contact Sheet Rules
 

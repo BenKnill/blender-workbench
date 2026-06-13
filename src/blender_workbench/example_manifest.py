@@ -2,10 +2,13 @@ from __future__ import annotations
 
 import argparse
 import json
+import shutil
 import sys
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
+
+from .capabilities import expand_required_tools, resolve_tool_path
 
 
 COST_BUCKET_ORDER = {
@@ -22,7 +25,12 @@ class ExamplePreflight:
     name: str
     command: str
     cost: dict[str, Any]
+    status: str
     runnable: bool
+    required_capabilities: tuple[str, ...]
+    required_tools: tuple[str, ...]
+    missing_tools: tuple[str, ...]
+    tool_paths: dict[str, str | None]
     missing_prerequisites: tuple[dict[str, str], ...]
     outputs_present: tuple[str, ...]
     outputs_missing: tuple[str, ...]
@@ -88,8 +96,40 @@ def normalized_cost(example: dict[str, Any]) -> dict[str, Any]:
     return cost
 
 
-def preflight_example(example: dict[str, Any], *, root: Path | None = None) -> ExamplePreflight:
+def normalized_required_capabilities(example: dict[str, Any]) -> tuple[str, ...]:
+    raw = example.get("required_capabilities", example.get("required_tools", ()))
+    if isinstance(raw, str):
+        values = [raw]
+    else:
+        values = list(raw)
+    if not values:
+        cost = normalized_cost(example)
+        if cost.get("requires_blender", True):
+            values = ["blender", "magick"]
+        elif cost.get("engine") == "PYTHON_IMAGEMAGICK":
+            values = ["postprocess_only"]
+    return tuple(dict.fromkeys(str(value) for value in values))
+
+
+def _tool_paths(
+    tools: tuple[str, ...],
+    *,
+    which: Callable[[str], str | None],
+    path_exists: Callable[[Path], bool] | None,
+) -> dict[str, str | None]:
+    return {tool: resolve_tool_path(tool, which=which, path_exists=path_exists) for tool in tools}
+
+
+def preflight_example(
+    example: dict[str, Any],
+    *,
+    root: Path | None = None,
+    check_tools: bool = False,
+    which: Callable[[str], str | None] | None = None,
+    path_exists: Callable[[Path], bool] | None = None,
+) -> ExamplePreflight:
     root = root or Path.cwd()
+    which = which or shutil.which
     prerequisites = example.get("prerequisites", [])
     missing_prerequisites: list[dict[str, str]] = []
     for prerequisite in prerequisites:
@@ -110,11 +150,26 @@ def preflight_example(example: dict[str, Any], *, root: Path | None = None) -> E
     outputs_missing = tuple(path for path in outputs if not (root / path).exists())
     docs_asset = example.get("docs_asset")
     docs_asset_present = bool(docs_asset and (root / docs_asset).exists())
+    required_capabilities = normalized_required_capabilities(example)
+    required_tools = expand_required_tools(required_capabilities)
+    tool_paths = _tool_paths(required_tools, which=which, path_exists=path_exists) if check_tools else {}
+    missing_tools = tuple(tool for tool, path in tool_paths.items() if not path)
+    if missing_prerequisites:
+        status = "blocked_missing_prereq"
+    elif missing_tools:
+        status = "blocked_missing_tool"
+    else:
+        status = "ready"
     return ExamplePreflight(
         name=example["name"],
         command=example["command"],
         cost=normalized_cost(example),
-        runnable=not missing_prerequisites,
+        status=status,
+        runnable=status == "ready",
+        required_capabilities=required_capabilities,
+        required_tools=required_tools,
+        missing_tools=missing_tools,
+        tool_paths=tool_paths,
         missing_prerequisites=tuple(missing_prerequisites),
         outputs_present=outputs_present,
         outputs_missing=outputs_missing,
@@ -131,9 +186,15 @@ def preflight_examples(
     ready_only: bool = False,
     max_cost: str | None = None,
     sort_by_cost: bool = False,
+    check_tools: bool = False,
+    which: Callable[[str], str | None] | None = None,
+    path_exists: Callable[[Path], bool] | None = None,
 ) -> list[ExamplePreflight]:
     examples = select_examples(load_manifest(manifest_path, root=root), names)
-    results = [preflight_example(example, root=root) for example in examples]
+    results = [
+        preflight_example(example, root=root, check_tools=check_tools, which=which, path_exists=path_exists)
+        for example in examples
+    ]
     if ready_only:
         results = [result for result in results if result.runnable]
     if max_cost is not None:
@@ -147,7 +208,6 @@ def preflight_examples(
 def format_preflight_report(results: list[ExamplePreflight]) -> str:
     lines = ["Example preflight:", ""]
     for result in results:
-        status = "ready" if result.runnable else "blocked"
         output_status = f"{len(result.outputs_present)} outputs present, {len(result.outputs_missing)} missing"
         docs_status = "docs asset present" if result.docs_asset_present else "docs asset missing"
         cost = result.cost
@@ -158,8 +218,15 @@ def format_preflight_report(results: list[ExamplePreflight]) -> str:
         blender = "Blender" if cost.get("requires_blender", True) else "no Blender"
         tile_count = cost.get("tile_count")
         tile_text = f"; {tile_count} tiles" if tile_count is not None else ""
-        lines.append(f"- {result.name}: {status}; cost {runtime}/{profile}/{engine}/{mode}/{blender}{tile_text}; {output_status}; {docs_status}")
+        lines.append(
+            f"- {result.name}: {result.status}; cost {runtime}/{profile}/{engine}/{mode}/{blender}{tile_text}; "
+            f"{output_status}; {docs_status}"
+        )
         lines.append(f"  command: {result.command}")
+        if result.required_capabilities:
+            lines.append(f"  required capabilities: {', '.join(result.required_capabilities)}")
+        if result.missing_tools:
+            lines.append(f"  missing tools: {', '.join(result.missing_tools)}")
         for missing in result.missing_prerequisites:
             lines.append(f"  missing: {missing['path']}")
             if missing.get("note"):
@@ -177,6 +244,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--ready-only", action="store_true", help="only include examples whose prerequisites are present")
     parser.add_argument("--max-cost", choices=("instant", "quick", "medium", "heavy"), help="only include examples at or below this runtime bucket")
     parser.add_argument("--sort-by-cost", action="store_true", help="sort examples by runtime bucket before name")
+    parser.add_argument("--check-tools", action="store_true", help="also check declared command-line tool capabilities")
     parser.add_argument("--json", action="store_true", help="print machine-readable preflight JSON")
     return parser.parse_args(_script_args(argv))
 
@@ -190,6 +258,7 @@ def main(argv: list[str] | None = None) -> list[ExamplePreflight]:
         ready_only=args.ready_only,
         max_cost=args.max_cost,
         sort_by_cost=args.sort_by_cost,
+        check_tools=args.check_tools,
     )
     if args.json:
         print(json.dumps([asdict(result) for result in results], indent=2))

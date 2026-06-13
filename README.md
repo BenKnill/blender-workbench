@@ -8,7 +8,8 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 
 - `blender_workbench.sweep`: render a list/grid of variants, write raw/finished PNGs, metadata, README, contact sheets, and selected hero renders promoted from sweep metadata.
 - `blender_workbench.camera`: orbit-camera helpers plus lens/distance matching for perspective studies.
-- `blender_workbench.example_manifest`: inspect example commands, expected outputs, docs assets, and generated-input prerequisites.
+- `blender_workbench.capabilities`: inspect local Blender, postprocess, video, PDF, and wrapper tool readiness.
+- `blender_workbench.example_manifest`: inspect example commands, expected outputs, docs assets, generated-input prerequisites, and required local tools.
 - `blender_workbench.materials`: small material helpers with explicit alpha, emission, and subsurface semantics.
 - `blender_workbench.postprocess`: reuse one raw render for finishing-look contact sheets.
 - `blender_workbench.primitives`: reusable low-cost scene primitives such as feathered horizon/light bands.
@@ -36,6 +37,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `docs/rocket-plume.md`: recipe notes for broad, smoky, in-space engine plumes.
 - `tools/pdf_triage.py`: capture local PDF extraction/rendering capability and create learning-note stubs under `runs/`.
 - `tools/reference_manifest.py`: verify the adjacent `../reference_materials` shelf by checksum, size, and derived-resource fingerprints.
+- `tools/workbench_doctor.py`: machine-readable and human-readable local capability preflight.
 - `tools/example_pick_smoke.py`: opt-in low-sample Blender smoke checks for example `--pick` promotion paths.
 
 ## Quick Start
@@ -65,9 +67,13 @@ Check example prerequisites before running a docs refresh or dependent example:
 python3 tools/example_preflight.py
 python3 tools/example_preflight.py --name postprocess_look_scout
 python3 tools/example_preflight.py --ready-only --max-cost quick --sort-by-cost
+python3 tools/example_preflight.py --check-tools --json
+python3 tools/workbench_doctor.py
 ```
 
 For dependent examples, the report prints the exact upstream command needed to create missing generated inputs. Cost-aware reports show runtime bucket, render profile, engine, mode, and tile count so agents can choose a cheap scout before starting heavier Cycles work.
+
+`--check-tools` upgrades example status from file-only readiness to `ready`, `blocked_missing_prereq`, or `blocked_missing_tool` using each manifest entry's `required_capabilities`. `workbench_doctor.py` gives the broader machine receipt for Blender, ImageMagick postprocess/contact sheets, video-reference tooling, PDF triage backends, and Python importability.
 
 Before opening a PR that adds or rewires an example `--pick` path, run a cheap selected-render smoke check:
 
