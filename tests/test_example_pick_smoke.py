@@ -55,6 +55,92 @@ class ExamplePickSmokeTests(unittest.TestCase):
         self.assertTrue(plan.selected_json.endswith("examples/output/demo/selected/soft_fill/selected.json"))
         self.assertIn("soft_fill", report)
 
+    def test_plan_pick_smoke_prefers_non_protected_default_role(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "examples/output/demo").mkdir(parents=True)
+            (root / "examples/demo.py").write_text("parser.add_argument('--pick')\nrender_selected_from_sweep()\n")
+            (root / "examples/output/demo/metadata.json").write_text(
+                json.dumps(
+                    {
+                        "variants": [
+                            {"name": "hard_fail", "settings": {}, "role": "failure_anchor"},
+                            {"name": "usable_soft", "settings": {}, "role": "candidate"},
+                        ]
+                    }
+                )
+            )
+            example = {
+                "name": "demo",
+                "script": "examples/demo.py",
+                "outputs": ["examples/output/demo/metadata.json"],
+            }
+
+            plan = plan_pick_smoke(example, root=root)
+
+        self.assertTrue(plan.runnable)
+        self.assertEqual(plan.pick, "usable_soft")
+        self.assertEqual(plan.pick_role, "candidate")
+
+    def test_plan_pick_smoke_marks_explicit_protected_pick(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "examples/output/demo").mkdir(parents=True)
+            (root / "examples/demo.py").write_text("parser.add_argument('--pick')\nrender_selected_from_sweep()\n")
+            (root / "examples/output/demo/metadata.json").write_text(
+                json.dumps(
+                    {
+                        "variants": [
+                            {"name": "hard_fail", "settings": {}, "role": "failure_anchor"},
+                            {"name": "usable_soft", "settings": {}, "role": "candidate"},
+                        ]
+                    }
+                )
+            )
+            example = {
+                "name": "demo",
+                "script": "examples/demo.py",
+                "outputs": ["examples/output/demo/metadata.json"],
+            }
+
+            plan = plan_pick_smoke(example, root=root, pick="hard_fail")
+            report = format_plan_report([plan])
+
+        self.assertTrue(plan.runnable)
+        self.assertEqual(plan.pick, "hard_fail")
+        self.assertEqual(plan.pick_role, "failure_anchor")
+        self.assertEqual(plan.status, "ready_explicit_protected_pick")
+        self.assertIn("explicit protected-role pick requested", report)
+
+    def test_plan_pick_smoke_warns_and_skips_roleless_failure_names(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "examples/output/demo").mkdir(parents=True)
+            (root / "examples/demo.py").write_text("parser.add_argument('--pick')\nrender_selected_from_sweep()\n")
+            (root / "examples/output/demo/metadata.json").write_text(
+                json.dumps(
+                    {
+                        "variants": [
+                            {"name": "soft_card_hard_edge_fail", "label": "hard_edge_fail", "settings": {}},
+                            {"name": "soft_card_base_soft", "label": "base_soft", "settings": {}},
+                        ]
+                    }
+                )
+            )
+            example = {
+                "name": "demo",
+                "script": "examples/demo.py",
+                "outputs": ["examples/output/demo/metadata.json"],
+            }
+
+            plan = plan_pick_smoke(example, root=root)
+            report = format_plan_report([plan])
+
+        self.assertTrue(plan.runnable)
+        self.assertEqual(plan.pick, "soft_card_base_soft")
+        self.assertEqual(plan.status, "ready_unverified_metadata")
+        self.assertIn("metadata has no role fields", report)
+
     def test_plan_pick_smoke_blocks_without_metadata(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
