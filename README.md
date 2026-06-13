@@ -35,6 +35,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `docs/learning-notes.md`: short map from local BlenderArt resources to implemented sweep ideas.
 - `docs/rocket-plume.md`: recipe notes for broad, smoky, in-space engine plumes.
 - `tools/pdf_triage.py`: capture local PDF extraction/rendering capability and create learning-note stubs under `runs/`.
+- `tools/reference_manifest.py`: verify the adjacent `../reference_materials` shelf by checksum, size, and derived-resource fingerprints.
 - `tools/example_pick_smoke.py`: opt-in low-sample Blender smoke checks for example `--pick` promotion paths.
 
 ## Quick Start
@@ -52,10 +53,11 @@ The example writes to `examples/output/mini_plume_sweep/`.
 To triage a local learning PDF before turning it into a recipe or issue:
 
 ```bash
+python3 tools/reference_manifest.py verify
 python3 tools/pdf_triage.py ../reference_materials/artistic_blender_pdfs/blenderart_issue_39_compositing_sep_2012.pdf
 ```
 
-The helper writes backend status, any extracted text, native macOS page images/contact sheets when available, cover thumbnails, and a `notes.md` stub under `runs/pdf_triage/`.
+The reference manifest verifies that local PDFs and SpaceX-derived visual references are present and unchanged before an agent downloads or regenerates media. The PDF helper writes backend status, any extracted text, native macOS page images/contact sheets when available, cover thumbnails, and a `notes.md` stub under `runs/pdf_triage/`.
 
 Check example prerequisites before running a docs refresh or dependent example:
 

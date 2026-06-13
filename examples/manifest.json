@@ -209,6 +209,16 @@
       "name": "sunset_haze_scout",
       "script": "examples/sunset_haze_scout.py",
       "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/sunset_haze_scout.py",
+      "cost": {
+        "profile": "cycles_preview",
+        "engine": "CYCLES",
+        "runtime": "quick",
+        "mode": "grid_scout",
+        "requires_blender": true,
+        "tile_count": 6,
+        "tile_preset": "filmstrip",
+        "reuse_outputs": true
+      },
       "outputs": ["examples/output/sunset_haze_scout/metadata.json", "examples/output/sunset_haze_scout/contact_sheet.png"],
       "prerequisites": [],
       "docs_asset": "docs/assets/sunset-haze-scout.jpg"
