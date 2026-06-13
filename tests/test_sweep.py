@@ -47,6 +47,7 @@ from blender_workbench.sweep import (
     named_variants,
     normalize_variant_role,
     replicate_variants,
+    render_profile_comparison_from_sweep,
     render_selected_replicates,
     select_variant,
     settings_to_jsonable,
@@ -313,6 +314,109 @@ class SweepTests(unittest.TestCase):
         self.assertEqual(workflow["pick_handles"][0]["name"], "wide_shell")
         self.assertEqual(workflow["pick_handles"][0]["role"], "candidate")
         self.assertEqual(workflow["pick_handles"][0]["promotion_command"], "blender --background --python examples/demo.py -- --pick wide_shell")
+
+    def test_sweep_workflow_metadata_can_include_profile_comparison_command(self):
+        result = RenderResult(
+            name="wide_shell",
+            raw="runs/demo/wide_shell.raw.png",
+            finished=None,
+            settings={"width": 1.4},
+        )
+
+        workflow = _sweep_workflow_metadata(
+            [result],
+            "blender demo.py -- --pick {pick}",
+            "blender demo.py -- --pick {pick} --compare-profiles",
+        )
+
+        self.assertEqual(workflow["profile_comparison_command_template"], "blender demo.py -- --pick {pick} --compare-profiles")
+        self.assertEqual(
+            workflow["pick_handles"][0]["profile_comparison_command"],
+            "blender demo.py -- --pick wide_shell --compare-profiles",
+        )
+
+    def test_render_profile_comparison_from_sweep_records_metadata_without_blender(self):
+        calls = []
+        original_render_variant = sweep_module._render_variant
+        original_write_contact_sheet = sweep_module.write_contact_sheet
+
+        def fake_render_variant(**kwargs):
+            calls.append(kwargs)
+            suffix = f".{kwargs['file_suffix']}" if kwargs["file_suffix"] else ""
+            raw = kwargs["out_dir"] / f"{kwargs['variant'].name}{suffix}.raw.png"
+            raw.parent.mkdir(parents=True, exist_ok=True)
+            raw.write_text("image")
+            return RenderResult(
+                name=kwargs["variant"].name,
+                raw=str(raw.relative_to(kwargs["root"])),
+                finished=None,
+                settings=kwargs["variant"].settings,
+                label=kwargs["variant"].label,
+                note=kwargs["variant"].note,
+                role=kwargs["variant"].role,
+                tags=kwargs["variant"].tags,
+                engine=kwargs["config"].engine,
+                camera_name=kwargs["config"].camera_name,
+                fingerprint={"schema": 1, "fingerprint": f"{kwargs['variant'].name}-fp"},
+            )
+
+        def fake_contact_sheet(_results, _root, out_path, _tile, **_kwargs):
+            out_path.write_text("contact")
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            sweep = root / "examples/output/demo"
+            sweep.mkdir(parents=True)
+            (sweep / "metadata.json").write_text(
+                json.dumps(
+                    {
+                        "fingerprint": {"schema": 1, "fingerprint": "source123"},
+                        "variants": [
+                            {
+                                "name": "wide_shell",
+                                "label": "wide",
+                                "settings": {"alpha": 0.35, "width": 1.4},
+                            }
+                        ],
+                    }
+                )
+            )
+            profiles = (
+                ("preview", RenderConfig.cycles_preview()),
+                ("hero", RenderConfig.hero_check()),
+            )
+            sweep_module._render_variant = fake_render_variant
+            sweep_module.write_contact_sheet = fake_contact_sheet
+            try:
+                results = render_profile_comparison_from_sweep(
+                    sweep_dir=sweep,
+                    pick="wide_shell",
+                    build_scene=lambda _settings: None,
+                    root=root,
+                    profiles=profiles,
+                    postprocess=None,
+                    title="Demo Profile Comparison",
+                )
+            finally:
+                sweep_module._render_variant = original_render_variant
+                sweep_module.write_contact_sheet = original_write_contact_sheet
+
+            out_dir = sweep / "profile_comparison" / "wide_shell"
+            payload = json.loads((out_dir / "profile_comparison.json").read_text())
+            readme = (out_dir / "README.md").read_text()
+
+        self.assertEqual([result.label for result in results], ["preview", "hero"])
+        self.assertEqual(calls[0]["variant"].settings, {"alpha": 0.35, "width": 1.4})
+        self.assertEqual(payload["pick"], "wide_shell")
+        self.assertEqual(payload["source_sweep"], "examples/output/demo")
+        self.assertEqual(payload["source_sweep_fingerprint"]["fingerprint"], "source123")
+        self.assertEqual(payload["selected"]["name"], "wide_shell")
+        self.assertEqual([profile["name"] for profile in payload["profiles"]], ["preview", "hero"])
+        self.assertEqual(payload["profiles"][1]["render_config"]["samples"], RenderConfig.hero_check().samples)
+        self.assertEqual(payload["profiles"][0]["result"]["raw"], "examples/output/demo/profile_comparison/wide_shell/wide_shell_preview.profile.raw.png")
+        self.assertEqual(payload["contact_sheet"], "examples/output/demo/profile_comparison/wide_shell/profile_comparison.png")
+        self.assertIn("Transparency or alpha settings are present", "\n".join(payload["warnings"]))
+        self.assertIn("Profile drift check", readme)
 
     def test_selected_render_blocks_failure_anchor_without_override(self):
         with tempfile.TemporaryDirectory() as tmp:
