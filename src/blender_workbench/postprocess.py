@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from blender_workbench.artifact_fingerprint import make_artifact_fingerprint, write_fingerprint_record
 from blender_workbench.sweep import (
     RenderResult,
     SweepVariant,
@@ -176,6 +177,16 @@ def render_postprocess_sweep(
         postprocess_seconds = time.perf_counter() - postprocess_started
         if not wrote:
             raise RuntimeError("Postprocess processor did not write an output image")
+        fingerprint = make_artifact_fingerprint(
+            "postprocess_variant",
+            {
+                "source_raw": _relative_or_absolute(raw_image, root),
+                "source_raw_mtime_ns": raw_image.stat().st_mtime_ns,
+                "settings": settings_to_jsonable(variant.settings),
+                "processor": processor,
+            },
+        )
+        write_fingerprint_record(finished.with_suffix(".fingerprint.json"), fingerprint)
         results.append(
             RenderResult(
                 name=variant.name,
@@ -187,14 +198,32 @@ def render_postprocess_sweep(
                 role=variant.role,
                 tags=variant.tags,
                 postprocess_seconds=postprocess_seconds,
+                cache_status="rendered",
+                fingerprint=fingerprint,
             )
         )
 
     write_contact_sheet(results, root, out_dir / "contact_sheet.png", tile_spec)
     write_postprocess_readme(out_dir, title, raw_image, root, results, notes)
+    sweep_fingerprint = make_artifact_fingerprint(
+        "postprocess_sweep_metadata",
+        {
+            "source_raw": _relative_or_absolute(raw_image, root),
+            "contact_sheet": settings_to_jsonable(tile_spec),
+            "variants": [
+                {
+                    "name": result.name,
+                    "settings": result.settings,
+                    "fingerprint": result.fingerprint.get("fingerprint") if result.fingerprint else None,
+                }
+                for result in results
+            ],
+        },
+    )
     (out_dir / "metadata.json").write_text(
         json.dumps(
             {
+                "fingerprint": sweep_fingerprint,
                 "mode": "postprocess_sweep",
                 "source_raw": _relative_or_absolute(raw_image, root),
                 "contact_sheet": {

@@ -1,5 +1,6 @@
 """Reusable helpers for Blender parameter-sweep visual workbenches."""
 
+from .artifact_fingerprint import fingerprint_status, make_artifact_fingerprint, render_cache_fingerprint
 from .camera import add_orbit_camera, camera_distance_for_matching_framing, look_at, orbit_location
 from .capabilities import collect_capability_report, expand_required_tools, format_capability_report
 from .example_manifest import ExamplePreflight, format_preflight_report, load_manifest, preflight_examples
@@ -38,6 +39,7 @@ __all__ = [
     "add_orbit_camera",
     "add_soft_horizon_band",
     "camera_distance_for_matching_framing",
+    "fingerprint_status",
     "collect_capability_report",
     "coerce_postprocess_look_settings",
     "ExamplePreflight",
@@ -59,6 +61,7 @@ __all__ = [
     "load_manifest",
     "load_sweep_variants",
     "look_at",
+    "make_artifact_fingerprint",
     "named_variants",
     "normalize_variant_role",
     "normalize_variant_tags",
@@ -72,6 +75,7 @@ __all__ = [
     "PROTECTED_PROMOTION_ROLES",
     "postprocess_look_variants",
     "render_postprocess_sweep",
+    "render_cache_fingerprint",
     "promote_from_metadata",
     "PromotionStatus",
     "format_promotion_report",

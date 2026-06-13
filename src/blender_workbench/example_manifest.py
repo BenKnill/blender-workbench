@@ -8,6 +8,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Callable
 
+from .artifact_fingerprint import fingerprint_status
 from .capabilities import expand_required_tools, resolve_tool_path
 
 
@@ -32,6 +33,7 @@ class ExamplePreflight:
     missing_tools: tuple[str, ...]
     tool_paths: dict[str, str | None]
     missing_prerequisites: tuple[dict[str, str], ...]
+    output_statuses: dict[str, str]
     outputs_present: tuple[str, ...]
     outputs_missing: tuple[str, ...]
     docs_asset_present: bool
@@ -146,6 +148,13 @@ def preflight_example(
             )
 
     outputs = tuple(example.get("outputs", []))
+    expected_output_fingerprints = example.get("output_fingerprints", {})
+    if not isinstance(expected_output_fingerprints, dict):
+        expected_output_fingerprints = {}
+    output_statuses = {
+        path: fingerprint_status(root / path, expected_output_fingerprints.get(path))
+        for path in outputs
+    }
     outputs_present = tuple(path for path in outputs if (root / path).exists())
     outputs_missing = tuple(path for path in outputs if not (root / path).exists())
     docs_asset = example.get("docs_asset")
@@ -171,6 +180,7 @@ def preflight_example(
         missing_tools=missing_tools,
         tool_paths=tool_paths,
         missing_prerequisites=tuple(missing_prerequisites),
+        output_statuses=output_statuses,
         outputs_present=outputs_present,
         outputs_missing=outputs_missing,
         docs_asset=docs_asset,
@@ -223,6 +233,13 @@ def format_preflight_report(results: list[ExamplePreflight]) -> str:
             f"{output_status}; {docs_status}"
         )
         lines.append(f"  command: {result.command}")
+        if result.output_statuses:
+            statuses = tuple(result.output_statuses.values())
+            counts = {status: statuses.count(status) for status in sorted(set(statuses))}
+            lines.append(
+                "  output freshness: "
+                + ", ".join(f"{status}={count}" for status, count in counts.items())
+            )
         if result.required_capabilities:
             lines.append(f"  required capabilities: {', '.join(result.required_capabilities)}")
         if result.missing_tools:

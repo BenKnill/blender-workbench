@@ -1,10 +1,13 @@
 import json
+import contextlib
+import io
 import shutil
 import tempfile
 import unittest
 from pathlib import Path
 
 import blender_workbench.sweep as sweep_module
+from blender_workbench.artifact_fingerprint import render_cache_fingerprint, write_fingerprint_record
 from blender_workbench.camera import camera_distance_for_matching_framing, orbit_location
 from blender_workbench.postprocess import (
     PostprocessLookSettings,
@@ -281,6 +284,43 @@ class SweepTests(unittest.TestCase):
                     out_dir=Path(tmp),
                 )
 
+    def test_render_variant_reuses_existing_only_when_fingerprint_matches(self):
+        def build_scene(settings):
+            raise AssertionError(f"should not build scene for fresh cache: {settings}")
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            out_dir = root / "runs/demo"
+            out_dir.mkdir(parents=True)
+            raw = out_dir / "wide_shell.raw.png"
+            raw.write_text("image")
+            variant = SweepVariant("wide_shell", {"width": 1.4})
+            config = RenderConfig(reuse_existing=True)
+            fingerprint = render_cache_fingerprint(
+                root=root,
+                variant_name=variant.name,
+                variant_settings=variant.settings,
+                render_config=settings_to_jsonable(config),
+                build_scene=build_scene,
+                postprocess=None,
+                extra={"render_label": "sweep", "file_suffix": ""},
+            )
+            write_fingerprint_record(raw.with_suffix(".fingerprint.json"), fingerprint)
+
+            with contextlib.redirect_stdout(io.StringIO()):
+                result = sweep_module._render_variant(
+                    variant=variant,
+                    build_scene=build_scene,
+                    out_dir=out_dir,
+                    root=root,
+                    config=config,
+                    postprocess=None,
+                )
+
+        self.assertTrue(result.skipped_existing)
+        self.assertEqual(result.cache_status, "present_fresh")
+        self.assertEqual(result.fingerprint["fingerprint"], fingerprint["fingerprint"])
+
     def test_selected_blend_export_writes_readme_and_metadata_without_render(self):
         calls = []
         original_render_variant = sweep_module._render_variant
@@ -308,6 +348,7 @@ class SweepTests(unittest.TestCase):
             out_dir = root / "examples/output/demo/selected/wide_shell"
             source_sweep = root / "examples/output/demo"
             source_sweep.mkdir(parents=True)
+            (source_sweep / "metadata.json").write_text(json.dumps({"fingerprint": {"schema": 1, "fingerprint": "source123"}}))
             sweep_module._render_variant = fake_render_variant
             try:
                 result = render_selected_variant(
@@ -334,6 +375,8 @@ class SweepTests(unittest.TestCase):
         self.assertTrue(payload["result"]["render_skipped"])
         self.assertIsNone(payload["result"]["raw"])
         self.assertEqual(payload["selected"]["role"], "candidate")
+        self.assertIn("fingerprint", payload)
+        self.assertEqual(payload["source_sweep_fingerprint"]["fingerprint"], "source123")
         self.assertEqual(payload["blend_export"]["path"], "examples/output/demo/selected/wide_shell/wide_shell.blend")
         self.assertEqual(payload["blend_export"]["camera_name"], "DemoCamera")
         self.assertFalse(payload["blend_export"]["render_image"])
@@ -418,11 +461,15 @@ class SweepTests(unittest.TestCase):
                 title="Test Look Sweep",
             )
             metadata = json.loads((out_dir / "metadata.json").read_text())
+            sidecar_exists = (out_dir / "test_neutral.look.fingerprint.json").exists()
 
         self.assertEqual(len(results), 2)
         self.assertEqual(metadata["mode"], "postprocess_sweep")
+        self.assertIn("fingerprint", metadata)
+        self.assertIn("fingerprint", metadata["variants"][0])
         self.assertEqual(metadata["variants"][0]["name"], "test_neutral")
         self.assertIn("source_raw", metadata)
+        self.assertTrue(sidecar_exists)
 
     def test_render_config_profiles_are_ordered_by_cost(self):
         self.assertEqual(RenderConfig.shape_scout().engine, "BLENDER_WORKBENCH")
