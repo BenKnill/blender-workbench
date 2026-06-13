@@ -34,6 +34,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `docs/parameter-sweep-pattern.md`: the short operating pattern for future agents.
 - `docs/performance.md`: defaults for fast basics-first exploration.
 - `docs/learning-notes.md`: short map from local BlenderArt resources to implemented sweep ideas.
+- `docs/source-translation.md`: ledger workflow for translating old Blender PDF lessons into current helpers.
 - `docs/rocket-plume.md`: recipe notes for broad, smoky, in-space engine plumes.
 - `tools/pdf_triage.py`: capture local PDF extraction/rendering capability and create learning-note stubs under `runs/`.
 - `tools/pdf_lesson_index.py`: maintain a structured PDF lesson index and next-skim queue.
@@ -64,7 +65,7 @@ python3 tools/pdf_triage.py ../reference_materials/artistic_blender_pdfs/blender
 python3 tools/pdf_lesson_index.py mark --source blenderart_issue_39_compositing --pages 8-10 --status triaged --triage-output runs/pdf_triage/blenderart_issue_39_compositing_sep_2012
 ```
 
-The reference manifest verifies that local PDFs and SpaceX-derived visual references are present and unchanged before an agent downloads or regenerates media. The lesson index records page counts, statuses, tags, and links from source ranges to triage outputs, coverage rows, issues, or examples. The PDF helper writes backend status, any extracted text, native macOS page images/contact sheets when available, cover thumbnails, and a `notes.md` stub under `runs/pdf_triage/`.
+The reference manifest verifies that local PDFs and SpaceX-derived visual references are present and unchanged before an agent downloads or regenerates media. The lesson index records page counts, statuses, tags, and links from source ranges to triage outputs, coverage rows, issues, or examples. The source translation ledger keeps old Blender UI/API terms from leaking into current workbench code. The PDF helper writes backend status, any extracted text, native macOS page images/contact sheets when available, cover thumbnails, and a `notes.md` stub under `runs/pdf_triage/`.
 
 Check example prerequisites before running a docs refresh or dependent example:
 
