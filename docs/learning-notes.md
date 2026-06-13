@@ -16,6 +16,7 @@ This is a compact map from the local BlenderArt/resource shelf to workbench exer
 - `examples/mesh_light_scout.py`: turns mesh-light and studio softbox notes into a same-view emissive size, distance, height, fill, and gel/shape board.
 - `examples/subsurface_scout.py`: turns SSS/translucency notes into wax, jelly, opal, thickness, backlight, and core-light comparisons.
 - `examples/terrain_environment_scout.py`: turns issue 39 landscape/Europa and virtual-environment prompts into same-view relief, strata, haze, backlight, and foreground-scale comparisons.
+- `examples/postprocess_look_scout.py`: turns issue 39 compositing/finishing prompts into a one-source glow, contrast, saturation, warmth, and vignette sheet.
 - `examples/camera_perspective_scout.py`: turns pack-shot and virtual-set camera lessons into same-view lens and scene-depth-cue sweeps.
 - `examples/transparency_scout.py`: turns alpha/glass/refraction notes into alpha, transmission, roughness, IOR, tint, and pane-thickness comparisons.
 
@@ -30,3 +31,4 @@ This is a compact map from the local BlenderArt/resource shelf to workbench exer
 - Visible light geometry is a useful diagnostic object, not only a renderer feature. Mesh-light boards should show both illumination on the subject and the light source's shape/gel behavior when possible.
 - Environment boards need foreground, midground, and horizon diagnostics in the same tile. Terrain relief alone is too abstract unless haze, strata, and silhouette scale are visible together.
 - Selected renders are better at exposing hard card edges than tiny contact sheets. Use reusable feathered primitives for horizon glow, haze sheets, and stylized light cards.
+- Compositing choices deserve their own sweep surface. Reusing one raw render for look variants is much cheaper than rerendering the scene for every glow or color-grade idea.

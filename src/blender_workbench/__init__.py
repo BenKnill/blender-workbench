@@ -1,6 +1,13 @@
 """Reusable helpers for Blender parameter-sweep visual workbenches."""
 
 from .camera import add_orbit_camera, camera_distance_for_matching_framing, look_at, orbit_location
+from .postprocess import (
+    PostprocessLookSettings,
+    coerce_postprocess_look_settings,
+    magick_look_postprocess,
+    postprocess_look_variants,
+    render_postprocess_sweep,
+)
 from .presets import RENDER_PRESETS, SWEEP_AXES, TILE_PRESETS, SweepAxis, one_axis_variants, stride_axis, two_axis_variants
 from .primitives import add_soft_horizon_band, soft_band_alpha_profile
 from .sweep import (
@@ -20,6 +27,7 @@ __all__ = [
     "add_orbit_camera",
     "add_soft_horizon_band",
     "camera_distance_for_matching_framing",
+    "coerce_postprocess_look_settings",
     "RenderConfig",
     "RenderResult",
     "RENDER_PRESETS",
@@ -34,6 +42,10 @@ __all__ = [
     "named_variants",
     "one_axis_variants",
     "orbit_location",
+    "magick_look_postprocess",
+    "PostprocessLookSettings",
+    "postprocess_look_variants",
+    "render_postprocess_sweep",
     "render_selected_variant",
     "render_sweep",
     "select_variant",

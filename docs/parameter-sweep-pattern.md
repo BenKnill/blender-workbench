@@ -53,6 +53,23 @@ render_selected_variant(
 
 The selected render writes `selected.json`, preserving the pick, settings, render config, source sweep, and final file paths.
 
+## Postprocess Sweep
+
+When the scene is already selected, reuse one raw render for finishing looks:
+
+```python
+from blender_workbench.postprocess import postprocess_look_variants, render_postprocess_sweep
+
+render_postprocess_sweep(
+    raw_image=OUT / "selected" / "terrain_relief_p2" / "terrain_relief_p2.hero.raw.png",
+    variants=postprocess_look_variants(),
+    out_dir=OUT / "looks",
+    root=ROOT,
+)
+```
+
+Use this for glow, contrast, saturation, warm/cool grade, vignette, and similar compositor/look decisions. The metadata records the source raw image and look settings for each tile.
+
 ## Transparency Lesson
 
 For transparent emission materials, `alpha=0` must mean fully transparent and `alpha=1` must mean fully emissive. This was easy to invert during the vacuum plume work, and an inverted mix makes sweeps misleading because "more alpha" visually does less.

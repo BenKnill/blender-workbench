@@ -9,6 +9,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `blender_workbench.sweep`: render a list/grid of variants, write raw/finished PNGs, metadata, README, contact sheets, and selected hero renders.
 - `blender_workbench.camera`: orbit-camera helpers plus lens/distance matching for perspective studies.
 - `blender_workbench.materials`: small material helpers with explicit alpha, emission, and subsurface semantics.
+- `blender_workbench.postprocess`: reuse one raw render for finishing-look contact sheets.
 - `blender_workbench.primitives`: reusable low-cost scene primitives such as feathered horizon/light bands.
 - `blender_workbench.presets`: starter axes, render profiles, and tile layouts for common visual experiments.
 - `blender_workbench.recipes`: optional domain recipes, including a fast rocket vacuum plume scout.
@@ -19,6 +20,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `examples/terrain_environment_scout.py`: same-view landscape/environment mood board for relief, strata, haze, backlight, and foreground scale.
 - `examples/transparency_scout.py`: transparency, transmission, roughness, IOR, tint, and thickness board.
 - `examples/mini_plume_sweep.py`: a compact Blender script showing the intended workflow.
+- `examples/postprocess_look_scout.py`: one raw render processed into a finishing-look contact sheet.
 - `examples/light_texture_scout.py`: named light-jitter and texture-magnitude board.
 - `examples/rocket_plume_scout.py`: a stronger plume use case built on the general sweep API.
 - `examples/rocket_plume_texture_scout.py`: dense plume texture board from smooth through overdone to whiteout.
@@ -191,6 +193,18 @@ After inspecting the sheet, promote one tile:
 ```
 
 ![Terrain environment scout contact sheet](docs/assets/terrain-environment-scout.jpg)
+
+## Learning Recipe: Postprocess Looks
+
+After rendering a selected terrain hero image, run the finishing-look scout:
+
+```bash
+python3 examples/postprocess_look_scout.py
+```
+
+This uses `blender_workbench.postprocess` to reuse one raw render and compare glow, contrast, saturation, warmth, vignette, and an overdone failure anchor. It is based on the BlenderArt compositing/finishing prompts.
+
+![Postprocess look scout contact sheet](docs/assets/postprocess-look-scout.jpg)
 
 ## Learning Recipe: Subsurface
 

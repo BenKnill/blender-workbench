@@ -65,6 +65,15 @@ Keep one deliberate failure anchor in material sheets. It calibrates the eye and
 
 Color sweeps should avoid one-note palettes. Put at least one cool/warm contrast or neutral anchor in the grid.
 
+## Postprocess Sweeps
+
+- finishing look: neutral, warm glow, cool mist, high contrast, soft haze, desaturated print, vivid, vignette, overdone
+- glow scout: blur radius, glow gain, screen blend strength
+- grade scout: brightness, contrast, saturation, warm/cool colorize
+- edge scout: vignette radius and strength
+
+Postprocess sweeps should reuse one raw render when the scene is already selected. This makes finishing experiments cheap enough to try aggressively.
+
 ## Good First Sheets
 
 - `plume_alpha_strength` x `plume_shape` with `micro_grid`
@@ -73,6 +82,7 @@ Color sweeps should avoid one-note palettes. Put at least one cool/warm contrast
 - `examples/gobo_lighting_scout.py` for projected shadow texture, gel color, and light softness
 - `examples/mesh_light_scout.py` for a same-view 5x5 emissive mesh size/distance/height/fill/gel sheet
 - `examples/terrain_environment_scout.py` for a same-view 5x5 landscape relief/strata/haze/backlight/foreground sheet
+- `examples/postprocess_look_scout.py` for a one-source finishing-look sheet
 - `examples/subsurface_scout.py` for translucent wax/jelly/opal material reads with thickness and backlight
 - `examples/transparency_scout.py` for a 5x5 alpha/roughness/IOR/thickness/tint stride sheet
 - `examples/light_texture_scout.py` for a concrete named light-jitter plus texture-magnitude board

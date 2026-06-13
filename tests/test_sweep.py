@@ -1,6 +1,16 @@
+import json
+import shutil
+import tempfile
 import unittest
+from pathlib import Path
 
 from blender_workbench.camera import camera_distance_for_matching_framing, orbit_location
+from blender_workbench.postprocess import (
+    PostprocessLookSettings,
+    coerce_postprocess_look_settings,
+    postprocess_look_variants,
+    render_postprocess_sweep,
+)
 from blender_workbench.presets import RENDER_PRESETS, SWEEP_AXES, TILE_PRESETS, one_axis_variants, stride_axis, two_axis_variants
 from blender_workbench.primitives import soft_band_alpha_profile
 from blender_workbench.recipes.camera_perspective import (
@@ -146,6 +156,46 @@ class SweepTests(unittest.TestCase):
             soft_band_alpha_profile(1.2)
         with self.assertRaisesRegex(ValueError, "feather_steps"):
             soft_band_alpha_profile(0.5, feather_steps=-1)
+
+    def test_postprocess_look_recipe_exposes_finishing_board(self):
+        variants = postprocess_look_variants(prefix="test")
+        settings = coerce_postprocess_look_settings({"glow_radius": 12.0, "warmth": -5.0, "unused": True})
+        names = [variant.name for variant in variants]
+
+        self.assertEqual(len(variants), 9)
+        self.assertIn("test_neutral", names)
+        self.assertIn("test_warm_glow", names)
+        self.assertIn("test_overdone_fail", names)
+        self.assertIsInstance(settings, PostprocessLookSettings)
+        self.assertEqual(settings.glow_radius, 12.0)
+        self.assertEqual(settings.warmth, -5.0)
+        self.assertFalse(hasattr(settings, "unused"))
+
+    def test_render_postprocess_sweep_writes_metadata(self):
+        root = Path.cwd()
+        source = root / "docs" / "assets" / "mini-plume-sweep.jpg"
+
+        def copy_processor(raw, finished, settings):
+            shutil.copyfile(raw, finished)
+            return True
+
+        with tempfile.TemporaryDirectory() as tmp:
+            out_dir = Path(tmp) / "look_sweep"
+            variants = postprocess_look_variants(prefix="test")[:2]
+            results = render_postprocess_sweep(
+                raw_image=source,
+                variants=variants,
+                out_dir=out_dir,
+                root=root,
+                processor=copy_processor,
+                title="Test Look Sweep",
+            )
+            metadata = json.loads((out_dir / "metadata.json").read_text())
+
+        self.assertEqual(len(results), 2)
+        self.assertEqual(metadata["mode"], "postprocess_sweep")
+        self.assertEqual(metadata["variants"][0]["name"], "test_neutral")
+        self.assertIn("source_raw", metadata)
 
     def test_render_config_profiles_are_ordered_by_cost(self):
         self.assertEqual(RenderConfig.shape_scout().engine, "BLENDER_WORKBENCH")
