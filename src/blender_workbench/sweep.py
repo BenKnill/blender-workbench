@@ -117,6 +117,19 @@ class RenderResult:
 
 
 @dataclass(frozen=True)
+class ReferenceTarget:
+    path: str | None = None
+    url: str | None = None
+    source_type: str = "image"
+    caption: str | None = None
+    crop: str | None = None
+    frame: str | int | None = None
+    page: str | int | None = None
+    notes: tuple[str, ...] = ()
+    match: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
 class TileSpec:
     width: int = 112
     height: int = 112
@@ -457,6 +470,47 @@ def _open_blend_command(blend_path: Path, root: Path) -> str:
     return f"open -a Blender {shlex.quote(_relative_or_absolute(blend_path, root))}"
 
 
+def coerce_reference_targets(targets: Iterable[ReferenceTarget | Mapping[str, Any]] | None = None) -> tuple[ReferenceTarget, ...]:
+    if not targets:
+        return ()
+    coerced: list[ReferenceTarget] = []
+    for target in targets:
+        if isinstance(target, ReferenceTarget):
+            coerced.append(target)
+            continue
+        data = dict(target)
+        for key in ("notes", "match"):
+            value = data.get(key)
+            if value is None:
+                data[key] = ()
+            elif isinstance(value, str):
+                data[key] = (value,)
+            else:
+                data[key] = tuple(str(item) for item in value)
+        coerced.append(ReferenceTarget(**data))
+    return tuple(coerced)
+
+
+def reference_targets_to_metadata(targets: Iterable[ReferenceTarget | Mapping[str, Any]]) -> list[dict[str, Any]]:
+    return [settings_to_jsonable(target) for target in coerce_reference_targets(targets)]
+
+
+def _reference_target_path(target: ReferenceTarget, root: Path) -> Path | None:
+    if not target.path:
+        return None
+    path = Path(target.path)
+    return path if path.is_absolute() else root / path
+
+
+def _local_reference_targets(targets: Iterable[ReferenceTarget], root: Path) -> list[tuple[ReferenceTarget, Path]]:
+    local = []
+    for target in targets:
+        path = _reference_target_path(target, root)
+        if path and path.exists():
+            local.append((target, path))
+    return local
+
+
 def variants_from_sweep_metadata(sweep_dir: Path) -> list[SweepVariant]:
     """Rebuild pickable variants from a prior sweep's `metadata.json`.
 
@@ -611,70 +665,93 @@ def _label_point_size(tile: TileSpec) -> int:
     return max(8, min(13, tile.label_height - 2))
 
 
-def write_contact_sheet(results: list[RenderResult], root: Path, out_path: Path, tile: TileSpec) -> None:
+def _write_labeled_thumb(
+    *,
+    magick: str,
+    image_path: Path,
+    thumb: Path,
+    label: str,
+    tile: TileSpec,
+) -> None:
+    unlabeled_cmd = [
+        magick,
+        str(image_path),
+        "-resize",
+        f"{tile.width}x{tile.height}^",
+        "-gravity",
+        "center",
+        "-extent",
+        f"{tile.width}x{tile.height}",
+        str(thumb),
+    ]
+    if not tile.show_labels or tile.label_height <= 0:
+        subprocess.run(unlabeled_cmd, check=True)
+        return
+
+    body_height = max(1, tile.height - tile.label_height)
+    label_max_chars = tile.label_max_chars or max(10, tile.width // 8)
+    if len(label) > label_max_chars:
+        label = f"{label[: max(1, label_max_chars - 3)]}..."
+    labeled_cmd = [
+        magick,
+        str(image_path),
+        "-resize",
+        f"{tile.width}x{body_height}^",
+        "-gravity",
+        "center",
+        "-extent",
+        f"{tile.width}x{body_height}",
+        "(",
+        "-size",
+        f"{tile.width}x{tile.label_height}",
+        f"xc:{tile.background}",
+        *_label_font_args(),
+        "-fill",
+        "#f5f0e6",
+        "-gravity",
+        "center",
+        "-pointsize",
+        str(_label_point_size(tile)),
+        "-annotate",
+        "+0+0",
+        label,
+        ")",
+        "-append",
+        str(thumb),
+    ]
+    try:
+        subprocess.run(labeled_cmd, check=True)
+    except subprocess.CalledProcessError:
+        subprocess.run(unlabeled_cmd, check=True)
+
+
+def write_contact_sheet(
+    results: list[RenderResult],
+    root: Path,
+    out_path: Path,
+    tile: TileSpec,
+    reference_targets: Iterable[ReferenceTarget | Mapping[str, Any]] | None = None,
+) -> None:
     magick = shutil.which("magick")
     if not magick or not results:
         return
 
-    columns = tile.columns_for_count(len(results))
+    references = _local_reference_targets(coerce_reference_targets(reference_targets), root)
+    columns = tile.columns_for_count(len(results) + len(references))
     thumbs: list[Path] = []
+    for index, (target, image_path) in enumerate(references):
+        thumb = out_path.parent / f"_ref_{index:03d}.thumb.png"
+        label = target.caption or target.source_type or "reference"
+        _write_labeled_thumb(magick=magick, image_path=image_path, thumb=thumb, label=f"ref: {label}", tile=tile)
+        thumbs.append(thumb)
+
     for index, result in enumerate(results):
         image_path = root / (result.finished or result.raw)
         thumb = out_path.parent / f"_{index:03d}_{result.name}.thumb.png"
-        unlabeled_cmd = [
-            magick,
-            str(image_path),
-            "-resize",
-            f"{tile.width}x{tile.height}^",
-            "-gravity",
-            "center",
-            "-extent",
-            f"{tile.width}x{tile.height}",
-            str(thumb),
-        ]
-        if not tile.show_labels or tile.label_height <= 0:
-            subprocess.run(unlabeled_cmd, check=True)
-            thumbs.append(thumb)
-            continue
-
-        body_height = max(1, tile.height - tile.label_height)
         label = result.label or result.name
         if tile.show_notes and result.note:
             label = f"{label} - {result.note}"
-        label_max_chars = tile.label_max_chars or max(10, tile.width // 8)
-        if len(label) > label_max_chars:
-            label = f"{label[: max(1, label_max_chars - 3)]}..."
-        labeled_cmd = [
-            magick,
-            str(image_path),
-            "-resize",
-            f"{tile.width}x{body_height}^",
-            "-gravity",
-            "center",
-            "-extent",
-            f"{tile.width}x{body_height}",
-            "(",
-            "-size",
-            f"{tile.width}x{tile.label_height}",
-            f"xc:{tile.background}",
-            *_label_font_args(),
-            "-fill",
-            "#f5f0e6",
-            "-gravity",
-            "center",
-            "-pointsize",
-            str(_label_point_size(tile)),
-            "-annotate",
-            "+0+0",
-            label,
-            ")",
-            "-append",
-            str(thumb),
-        ]
-        try:
-            subprocess.run(labeled_cmd, check=True)
-        except subprocess.CalledProcessError:
-            subprocess.run(unlabeled_cmd, check=True)
+        _write_labeled_thumb(magick=magick, image_path=image_path, thumb=thumb, label=label, tile=tile)
         thumbs.append(thumb)
 
     rows: list[Path] = []
@@ -713,6 +790,39 @@ def _role_text(role: str, tags: Iterable[str] = ()) -> str:
     if tag_values:
         text = f"{text}, tags `{', '.join(tag_values)}`"
     return text
+
+
+def format_reference_targets_readme(targets: Iterable[ReferenceTarget | Mapping[str, Any]]) -> list[str]:
+    values = coerce_reference_targets(targets)
+    if not values:
+        return []
+    lines = ["Reference targets:", ""]
+    for index, target in enumerate(values, start=1):
+        cue = target.path or target.url or "(no path/url)"
+        caption = f": {target.caption}" if target.caption else ""
+        lines.append(f"{index}. `{cue}`{caption}")
+        details = []
+        if target.source_type:
+            details.append(f"type `{target.source_type}`")
+        if target.frame is not None:
+            details.append(f"frame `{target.frame}`")
+        if target.page is not None:
+            details.append(f"page `{target.page}`")
+        if target.crop:
+            details.append(f"crop `{target.crop}`")
+        if details:
+            lines.append(f"   - {', '.join(details)}")
+        for note in target.notes:
+            lines.append(f"   - {note}")
+        for match in target.match:
+            lines.append(f"   - match: {match}")
+    lines.extend(
+        [
+            "",
+            "Pick the generated tile that best matches the target criteria, not merely the prettiest tile.",
+        ]
+    )
+    return lines
 
 
 def _sweep_workflow_metadata(results: list[RenderResult], promotion_command: str | None) -> dict[str, Any]:
@@ -777,6 +887,7 @@ def write_readme(
     results: list[RenderResult],
     notes: list[str] | None = None,
     promotion_command: str | None = None,
+    reference_targets: Iterable[ReferenceTarget | Mapping[str, Any]] | None = None,
 ) -> None:
     lines = [f"# {title}", "", "Rendered variants:", ""]
     for index, result in enumerate(results, start=1):
@@ -791,6 +902,9 @@ def write_readme(
     if notes:
         lines.extend(["", "Notes:", ""])
         lines.extend(f"- {note}" for note in notes)
+    target_lines = format_reference_targets_readme(reference_targets or ())
+    if target_lines:
+        lines.extend(["", *target_lines])
     lines.extend(
         [
             "",
@@ -838,6 +952,7 @@ def write_selected_readme(
     source_sweep_dir: Path | None = None,
     root: Path | None = None,
     handoff_path: str | None = None,
+    reference_attempt: str | None = None,
 ) -> None:
     lines = [
         f"# {title}",
@@ -889,8 +1004,69 @@ def write_selected_readme(
         lines.extend(f"- {note}" for note in notes)
     if handoff_path:
         lines.extend(["", "Handoff:", "", f"- `{handoff_path}` records the prompt card for the next artist or agent."])
+    if reference_attempt:
+        lines.extend(["", "Reference comparison:", "", f"- `{reference_attempt}` pairs the target reference with this attempt."])
     lines.extend(["", "`selected.json` contains the chosen settings, render config, and provenance.", ""])
     (out_dir / "README.md").write_text("\n".join(lines))
+
+
+def write_reference_attempt_pair(
+    out_dir: Path,
+    result: RenderResult,
+    *,
+    reference_targets: Iterable[ReferenceTarget | Mapping[str, Any]] | None = None,
+    root: Path,
+) -> str | None:
+    local_targets = _local_reference_targets(coerce_reference_targets(reference_targets), root)
+    image = result.finished or result.raw
+    if not local_targets or not image:
+        return None
+    magick = shutil.which("magick")
+    if not magick:
+        return None
+    reference, reference_path = local_targets[0]
+    attempt_path = Path(image)
+    if not attempt_path.is_absolute():
+        attempt_path = root / attempt_path
+    out_path = out_dir / "reference_attempt.png"
+    label = reference.caption or "reference"
+    subprocess.run(
+        [
+            magick,
+            "(",
+            str(reference_path),
+            "-resize",
+            "640x640^",
+            "-gravity",
+            "center",
+            "-extent",
+            "640x640",
+            "-pointsize",
+            "24",
+            "-annotate",
+            "+24+40",
+            f"reference: {label}",
+            ")",
+            "(",
+            str(attempt_path),
+            "-resize",
+            "640x640^",
+            "-gravity",
+            "center",
+            "-extent",
+            "640x640",
+            "-pointsize",
+            "24",
+            "-annotate",
+            "+24+40",
+            f"attempt: {result.name}",
+            ")",
+            "+append",
+            str(out_path),
+        ],
+        check=True,
+    )
+    return _relative_or_absolute(out_path, root)
 
 
 def _source_sweep_fingerprint(source_sweep_dir: Path | None) -> dict[str, Any] | None:
@@ -1098,6 +1274,7 @@ def render_sweep(
     title: str = "Blender Sweep",
     notes: list[str] | None = None,
     promotion_command: str | None = None,
+    reference_targets: Iterable[ReferenceTarget | Mapping[str, Any]] | None = None,
     square: bool = False,
 ) -> list[RenderResult]:
     """Render a sequence of variants from one scene-builder function.
@@ -1112,6 +1289,7 @@ def render_sweep(
         cfg = dataclasses.replace(cfg, tile=cfg.tile.with_auto_columns())
     root = root or Path.cwd()
     out_dir.mkdir(parents=True, exist_ok=True)
+    target_list = coerce_reference_targets(reference_targets)
 
     results: list[RenderResult] = []
     sweep_started = time.perf_counter()
@@ -1127,8 +1305,8 @@ def render_sweep(
             )
         )
 
-    write_contact_sheet(results, root, out_dir / "contact_sheet.png", cfg.tile)
-    write_readme(out_dir, title, results, notes, promotion_command=promotion_command)
+    write_contact_sheet(results, root, out_dir / "contact_sheet.png", cfg.tile, reference_targets=target_list)
+    write_readme(out_dir, title, results, notes, promotion_command=promotion_command, reference_targets=target_list)
     sweep_fingerprint = make_artifact_fingerprint(
         "sweep_metadata",
         {
@@ -1150,9 +1328,11 @@ def render_sweep(
                 "title": title,
                 "render_config": settings_to_jsonable(cfg),
                 "contact_sheet": {
-                    "columns": cfg.tile.columns_for_count(len(results)),
+                    "columns": cfg.tile.columns_for_count(len(results) + len(_local_reference_targets(target_list, root))),
                     "tile": settings_to_jsonable(cfg.tile),
+                    "reference_panels": len(_local_reference_targets(target_list, root)),
                 },
+                "reference_targets": reference_targets_to_metadata(target_list),
                 "workflow": _sweep_workflow_metadata(results, promotion_command),
                 "total_seconds": time.perf_counter() - sweep_started,
                 "variants": [dataclasses.asdict(result) for result in results],
@@ -1176,6 +1356,7 @@ def render_selected_variant(
     title: str = "Selected Blender Render",
     notes: list[str] | None = None,
     handoff_notes: Mapping[str, Any] | None = None,
+    reference_targets: Iterable[ReferenceTarget | Mapping[str, Any]] | None = None,
     source_sweep_dir: Path | None = None,
     save_blend: bool = False,
     render_image: bool = True,
@@ -1256,6 +1437,15 @@ def render_selected_variant(
             "render_image": render_image,
             "source_sweep": source_value,
         }
+    target_list = coerce_reference_targets(reference_targets)
+    reference_attempt = write_reference_attempt_pair(out_dir, result, reference_targets=target_list, root=root)
+    if target_list:
+        payload["reference_targets"] = reference_targets_to_metadata(target_list)
+    if reference_attempt:
+        payload["reference_attempt"] = {
+            "path": reference_attempt,
+            "source": payload.get("reference_targets", [None])[0],
+        }
     payload["handoff"] = write_handoff_card(
         out_dir=out_dir,
         selected_payload=payload,
@@ -1273,6 +1463,7 @@ def render_selected_variant(
         source_sweep_dir=source_sweep_dir,
         root=root,
         handoff_path="handoff.md",
+        reference_attempt=Path(reference_attempt).name if reference_attempt else None,
     )
     (out_dir / "selected.json").write_text(
         json.dumps(
@@ -1295,6 +1486,7 @@ def render_selected_from_sweep(
     title: str = "Selected Blender Render",
     notes: list[str] | None = None,
     handoff_notes: Mapping[str, Any] | None = None,
+    reference_targets: Iterable[ReferenceTarget | Mapping[str, Any]] | None = None,
     source_sweep_dir: Path | None = None,
     save_blend: bool = False,
     render_image: bool = True,
@@ -1309,6 +1501,13 @@ def render_selected_from_sweep(
         if pick is None:
             raise ValueError(f"No pick provided and {sweep_dir / 'review.json'} has no promotable winner")
     variant_list = variants_from_sweep_metadata(sweep_dir)
+    if reference_targets is None:
+        try:
+            source_payload = json.loads((sweep_dir / "metadata.json").read_text())
+            raw_targets = source_payload.get("reference_targets")
+            reference_targets = raw_targets if isinstance(raw_targets, list) else None
+        except (OSError, json.JSONDecodeError):
+            reference_targets = None
     selected = select_variant(variant_list, pick)
     target_out_dir = out_dir or sweep_dir / "selected" / _safe_output_name(selected.name)
     return render_selected_variant(
@@ -1322,6 +1521,7 @@ def render_selected_from_sweep(
         title=title,
         notes=notes,
         handoff_notes=handoff_notes,
+        reference_targets=reference_targets,
         source_sweep_dir=source_sweep_dir or sweep_dir,
         save_blend=save_blend,
         render_image=render_image,

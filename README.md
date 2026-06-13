@@ -145,6 +145,13 @@ render_sweep(
     build_scene=build_scene,
     out_dir=OUT,
     config=replace(RENDER_PRESETS["cycles_preview"], tile=TILE_PRESETS["micro_grid"]),
+    reference_targets=[
+        {
+            "path": "docs/assets/source-reference.jpg",
+            "caption": "target lighting structure",
+            "match": ["edge softness", "subject separation"],
+        }
+    ],
     promotion_command="/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/my_scout.py -- --pick {pick}",
 )
 
@@ -194,6 +201,9 @@ PYTHONPATH=src /Applications/Blender.app/Contents/MacOS/Blender --background --p
 Use `--export-blend-only` on the same helper or on pickable examples when you want the GUI handoff without spending time on a selected PNG render.
 Selected renders also write `handoff.md` and `prompt_card.json`; `selected.json` records both paths.
 The selected README links the Markdown card for the next artist or agent.
+
+Use `reference_targets=[...]` when a sweep is trying to match a source frame, PDF crop, or local study.
+Local reference images are added as leading contact-sheet panels, recorded in `metadata.json`, and carried into selected reference-vs-attempt comparisons when possible.
 
 The default contact sheet is now a tiny square auto-grid. Use `tiny_grid`/`auto_tiny_grid` when you want lots of tiles, `micro_grid`/`auto_micro_grid` when labels need more room, `hero_pair` for larger before/after comparisons, `balanced_grid` for readable 3x3 studies, `square_moodboard` for palette and shape boards, and `filmstrip` only when sequence order matters more than square comparison.
 

@@ -24,6 +24,9 @@ For numeric parameters, use `stride_axis(...)` when you expect to adjust the swe
 
 Use the generated `review.html` page for dense `micro_grid` and `tiny_grid` boards before promoting a winner; full-size raw/finished tiles reveal edge, alpha, label, and noise artifacts that thumbnails hide.
 
+When a board is trying to match a source frame, PDF crop, or prior local study, pass `reference_targets=[...]` to `render_sweep(...)`.
+The target is recorded in metadata and shown as a leading contact-sheet panel when the image exists locally.
+
 For procedural parameters, use `seed_stride_axis(...)` or `replicate_variants(...)` around stable fields such as `variation_seed`, `noise_phase`, and `texture_offset`. A winner from a noisy texture, jittered light, plume billow, or randomized placement board should survive a selected replicate strip before it becomes a preset.
 
 For recipe-specific stride boards, prefer named stride kwargs such as `lens_stride`, `ior_stride`, or `thickness_stride`. A 5x5 sheet works well when each row isolates one variable and each column is the same `m2, m1, base, p1, p2` step pattern.

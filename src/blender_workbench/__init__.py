@@ -30,10 +30,13 @@ from .review_page import write_review_page
 from .sweep import (
     RenderConfig,
     RenderResult,
+    ReferenceTarget,
     SweepVariant,
     TileSpec,
     VARIANT_ROLES,
     configure_render,
+    coerce_reference_targets,
+    format_reference_targets_readme,
     grid_variants,
     infer_procedural_controls,
     named_variants,
@@ -50,6 +53,7 @@ from .sweep import (
     render_sweep,
     select_variant,
     variants_from_sweep_metadata,
+    write_reference_attempt_pair,
 )
 
 __all__ = [
@@ -70,6 +74,7 @@ __all__ = [
     "format_learning_coverage_report",
     "RenderConfig",
     "RenderResult",
+    "ReferenceTarget",
     "RENDER_PRESETS",
     "SWEEP_AXES",
     "SweepAxis",
@@ -78,6 +83,8 @@ __all__ = [
     "TileSpec",
     "VARIANT_ROLES",
     "configure_render",
+    "coerce_reference_targets",
+    "format_reference_targets_readme",
     "grid_variants",
     "infer_procedural_controls",
     "expand_required_tools",
@@ -132,5 +139,6 @@ __all__ = [
     "review_summary",
     "write_review_page",
     "write_handoff_card",
+    "write_reference_attempt_pair",
     "write_review_log",
 ]
