@@ -498,18 +498,26 @@ def _promotion_command_for_result(template: str, result: RenderResult, index: in
 
 
 def _sweep_workflow_metadata(results: list[RenderResult], promotion_command: str | None) -> dict[str, Any]:
+    pick_handles = []
+    for index, result in enumerate(results, start=1):
+        handle = {
+            "index": index,
+            "name": result.name,
+            "label": result.label,
+            "note": result.note,
+        }
+        if promotion_command:
+            handle["promotion_command"] = _promotion_command_for_result(promotion_command, result, index)
+        pick_handles.append(handle)
+
     workflow: dict[str, Any] = {
         "stage": "sweep_grid",
+        "status": "needs_selected_render",
+        "required_decision": "choose_the_most_promising_tile_by_visual_inspection",
+        "selected_render_required_before_scene_promotion": True,
+        "done_when": "selected/<pick>/selected.json exists for one chosen tile",
         "next": "inspect_contact_sheet_pick_variant_render_selected",
-        "pick_handles": [
-            {
-                "index": index,
-                "name": result.name,
-                "label": result.label,
-                "note": result.note,
-            }
-            for index, result in enumerate(results, start=1)
-        ],
+        "pick_handles": pick_handles,
     }
     if promotion_command:
         workflow["promotion_command_template"] = promotion_command
@@ -542,6 +550,7 @@ def write_readme(
             "- Prefer `render_selected_from_sweep(...)` so the selected render is rebuilt from this sweep's `metadata.json`.",
             "- Use `render_selected_variant(...)` only when the script already has the same variant list in memory.",
             "- Render with a heavier config such as `RENDER_PRESETS['hero_check']`.",
+            "- Done when `selected/<pick>/selected.json` exists for one chosen tile.",
         ]
     )
     if promotion_command and results:
@@ -767,6 +776,12 @@ def render_selected_variant(
                     "settings": settings_to_jsonable(selected.settings),
                 },
                 "render_config": settings_to_jsonable(cfg),
+                "workflow": {
+                    "stage": "selected_render",
+                    "status": "complete",
+                    "source_sweep": source_value,
+                    "satisfies": "selected_render_required_before_scene_promotion",
+                },
                 "total_seconds": time.perf_counter() - selected_started,
                 "result": dataclasses.asdict(result),
             },

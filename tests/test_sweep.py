@@ -42,6 +42,7 @@ from blender_workbench.sweep import (
     named_variants,
     select_variant,
     settings_to_jsonable,
+    _sweep_workflow_metadata,
     variants_from_sweep_metadata,
     write_readme,
 )
@@ -184,7 +185,29 @@ class SweepTests(unittest.TestCase):
         self.assertIn("pick `wide_shell` or `1`", text)
         self.assertIn("Do not stop at the contact sheet", text)
         self.assertIn("render_selected_from_sweep", text)
+        self.assertIn("Done when `selected/<pick>/selected.json` exists", text)
         self.assertIn("blender --background --python examples/demo.py -- --pick wide_shell", text)
+
+    def test_sweep_workflow_metadata_marks_grid_incomplete_until_selected_render(self):
+        result = RenderResult(
+            name="wide_shell",
+            raw="runs/demo/wide_shell.raw.png",
+            finished=None,
+            settings={"width": 1.4},
+            label="wide",
+        )
+
+        workflow = _sweep_workflow_metadata(
+            [result],
+            "blender --background --python examples/demo.py -- --pick {pick}",
+        )
+
+        self.assertEqual(workflow["status"], "needs_selected_render")
+        self.assertEqual(workflow["required_decision"], "choose_the_most_promising_tile_by_visual_inspection")
+        self.assertTrue(workflow["selected_render_required_before_scene_promotion"])
+        self.assertEqual(workflow["done_when"], "selected/<pick>/selected.json exists for one chosen tile")
+        self.assertEqual(workflow["pick_handles"][0]["name"], "wide_shell")
+        self.assertEqual(workflow["pick_handles"][0]["promotion_command"], "blender --background --python examples/demo.py -- --pick wide_shell")
 
     def test_tile_spec_auto_columns_make_square_boards(self):
         tile = TileSpec.auto_micro_grid()
