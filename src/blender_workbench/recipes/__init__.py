@@ -9,6 +9,14 @@ from .camera_perspective import (
 )
 from .gobo_lighting import GOBO_CAMERA, GoboLightingSettings, build_gobo_lighting_scene, coerce_gobo_settings, gobo_lighting_variants
 from .mesh_light import MESH_LIGHT_CAMERA, MeshLightSettings, build_mesh_light_scene, coerce_mesh_light_settings, mesh_light_variants
+from .procedural_texture import (
+    PROCEDURAL_TEXTURE_CAMERA,
+    ProceduralTextureSettings,
+    build_procedural_texture_scene,
+    coerce_procedural_texture_settings,
+    procedural_texture_descriptor,
+    procedural_texture_variants,
+)
 from .rocket_plume import (
     ROCKET_PLUME_CAMERA,
     RocketPlumeSettings,
@@ -61,6 +69,8 @@ __all__ = [
     "GoboLightingSettings",
     "MESH_LIGHT_CAMERA",
     "MeshLightSettings",
+    "PROCEDURAL_TEXTURE_CAMERA",
+    "ProceduralTextureSettings",
     "ROCKET_PLUME_CAMERA",
     "RocketPlumeSettings",
     "SILHOUETTE_SHAPE_CAMERA",
@@ -78,6 +88,7 @@ __all__ = [
     "build_camera_perspective_scene",
     "build_gobo_lighting_scene",
     "build_mesh_light_scene",
+    "build_procedural_texture_scene",
     "build_rocket_plume_scene",
     "build_silhouette_shape_scene",
     "build_soft_atmosphere_scene",
@@ -89,6 +100,7 @@ __all__ = [
     "coerce_camera_perspective_settings",
     "coerce_gobo_settings",
     "coerce_mesh_light_settings",
+    "coerce_procedural_texture_settings",
     "coerce_rocket_plume_settings",
     "coerce_silhouette_shape_settings",
     "coerce_soft_atmosphere_settings",
@@ -98,6 +110,8 @@ __all__ = [
     "coerce_transparency_settings",
     "gobo_lighting_variants",
     "mesh_light_variants",
+    "procedural_texture_descriptor",
+    "procedural_texture_variants",
     "rocket_plume_scout_variants",
     "rocket_plume_texture_variants",
     "silhouette_shape_variants",

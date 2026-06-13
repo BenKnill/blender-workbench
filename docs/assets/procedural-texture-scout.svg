@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 420" role="img" aria-label="Procedural texture node scout">
+  <rect width="960" height="420" fill="#16181c"/>
+  <rect x="88" y="68" width="784" height="272" fill="#252831" stroke="#616a78" stroke-width="4"/>
+  <rect x="150" y="288" width="660" height="42" fill="#32343d"/>
+  <g opacity="0.48">
+    <rect x="186" y="104" width="24" height="190" fill="#d59a5e"/>
+    <rect x="250" y="104" width="24" height="190" fill="#79a3da"/>
+    <rect x="700" y="104" width="24" height="190" fill="#79a3da"/>
+    <rect x="764" y="104" width="24" height="190" fill="#d59a5e"/>
+  </g>
+  <circle cx="416" cy="220" r="82" fill="#bd7b4f"/>
+  <path d="M350 190 C374 152 452 148 482 190 C446 174 392 174 350 190 Z" fill="#e4b16d"/>
+  <path d="M360 246 C394 262 444 264 484 246" fill="none" stroke="#4d3328" stroke-width="10" opacity="0.55"/>
+  <rect x="560" y="156" width="112" height="132" rx="14" fill="#748ea0"/>
+  <path d="M572 182 L654 182 M572 210 L654 210 M572 238 L654 238 M572 266 L654 266" stroke="#26313b" stroke-width="8" opacity="0.58"/>
+  <g fill="none" stroke-linecap="round" stroke-width="8">
+    <path d="M104 366 C192 310 276 274 348 242" stroke="#e6ad70"/>
+    <path d="M140 48 C232 112 304 154 370 186" stroke="#78c7ff"/>
+    <path d="M482 40 C474 104 472 144 458 178" stroke="#d7e06f"/>
+    <path d="M824 50 C750 112 702 158 654 202" stroke="#b98cff"/>
+    <path d="M852 358 C760 310 694 276 640 246" stroke="#f26d5b"/>
+  </g>
+  <g fill="#f2efe5" font-family="Helvetica, Arial, sans-serif" font-size="22">
+    <text x="64" y="392">scale</text>
+    <text x="96" y="42">noise</text>
+    <text x="432" y="34">palette</text>
+    <text x="790" y="42">wave</text>
+    <text x="790" y="386">bump</text>
+  </g>
+</svg>

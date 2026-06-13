@@ -46,12 +46,20 @@
       "lesson": "Translate older node/UI prompts into current procedural texture, terrain, and lighting axes.",
       "status": "issue_open",
       "links": {
-        "examples": ["examples/light_texture_scout.py", "examples/terrain_environment_scout.py"],
+        "examples": [
+          "examples/procedural_texture_scout.py",
+          "examples/light_texture_scout.py",
+          "examples/terrain_environment_scout.py"
+        ],
         "docs": ["docs/source-translation.md", "docs/learning-notes.md"],
         "issues": [12, 22],
-        "artifacts": ["docs/assets/light-texture-scout.jpg", "docs/assets/terrain-environment-scout.jpg"]
+        "artifacts": [
+          "docs/assets/procedural-texture-scout.svg",
+          "docs/assets/light-texture-scout.jpg",
+          "docs/assets/terrain-environment-scout.jpg"
+        ]
       },
-      "notes": "The broad environment and texture boards exist; caustics and reusable texture-node recipe work remain open."
+      "notes": "The broad environment, concrete light/texture, and reusable surface texture-node boards exist; caustic water remains open."
     },
     {
       "id": "blenderart39-virtual-landscape-compositing",

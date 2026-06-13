@@ -27,6 +27,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `examples/mini_plume_sweep.py`: a compact Blender script showing the intended workflow.
 - `examples/postprocess_look_scout.py`: one raw render processed into a finishing-look contact sheet.
 - `examples/light_texture_scout.py`: named light-jitter and texture-magnitude board.
+- `examples/procedural_texture_scout.py`: reusable surface texture-node board for node family, scale, ramp, palette, bump, and roughness coupling.
 - `examples/rocket_plume_scout.py`: a stronger plume use case built on the general sweep API.
 - `examples/rocket_plume_texture_scout.py`: dense plume texture board from smooth through overdone to whiteout.
 - `examples/silhouette_shape_scout.py`: blind unlabeled shape-first board for silhouette judgment.
@@ -128,6 +129,13 @@ Examples can opt in with recipe-specific expectations:
 ```
 
 When enabled through `render_sweep(..., scene_expectations=...)`, warnings are non-fatal by default and are recorded under `scene_sanity` in `metadata.json`. Use `strict_scene_sanity=True` or an example's `--strict-scene` path for CI-style failures.
+
+Use procedural texture-node boards when the material question is surface shader noise rather than spatial volume structure. `examples/procedural_texture_scout.py` records node family, coordinate space, scale, ramp contrast, palette, bump, and roughness coupling so a selected tile can seed a reusable material preset:
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/procedural_texture_scout.py
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/procedural_texture_scout.py -- --pick noise_medium_marked
+```
 
 Use frame-sampled filmstrips when the visual question is temporal: animated texture masks, driver scale/direction, plume billow evolution, camera path checkpoints, path-following objects, or pose stepping. `render_frame_sweep(...)` builds one animated scene, samples specific frames, and records frame number, fps/time, driver values, render config, and output paths in `metadata.json`:
 
