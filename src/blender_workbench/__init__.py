@@ -13,6 +13,7 @@ from .capabilities import collect_capability_report, expand_required_tools, form
 from .example_manifest import ExamplePreflight, format_preflight_report, load_manifest, preflight_examples
 from .example_pick_smoke import PickSmokePlan, PickSmokeResult, pick_smoke_plans, run_pick_smoke, verify_selected_json
 from .handoff import build_handoff_prompt_card, format_handoff_markdown, prompt_card_from_reference_prompt, write_handoff_card
+from .learning_coverage import format_learning_coverage_report, uncovered_learning_prompts, validate_learning_coverage
 from .postprocess import (
     PostprocessLookSettings,
     coerce_postprocess_look_settings,
@@ -66,6 +67,7 @@ __all__ = [
     "format_preflight_report",
     "format_capability_report",
     "format_handoff_markdown",
+    "format_learning_coverage_report",
     "RenderConfig",
     "RenderResult",
     "RENDER_PRESETS",
@@ -123,6 +125,8 @@ __all__ = [
     "stride_axis",
     "two_axis_variants",
     "validate_artifact_index",
+    "uncovered_learning_prompts",
+    "validate_learning_coverage",
     "variants_from_sweep_metadata",
     "verify_selected_json",
     "review_summary",

@@ -1,0 +1,140 @@
+{
+  "schema": 1,
+  "updated": "2026-06-13",
+  "purpose": "Track what happened after a useful learning/resource prompt was inspected: implemented scout, linked issue, generated artifact, deliberate skip, or stale follow-up.",
+  "status_values": ["implemented", "issue_open", "needs_exercise", "skipped", "stale"],
+  "rows": [
+    {
+      "id": "blenderart27-cg-lighting-packshot",
+      "source_type": "pdf",
+      "source": "blenderart_issue_27_cg_lighting_apr_2010.pdf",
+      "prompt": "Textured light, shadow play, mesh/glowing lights, pack-shot camera controls, zoom/focal blur, and studio tables.",
+      "lesson": "Turn lighting and camera lessons into fixed-view sweep boards before copying any old render settings.",
+      "status": "implemented",
+      "links": {
+        "examples": [
+          "examples/gobo_lighting_scout.py",
+          "examples/mesh_light_scout.py",
+          "examples/camera_perspective_scout.py"
+        ],
+        "docs": ["docs/learning-notes.md", "docs/sweep-catalog.md"],
+        "issues": [15, 17],
+        "artifacts": ["docs/assets/gobo-lighting-scout.jpg", "docs/assets/mesh-light-scout.jpg"]
+      },
+      "notes": "Depth-of-field and hard-surface edge-light follow-ups remain issue-backed even though the core lighting scouts exist."
+    },
+    {
+      "id": "blenderart16-material-transparency-smoke",
+      "source_type": "pdf",
+      "source": "blenderart_issue_16_lighting_rendering_may_2008.pdf",
+      "prompt": "Multilayer skin/SSS thinking, translucent-vs-transparent materials, smoke, and alpha billboards.",
+      "lesson": "Separate material-read scouts from atmospheric card and smoke exercises so thumbnails reveal different failure modes.",
+      "status": "issue_open",
+      "links": {
+        "examples": ["examples/subsurface_scout.py", "examples/transparency_scout.py", "examples/soft_atmosphere_scout.py"],
+        "docs": ["docs/learning-notes.md"],
+        "issues": [14, 16, 23],
+        "artifacts": ["docs/assets/subsurface-scout.jpg", "docs/assets/transparency-scout.jpg"]
+      },
+      "notes": "SSS and transparency are implemented; alpha-billboard smoke and layered material components still need dedicated issue work."
+    },
+    {
+      "id": "blenderart22-texture-environment-node-prompts",
+      "source_type": "pdf",
+      "source": "blenderart_issue_22_texturing_environment_lighting_jun_2009.pdf",
+      "prompt": "Texture-node thinking, candle/face SSS, trial-and-error material lighting, and environment-lighting mood.",
+      "lesson": "Translate older node/UI prompts into current procedural texture, terrain, and lighting axes.",
+      "status": "issue_open",
+      "links": {
+        "examples": ["examples/light_texture_scout.py", "examples/terrain_environment_scout.py"],
+        "docs": ["docs/source-translation.md", "docs/learning-notes.md"],
+        "issues": [12, 22],
+        "artifacts": ["docs/assets/light-texture-scout.jpg", "docs/assets/terrain-environment-scout.jpg"]
+      },
+      "notes": "The broad environment and texture boards exist; caustics and reusable texture-node recipe work remain open."
+    },
+    {
+      "id": "blenderart39-virtual-landscape-compositing",
+      "source_type": "pdf",
+      "source": "blenderart_issue_39_compositing_sep_2012.pdf",
+      "prompt": "Virtual sets that survive multiple camera setups, displacement landscapes, SSS ice, render passes, and compositing.",
+      "lesson": "Keep scene robustness, landscape structure, and finishing-look sweeps inspectable as separate surfaces.",
+      "status": "issue_open",
+      "links": {
+        "examples": [
+          "examples/terrain_environment_scout.py",
+          "examples/postprocess_look_scout.py",
+          "examples/camera_perspective_scout.py"
+        ],
+        "docs": ["docs/learning-notes.md", "docs/source-translation-ledger.json"],
+        "issues": [21, 24, 28, 32],
+        "artifacts": ["docs/assets/terrain-environment-scout.jpg", "docs/assets/postprocess-look-scout.jpg"]
+      },
+      "notes": "Implemented boards cover terrain, camera, and look sweeps; pass diagnostics, reference-guided targets, and multi-camera robustness remain open."
+    },
+    {
+      "id": "blenderart42-diffuser-hard-surface-material",
+      "source_type": "pdf",
+      "source": "blenderart_issue_42_general_inspiration_sep_2013.pdf",
+      "prompt": "Translucent printed china-ball lighting objects and mixed hard-surface/organic material workflows.",
+      "lesson": "Use as art-direction language and turn concrete material/light-object ideas into small scouts or issues.",
+      "status": "issue_open",
+      "links": {
+        "examples": [],
+        "docs": ["docs/learning-notes.md", "docs/source-translation-ledger.json"],
+        "issues": [14, 17, 23, 32],
+        "artifacts": []
+      },
+      "notes": "No dedicated scout exists yet; diffuser, hard-surface, layered material, and reference-guided scout issues cover the next work."
+    },
+    {
+      "id": "spacex-plume-frame-references",
+      "source_type": "reference_media",
+      "source": "../reference_materials/spacex_plume_frames",
+      "prompt": "SpaceX plume frame references and adjacent vacuum plume studies.",
+      "lesson": "Use plume references to calibrate alpha shell, texture density, broad expansion shape, and overdone/whiteout failure anchors.",
+      "status": "implemented",
+      "links": {
+        "examples": [
+          "examples/mini_plume_sweep.py",
+          "examples/rocket_plume_scout.py",
+          "examples/rocket_plume_texture_scout.py"
+        ],
+        "docs": ["docs/rocket-plume.md", "docs/sweep-catalog.md"],
+        "issues": [],
+        "artifacts": ["docs/assets/mini-plume-sweep.jpg", "docs/assets/rocket-plume-texture-scout.jpg"]
+      },
+      "notes": "Non-PDF reference media is represented here so future agents do not treat it as outside the learning pipeline."
+    },
+    {
+      "id": "fast-lighting-study-reference-prompts",
+      "source_type": "local_study",
+      "source": "../fast_distinct_lighting_studies_v2",
+      "prompt": "Reference-use prompts for distinct knight lighting studies with scene, lighting, preserve, and improve-after constraints.",
+      "lesson": "Carry selected structure/lighting studies forward as handoff prompt cards instead of treating PNGs as final art.",
+      "status": "issue_open",
+      "links": {
+        "examples": [],
+        "docs": ["docs/learning-notes.md"],
+        "issues": [32, 40, 42],
+        "artifacts": ["../fast_distinct_lighting_studies_v2/*/reference_use_prompt.md"]
+      },
+      "notes": "Covered by reference-guided sweeps, handoff cards, and artifact-index follow-ups."
+    },
+    {
+      "id": "fast-knight-study-reference-prompts",
+      "source_type": "local_study",
+      "source": "../fast_distinct_knight_studies",
+      "prompt": "Reference-use prompts for knight pose/bind studies with structure-preservation constraints.",
+      "lesson": "Preserve figure and trainer separation through handoff cards and reusable fixture/reference-scene support.",
+      "status": "issue_open",
+      "links": {
+        "examples": [],
+        "docs": ["docs/learning-notes.md"],
+        "issues": [29, 40],
+        "artifacts": ["../fast_distinct_knight_studies/*/reference_use_prompt.md"]
+      },
+      "notes": "This is local-study coverage rather than PDF triage; it points to the workflow issues that make the studies reusable."
+    }
+  ]
+}
