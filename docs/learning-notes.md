@@ -2,7 +2,7 @@
 
 This is a compact map from the local BlenderArt/resource shelf to workbench exercises.
 
-When adding a new source PDF, run `python3 tools/pdf_triage.py <pdf>` first. It writes backend receipts and a `notes.md` observation stub under ignored `runs/pdf_triage/`, which keeps the skim -> exercise -> issue loop traceable even when text extraction is unavailable.
+Before downloading or regenerating learning resources, run `python3 tools/reference_manifest.py verify` to check the adjacent `../reference_materials` shelf. When adding a new source PDF, run `python3 tools/pdf_triage.py <pdf>` first. It writes backend receipts and a `notes.md` observation stub under ignored `runs/pdf_triage/`, which keeps the skim -> exercise -> issue loop traceable even when text extraction is unavailable.
 
 ## Current Source Prompts
 

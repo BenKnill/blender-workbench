@@ -1,0 +1,151 @@
+{
+  "schema": 1,
+  "updated": "2026-06-13",
+  "root_note": "Paths are resolved from the blender-workbench repository root. Reference media lives in the adjacent ../reference_materials shelf and is not vendored in this git repository.",
+  "resources": [
+    {
+      "id": "blender_basics_2017",
+      "type": "pdf",
+      "path": "../reference_materials/artistic_blender_pdfs/blender_basics_classroom_tutorial_book_2017.pdf",
+      "size_bytes": 54073653,
+      "sha256": "3f066f1999f7b2ea6885f0705f0adfc1dccb3a806c8de6bc0f01521ef1792b0c",
+      "source_url": "https://archive.org/details/2017BlenderBasics",
+      "retrieved": "2026-06-13",
+      "acquisition_note": "Manual download from the Archive.org item page.",
+      "terms_note": "Use as a local learning reference; verify Archive.org item terms before redistribution.",
+      "intended_use": "learning_pdf"
+    },
+    {
+      "id": "blenderart_issue_16_lighting_rendering",
+      "type": "pdf",
+      "path": "../reference_materials/artistic_blender_pdfs/blenderart_issue_16_lighting_rendering_may_2008.pdf",
+      "size_bytes": 15091548,
+      "sha256": "9a878a87c590f0111c8978be81a8b79046254efee2d7f76ef4844affd9cf5659",
+      "source_url": "https://archive.org/details/BlenderArt-Magazine-Issue-16",
+      "retrieved": "2026-06-13",
+      "acquisition_note": "Manual download from the Archive.org item page.",
+      "terms_note": "Use as a local learning reference; verify Archive.org item terms before redistribution.",
+      "intended_use": "learning_pdf"
+    },
+    {
+      "id": "blenderart_issue_22_texturing_environment_lighting",
+      "type": "pdf",
+      "path": "../reference_materials/artistic_blender_pdfs/blenderart_issue_22_texturing_environment_lighting_jun_2009.pdf",
+      "size_bytes": 9966711,
+      "sha256": "bcee3eb34f47bf203bbb38491c96fe5b436e87c64b5a5bc4e4efd67650610190",
+      "source_url": "https://archive.org/details/BlenderArt-Magazine-Issue-22",
+      "retrieved": "2026-06-13",
+      "acquisition_note": "Manual download from the Archive.org item page.",
+      "terms_note": "Use as a local learning reference; verify Archive.org item terms before redistribution.",
+      "intended_use": "learning_pdf"
+    },
+    {
+      "id": "blenderart_issue_27_cg_lighting",
+      "type": "pdf",
+      "path": "../reference_materials/artistic_blender_pdfs/blenderart_issue_27_cg_lighting_apr_2010.pdf",
+      "size_bytes": 9547696,
+      "sha256": "de681b8977c6f41755c236e70923160af1a5911d5065dc80880ccb009be14f46",
+      "source_url": "https://archive.org/details/BlenderArt-Magazine-Issue-27",
+      "retrieved": "2026-06-13",
+      "acquisition_note": "Manual download from the Archive.org item page.",
+      "terms_note": "Use as a local learning reference; verify Archive.org item terms before redistribution.",
+      "intended_use": "learning_pdf"
+    },
+    {
+      "id": "blenderart_issue_39_compositing",
+      "type": "pdf",
+      "path": "../reference_materials/artistic_blender_pdfs/blenderart_issue_39_compositing_sep_2012.pdf",
+      "size_bytes": 19974893,
+      "sha256": "519927fc2aa6ffcef7868358a16d23b2d544feaf411020d936d6b7bb8759610f",
+      "source_url": "https://archive.org/details/BlenderArt-Magazine-Issue-39",
+      "retrieved": "2026-06-13",
+      "acquisition_note": "Manual download from the Archive.org item page.",
+      "terms_note": "Use as a local learning reference; verify Archive.org item terms before redistribution.",
+      "intended_use": "learning_pdf"
+    },
+    {
+      "id": "blenderart_issue_42_general_inspiration",
+      "type": "pdf",
+      "path": "../reference_materials/artistic_blender_pdfs/blenderart_issue_42_general_inspiration_sep_2013.pdf",
+      "size_bytes": 3536165,
+      "sha256": "4eaab18b4cdc291e73d99073c28219799e40ff83eb39af693fb9fa6271bf7dd0",
+      "source_url": "https://archive.org/details/blender-art-magazine-issue-42",
+      "retrieved": "2026-06-13",
+      "acquisition_note": "Manual download from the Archive.org item page.",
+      "terms_note": "Use as a local learning reference; verify Archive.org item terms before redistribution.",
+      "intended_use": "learning_pdf"
+    },
+    {
+      "id": "saocom_1b_launch_landing_lowres",
+      "type": "video_excerpt",
+      "path": "../reference_materials/spacex_vacuum_plume_reference/saocom_1b_launch_landing_lowres.mp4",
+      "size_bytes": 7158539,
+      "sha256": "d9646a19f0fe03758f6d8c87263d2a0c12bea7d701c221800b100e8f05efabde",
+      "source_url": "https://www.youtube.com/watch?v=lXgLyCYuYA4",
+      "retrieved": "2026-06-13",
+      "acquisition_command": "yt-dlp --format 'mp4[height<=360]' --output saocom_1b_launch_landing_lowres.mp4 https://www.youtube.com/watch?v=lXgLyCYuYA4",
+      "terms_note": "Low-resolution local visual reference; do not redistribute downloaded video.",
+      "intended_use": "visual_reference",
+      "low_resolution": true
+    },
+    {
+      "id": "saocom_vacuum_plume_excerpt_lowres",
+      "type": "video_excerpt",
+      "path": "../reference_materials/spacex_vacuum_plume_reference/saocom_vacuum_plume_excerpt_lowres.mp4",
+      "size_bytes": 175749,
+      "sha256": "0d53fe29b8cb0e5f64d5d60013a0173ffb4b9f08007d1a7075b25a09eb56d58d",
+      "source_url": "https://www.youtube.com/watch?v=lXgLyCYuYA4",
+      "parent": "saocom_1b_launch_landing_lowres",
+      "derivation_command": "ffmpeg -i saocom_1b_launch_landing_lowres.mp4 -ss <plume-start> -t <short-duration> -vf scale=-1:360 saocom_vacuum_plume_excerpt_lowres.mp4",
+      "terms_note": "Derived low-resolution local visual reference; do not redistribute downloaded video.",
+      "intended_use": "visual_reference",
+      "low_resolution": true
+    },
+    {
+      "id": "saocom_frames",
+      "type": "frame_sequence",
+      "path": "../reference_materials/spacex_vacuum_plume_reference/saocom_frames",
+      "file_count": 47,
+      "total_size_bytes": 299791,
+      "aggregate_sha256": "c1c3ec0846d2b6e0386bbb415088ebf55f00d4983b79bdab5906838a45270807",
+      "parent": "saocom_vacuum_plume_excerpt_lowres",
+      "derivation_command": "ffmpeg -i saocom_vacuum_plume_excerpt_lowres.mp4 -vf fps=<sample-rate> saocom_frames/frame_%03d.jpg",
+      "terms_note": "Derived low-resolution local frame sequence for visual analysis only.",
+      "intended_use": "visual_reference"
+    },
+    {
+      "id": "saocom_plume_keyframes",
+      "type": "frame_sequence",
+      "path": "../reference_materials/spacex_vacuum_plume_reference/plume_keyframes",
+      "file_count": 30,
+      "total_size_bytes": 197716,
+      "aggregate_sha256": "f742aa0c837bcbdcdfce7c99819073d69995bc72451feec245c489eddd328bdc",
+      "parent": "saocom_frames",
+      "derivation_command": "manual selection/copy of representative frame samples into plume_keyframes/",
+      "terms_note": "Derived low-resolution local keyframes for visual analysis only.",
+      "intended_use": "target_panel"
+    },
+    {
+      "id": "saocom_contact_sheet",
+      "type": "contact_sheet",
+      "path": "../reference_materials/spacex_vacuum_plume_reference/saocom_contact_sheet.jpg",
+      "size_bytes": 362132,
+      "sha256": "49e7350fa3b2489050d752420c8108aaba68c7701e188637fbd5b7f55ebade95",
+      "parent": "saocom_frames",
+      "derivation_command": "ImageMagick contact sheet from saocom_frames/",
+      "terms_note": "Derived low-resolution local review sheet; do not redistribute source-derived media.",
+      "intended_use": "target_panel"
+    },
+    {
+      "id": "plume_excerpt_sheet",
+      "type": "contact_sheet",
+      "path": "../reference_materials/spacex_vacuum_plume_reference/plume_excerpt_sheet.jpg",
+      "size_bytes": 164351,
+      "sha256": "5629e1553f3807e263db1b1b0c0f34c6cad774129a7df58cf4e3a342ca66ab6d",
+      "parent": "saocom_plume_keyframes",
+      "derivation_command": "ImageMagick contact sheet from selected plume keyframes.",
+      "terms_note": "Derived low-resolution local review sheet; do not redistribute source-derived media.",
+      "intended_use": "target_panel"
+    }
+  ]
+}
