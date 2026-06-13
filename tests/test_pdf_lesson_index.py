@@ -6,9 +6,11 @@ from pathlib import Path
 from tools.pdf_lesson_index import (
     build_lesson_index,
     format_queue_report,
+    import_toc_ranges,
     mark_range,
     next_items,
     parse_pages,
+    parse_toc_entry,
     read_page_count_mdls,
 )
 
@@ -144,10 +146,71 @@ class PdfLessonIndexTests(unittest.TestCase):
         self.assertEqual(entry["triage_output"], "runs/pdf_triage/lighting")
         self.assertEqual(index["sources"][0]["status"], "issue_open")
 
+    def test_import_toc_ranges_adds_titles_and_prioritized_candidates(self):
+        index = {
+            "schema": 1,
+            "updated": "old",
+            "sources": [
+                {
+                    "source_id": "lesson_lighting",
+                    "title": "Lighting",
+                    "path": "lighting.pdf",
+                    "page_count": 30,
+                    "status": "unskimmed",
+                    "priority": 90,
+                    "tags": ["lighting"],
+                    "ranges": [],
+                },
+                {
+                    "source_id": "plain_unskimmed",
+                    "title": "Plain",
+                    "path": "plain.pdf",
+                    "page_count": 12,
+                    "status": "unskimmed",
+                    "priority": 99,
+                    "tags": [],
+                    "ranges": [],
+                },
+            ],
+        }
+
+        entries = import_toc_ranges(
+            index,
+            source_id="lesson",
+            entries=[
+                "5-6=Fun with Shadows:shadow,lighting",
+                "10-11=Mesh Lights:mesh_light,lighting",
+            ],
+            tags=["toc"],
+            priority=97,
+            triage_output="runs/pdf_triage/lesson_lighting",
+        )
+        items = next_items(index, limit=3)
+        report = format_queue_report(items)
+
+        self.assertEqual(entries[0]["title"], "Fun with Shadows")
+        self.assertEqual(entries[0]["priority"], 97)
+        self.assertEqual(entries[0]["triage_output"], "runs/pdf_triage/lesson_lighting")
+        self.assertEqual(index["sources"][0]["status"], "candidate")
+        self.assertEqual(items[0]["source_id"], "lesson_lighting")
+        self.assertEqual(items[0]["range_title"], "Fun with Shadows")
+        self.assertEqual(items[0]["priority"], 97)
+        self.assertIn("toc", items[0]["tags"])
+        self.assertEqual(items[2]["source_id"], "plain_unskimmed")
+        self.assertIn("Fun with Shadows", report)
+
     def test_parse_pages_rejects_reversed_ranges(self):
         self.assertEqual(parse_pages("3"), (3, 3))
         with self.assertRaisesRegex(ValueError, "Invalid page range"):
             parse_pages("9-2")
+
+    def test_parse_toc_entry_rejects_missing_title_separator(self):
+        self.assertEqual(
+            parse_toc_entry("10-11=Mesh Lights:mesh_light,lighting"),
+            {"pages": "10-11", "title": "Mesh Lights", "tags": ["mesh_light", "lighting"]},
+        )
+        with self.assertRaisesRegex(ValueError, "TOC entry must use"):
+            parse_toc_entry("10-11 Mesh Lights")
 
 
 if __name__ == "__main__":
