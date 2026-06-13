@@ -32,6 +32,7 @@ class SweepTests(unittest.TestCase):
         self.assertIn("texture_magnitude_stride", SWEEP_AXES)
         self.assertIn("micro_grid", TILE_PRESETS)
         self.assertIn("auto_micro_grid", TILE_PRESETS)
+        self.assertIn("auto_tiny_grid", TILE_PRESETS)
         self.assertIn("shape_scout", RENDER_PRESETS)
         self.assertGreaterEqual(TILE_PRESETS["micro_grid"].columns, 6)
         self.assertIsNone(TILE_PRESETS["auto_micro_grid"].columns)
@@ -119,9 +120,11 @@ class SweepTests(unittest.TestCase):
 
     def test_rocket_plume_texture_scout_has_failure_anchor(self):
         variants = rocket_plume_texture_variants(prefix="test")
+        names = [variant.name for variant in variants]
 
-        self.assertEqual(len(variants), 5)
-        self.assertEqual(variants[-1].name, "test_overdone_fail")
+        self.assertEqual(len(variants), 16)
+        self.assertIn("test_overdone", names)
+        self.assertEqual(variants[-1].name, "test_whiteout_fail")
         self.assertGreater(variants[-1].settings["plume_texture_magnitude"], variants[0].settings["plume_texture_magnitude"])
         self.assertGreater(variants[-1].settings["density_wisp_count"], variants[0].settings["density_wisp_count"])
         self.assertGreater(variants[-1].settings["density_clump_count"], variants[0].settings["density_clump_count"])

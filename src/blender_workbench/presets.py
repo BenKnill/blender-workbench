@@ -233,6 +233,8 @@ TILE_PRESETS = {
     "balanced_grid": TileSpec.balanced_grid(),
     "micro_grid": TileSpec.micro_grid(),
     "auto_micro_grid": TileSpec.auto_micro_grid(),
+    "tiny_grid": TileSpec.tiny_grid(),
+    "auto_tiny_grid": TileSpec.auto_tiny_grid(),
     "square_moodboard": TileSpec.square_moodboard(),
     "auto_square_moodboard": TileSpec.auto_square_moodboard(),
     "filmstrip": TileSpec.filmstrip(),

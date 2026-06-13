@@ -6,11 +6,13 @@ Start with the cheapest render profile that can answer the visual question. Shap
 
 ## Tile Layouts
 
-- default `TileSpec`: small square tiles with near-square columns chosen from the variant count.
+- default `TileSpec`: tiny square tiles with near-square columns chosen from the variant count.
 - `hero_pair`: two larger square tiles for before/after, winner/failure, reference/attempt.
 - `balanced_grid`: readable small square sheets for causal sweeps.
 - `micro_grid`: many little square tiles for broad scouting, color palettes, noisy alpha tests, and silhouette thumbnails.
 - `auto_micro_grid`: little square tiles with near-square columns chosen from the variant count.
+- `tiny_grid`: even smaller square tiles for dense boards.
+- `auto_tiny_grid`: dense boards with near-square columns chosen from the variant count.
 - `square_moodboard`: compact square tiles for shape boards, material chips, and palette studies.
 - `auto_square_moodboard`: named case boards without pre-deciding the row count.
 - `filmstrip`: ordered tiles for motion, time-of-day, long-exposure streak length, or camera path tests.
@@ -60,7 +62,7 @@ Color sweeps should avoid one-note palettes. Put at least one cool/warm contrast
 - `plume_alpha_strength` x `plume_shape` with `micro_grid`
 - named texture cases with `auto_square_moodboard` and `square=True`
 - `examples/light_texture_scout.py` for a concrete named light-jitter plus texture-magnitude board
-- `examples/rocket_plume_texture_scout.py` for a plume density-texture board from smooth to overdone
+- `examples/rocket_plume_texture_scout.py` for a dense plume density-texture board from smooth through overdone to whiteout
 - `light_source_jitter` x `texture_magnitude` with `balanced_grid`
 - `sunset_haze` as a one-axis `filmstrip`
 - `subsurface_candy` x shape scale with `square_moodboard`

@@ -18,11 +18,11 @@ OUT = ROOT / "examples" / "output" / "rocket_plume_texture_scout"
 def main() -> None:
     config = replace(
         RENDER_PRESETS["cycles_preview"],
-        resolution_x=640,
-        resolution_y=420,
-        samples=24,
+        resolution_x=560,
+        resolution_y=360,
+        samples=16,
         camera_name=ROCKET_PLUME_CAMERA,
-        tile=TILE_PRESETS["auto_micro_grid"],
+        tile=TILE_PRESETS["auto_tiny_grid"],
     )
     render_sweep(
         variants=rocket_plume_texture_variants(),
@@ -33,7 +33,7 @@ def main() -> None:
         title="Rocket Vacuum Plume Texture Scout",
         notes=[
             "Named stride scout for spatial density texture: ribbons, wisps, clumps, and filament wiggle.",
-            "Smooth and overdone_fail are anchors; useful settings should land between them.",
+            "Overdone is now an aesthetic target; whiteout_fail is the true too-far anchor.",
         ],
         square=True,
     )

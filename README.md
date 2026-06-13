@@ -13,7 +13,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `examples/mini_plume_sweep.py`: a compact Blender script showing the intended workflow.
 - `examples/light_texture_scout.py`: named light-jitter and texture-magnitude board.
 - `examples/rocket_plume_scout.py`: a stronger plume use case built on the general sweep API.
-- `examples/rocket_plume_texture_scout.py`: plume texture stride scout from smooth to overdone.
+- `examples/rocket_plume_texture_scout.py`: dense plume texture board from smooth through overdone to whiteout.
 - `docs/parameter-sweep-pattern.md`: the short operating pattern for future agents.
 - `docs/performance.md`: defaults for fast basics-first exploration.
 - `docs/rocket-plume.md`: recipe notes for broad, smoky, in-space engine plumes.
@@ -69,7 +69,7 @@ render_sweep(
 )
 ```
 
-The default contact sheet is now a small square auto-grid. Use `micro_grid` or `auto_micro_grid` when you need lots of little square tiles, `hero_pair` for larger before/after comparisons, `balanced_grid` for readable 3x3 studies, `square_moodboard` for palette and shape boards, and `filmstrip` only when sequence order matters more than square comparison.
+The default contact sheet is now a tiny square auto-grid. Use `tiny_grid`/`auto_tiny_grid` when you want lots of tiles, `micro_grid`/`auto_micro_grid` when labels need more room, `hero_pair` for larger before/after comparisons, `balanced_grid` for readable 3x3 studies, `square_moodboard` for palette and shape boards, and `filmstrip` only when sequence order matters more than square comparison.
 
 Use `shape_scout` for silhouette/form, `material_scout` for quick color and transparency reads, `cycles_preview` when lighting matters, and `hero_check` only after a smaller sheet has picked a direction.
 
@@ -130,6 +130,6 @@ Run the plume density-texture scout:
 /Applications/Blender.app/Contents/MacOS/Blender --background --python examples/rocket_plume_texture_scout.py
 ```
 
-This scout treats plume texture as spatial density: wisps, clumps, ribbons, and turbulence through the plume volume, not just shader noise on a cone.
+This scout treats plume texture as spatial density: wisps, clumps, ribbons, and turbulence through the plume volume, not just shader noise on a cone. The overdone region is an aesthetic target; `whiteout_fail` is the true too-far anchor.
 
 ![Rocket plume texture scout contact sheet](docs/assets/rocket-plume-texture-scout.jpg)

@@ -36,13 +36,13 @@ class RenderResult:
 
 @dataclass(frozen=True)
 class TileSpec:
-    width: int = 144
-    height: int = 144
+    width: int = 112
+    height: int = 112
     columns: int | None = None
-    label_height: int = 18
+    label_height: int = 14
     background: str = "black"
     show_notes: bool = False
-    label_max_chars: int | None = 16
+    label_max_chars: int | None = 12
 
     @classmethod
     def hero_pair(cls) -> "TileSpec":
@@ -50,15 +50,23 @@ class TileSpec:
 
     @classmethod
     def balanced_grid(cls) -> "TileSpec":
-        return cls(width=180, height=180, columns=None, label_height=22, label_max_chars=22)
+        return cls(width=160, height=160, columns=None, label_height=18, label_max_chars=18)
 
     @classmethod
     def micro_grid(cls, columns: int = 8) -> "TileSpec":
-        return cls(width=128, height=128, columns=columns, label_height=16, label_max_chars=16)
+        return cls(width=104, height=104, columns=columns, label_height=14, label_max_chars=12)
 
     @classmethod
     def auto_micro_grid(cls) -> "TileSpec":
-        return cls(width=128, height=128, columns=None, label_height=16, label_max_chars=16)
+        return cls(width=104, height=104, columns=None, label_height=14, label_max_chars=12)
+
+    @classmethod
+    def tiny_grid(cls, columns: int = 10) -> "TileSpec":
+        return cls(width=88, height=88, columns=columns, label_height=12, label_max_chars=10)
+
+    @classmethod
+    def auto_tiny_grid(cls) -> "TileSpec":
+        return cls(width=88, height=88, columns=None, label_height=12, label_max_chars=10)
 
     @classmethod
     def square_moodboard(cls, columns: int = 5) -> "TileSpec":
