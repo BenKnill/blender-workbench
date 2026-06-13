@@ -140,6 +140,11 @@ render_selected_from_sweep(
     pick="balanced_bell",
     build_scene=build_scene,
     config=RENDER_PRESETS["hero_check"],
+    handoff_notes={
+        "preserve": ["Keep the chosen silhouette and readable scale cues."],
+        "improve_after": ["Refine materials only after the structure works."],
+        "failure_modes": ["Do not copy neighboring tiles that lost the thumbnail read."],
+    },
     save_blend=True,
 )
 
@@ -174,6 +179,8 @@ PYTHONPATH=src /Applications/Blender.app/Contents/MacOS/Blender --background --p
 ```
 
 Use `--export-blend-only` on the same helper or on pickable examples when you want the GUI handoff without spending time on a selected PNG render.
+Selected renders also write `handoff.md` and `prompt_card.json`; `selected.json` records both paths.
+The selected README links the Markdown card for the next artist or agent.
 
 The default contact sheet is now a tiny square auto-grid. Use `tiny_grid`/`auto_tiny_grid` when you want lots of tiles, `micro_grid`/`auto_micro_grid` when labels need more room, `hero_pair` for larger before/after comparisons, `balanced_grid` for readable 3x3 studies, `square_moodboard` for palette and shape boards, and `filmstrip` only when sequence order matters more than square comparison.
 

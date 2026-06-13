@@ -5,6 +5,7 @@ from .camera import add_orbit_camera, camera_distance_for_matching_framing, look
 from .capabilities import collect_capability_report, expand_required_tools, format_capability_report
 from .example_manifest import ExamplePreflight, format_preflight_report, load_manifest, preflight_examples
 from .example_pick_smoke import PickSmokePlan, PickSmokeResult, pick_smoke_plans, run_pick_smoke, verify_selected_json
+from .handoff import build_handoff_prompt_card, format_handoff_markdown, prompt_card_from_reference_prompt, write_handoff_card
 from .postprocess import (
     PostprocessLookSettings,
     coerce_postprocess_look_settings,
@@ -46,6 +47,7 @@ from .sweep import (
 __all__ = [
     "add_orbit_camera",
     "add_soft_horizon_band",
+    "build_handoff_prompt_card",
     "camera_distance_for_matching_framing",
     "fingerprint_status",
     "collect_capability_report",
@@ -53,6 +55,7 @@ __all__ = [
     "ExamplePreflight",
     "format_preflight_report",
     "format_capability_report",
+    "format_handoff_markdown",
     "RenderConfig",
     "RenderResult",
     "RENDER_PRESETS",
@@ -93,6 +96,7 @@ __all__ = [
     "PromotionStatus",
     "format_promotion_report",
     "promotion_statuses",
+    "prompt_card_from_reference_prompt",
     "preflight_examples",
     "render_selected_from_sweep",
     "render_selected_replicates",
@@ -111,5 +115,6 @@ __all__ = [
     "verify_selected_json",
     "review_summary",
     "write_review_page",
+    "write_handoff_card",
     "write_review_log",
 ]

@@ -4,7 +4,7 @@ import argparse
 import importlib
 import json
 import sys
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import replace
 from pathlib import Path
 from typing import Any
@@ -112,6 +112,7 @@ def promote_from_metadata(
     postprocess: Callable[[Path, Path], bool] | None = None,
     title: str = "Selected Blender Render",
     notes: list[str] | None = None,
+    handoff_notes: Mapping[str, Any] | None = None,
     save_blend: bool = False,
     render_image: bool = True,
     allow_anchor_promotion: bool = False,
@@ -145,6 +146,7 @@ def promote_from_metadata(
             "Promoted from an existing sweep metadata file.",
             "The full contact sheet was not rerendered for this selected pass.",
         ],
+        handoff_notes=handoff_notes,
         source_sweep_dir=source_sweep_dir,
         save_blend=save_blend,
         render_image=render_image,
@@ -165,6 +167,15 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--postprocess-glow", action="store_true", help="apply the workbench glow/contrast postprocess after rendering")
     parser.add_argument("--save-blend", action="store_true", help="also save selected/<pick>/<pick>.blend for GUI review")
     parser.add_argument("--export-blend-only", action="store_true", help="save the selected .blend and skip image rendering")
+    parser.add_argument("--handoff-preserve", action="append", default=[], help="constraint to keep legible in handoff.md")
+    parser.add_argument("--handoff-improve-after", action="append", default=[], help="detail to refine after structure works")
+    parser.add_argument("--handoff-failure-mode", action="append", default=[], help="known failure mode to carry into handoff.md")
+    parser.add_argument(
+        "--handoff-reference",
+        action="append",
+        default=[],
+        help="reference target path or cue to record in prompt_card.json",
+    )
     parser.add_argument("--allow-anchor-promotion", action="store_true", help="allow deliberate failure/negative-control picks")
     return parser.parse_args(_script_args(argv))
 
@@ -181,6 +192,12 @@ def main(argv: list[str] | None = None) -> RenderResult:
         hero_samples=args.hero_samples,
         postprocess=postprocess_glow_contrast if args.postprocess_glow else None,
         title=args.title,
+        handoff_notes={
+            "preserve": args.handoff_preserve,
+            "improve_after": args.handoff_improve_after,
+            "failure_modes": args.handoff_failure_mode,
+            "reference_targets": args.handoff_reference,
+        },
         save_blend=args.save_blend or args.export_blend_only,
         render_image=not args.export_blend_only,
         allow_anchor_promotion=args.allow_anchor_promotion,
