@@ -1,0 +1,99 @@
+{
+  "schema": 1,
+  "examples": [
+    {
+      "name": "camera_perspective_scout",
+      "script": "examples/camera_perspective_scout.py",
+      "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/camera_perspective_scout.py",
+      "outputs": ["examples/output/camera_perspective_scout/metadata.json", "examples/output/camera_perspective_scout/contact_sheet.png"],
+      "prerequisites": [],
+      "docs_asset": "docs/assets/camera-perspective-scout.jpg"
+    },
+    {
+      "name": "gobo_lighting_scout",
+      "script": "examples/gobo_lighting_scout.py",
+      "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/gobo_lighting_scout.py",
+      "outputs": ["examples/output/gobo_lighting_scout/metadata.json", "examples/output/gobo_lighting_scout/contact_sheet.png"],
+      "prerequisites": [],
+      "docs_asset": "docs/assets/gobo-lighting-scout.jpg"
+    },
+    {
+      "name": "light_texture_scout",
+      "script": "examples/light_texture_scout.py",
+      "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/light_texture_scout.py",
+      "outputs": ["examples/output/light_texture_scout/metadata.json", "examples/output/light_texture_scout/contact_sheet.png"],
+      "prerequisites": [],
+      "docs_asset": "docs/assets/light-texture-scout.jpg"
+    },
+    {
+      "name": "mesh_light_scout",
+      "script": "examples/mesh_light_scout.py",
+      "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/mesh_light_scout.py",
+      "outputs": ["examples/output/mesh_light_scout/metadata.json", "examples/output/mesh_light_scout/contact_sheet.png"],
+      "prerequisites": [],
+      "docs_asset": "docs/assets/mesh-light-scout.jpg"
+    },
+    {
+      "name": "mini_plume_sweep",
+      "script": "examples/mini_plume_sweep.py",
+      "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/mini_plume_sweep.py",
+      "outputs": ["examples/output/mini_plume_sweep/metadata.json", "examples/output/mini_plume_sweep/contact_sheet.png"],
+      "prerequisites": [],
+      "docs_asset": "docs/assets/mini-plume-sweep.jpg"
+    },
+    {
+      "name": "postprocess_look_scout",
+      "script": "examples/postprocess_look_scout.py",
+      "command": "python3 examples/postprocess_look_scout.py",
+      "outputs": ["examples/output/postprocess_look_scout/metadata.json", "examples/output/postprocess_look_scout/contact_sheet.png"],
+      "prerequisites": [
+        {
+          "path": "examples/output/terrain_environment_scout/selected/terrain_relief_p2/terrain_relief_p2.hero.raw.png",
+          "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/terrain_environment_scout.py -- --pick terrain_relief_p2",
+          "note": "source raw render for the finishing-look board"
+        }
+      ],
+      "docs_asset": "docs/assets/postprocess-look-scout.jpg"
+    },
+    {
+      "name": "rocket_plume_scout",
+      "script": "examples/rocket_plume_scout.py",
+      "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/rocket_plume_scout.py",
+      "outputs": ["examples/output/rocket_plume_scout/metadata.json", "examples/output/rocket_plume_scout/contact_sheet.png"],
+      "prerequisites": [],
+      "docs_asset": "docs/assets/rocket-plume-scout.jpg"
+    },
+    {
+      "name": "rocket_plume_texture_scout",
+      "script": "examples/rocket_plume_texture_scout.py",
+      "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/rocket_plume_texture_scout.py",
+      "outputs": ["examples/output/rocket_plume_texture_scout/metadata.json", "examples/output/rocket_plume_texture_scout/contact_sheet.png"],
+      "prerequisites": [],
+      "docs_asset": "docs/assets/rocket-plume-texture-scout.jpg"
+    },
+    {
+      "name": "subsurface_scout",
+      "script": "examples/subsurface_scout.py",
+      "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/subsurface_scout.py",
+      "outputs": ["examples/output/subsurface_scout/metadata.json", "examples/output/subsurface_scout/contact_sheet.png"],
+      "prerequisites": [],
+      "docs_asset": "docs/assets/subsurface-scout.jpg"
+    },
+    {
+      "name": "terrain_environment_scout",
+      "script": "examples/terrain_environment_scout.py",
+      "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/terrain_environment_scout.py",
+      "outputs": ["examples/output/terrain_environment_scout/metadata.json", "examples/output/terrain_environment_scout/contact_sheet.png"],
+      "prerequisites": [],
+      "docs_asset": "docs/assets/terrain-environment-scout.jpg"
+    },
+    {
+      "name": "transparency_scout",
+      "script": "examples/transparency_scout.py",
+      "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/transparency_scout.py",
+      "outputs": ["examples/output/transparency_scout/metadata.json", "examples/output/transparency_scout/contact_sheet.png"],
+      "prerequisites": [],
+      "docs_asset": "docs/assets/transparency-scout.jpg"
+    }
+  ]
+}
