@@ -22,6 +22,8 @@ Run an example through Blender:
 
 The example writes to `examples/output/mini_plume_sweep/`.
 
+![Mini plume sweep contact sheet](docs/assets/mini-plume-sweep.jpg)
+
 ## Agent Loop
 
 1. Define a small dataclass or dict of meaningful parameters.
