@@ -156,6 +156,25 @@
       "docs_asset": "docs/assets/mesh-light-scout.jpg"
     },
     {
+      "name": "diffuser_light_object_scout",
+      "script": "examples/diffuser_light_object_scout.py",
+      "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/diffuser_light_object_scout.py",
+      "required_capabilities": ["blender", "magick"],
+      "cost": {
+        "profile": "cycles_preview",
+        "engine": "CYCLES",
+        "runtime": "quick",
+        "mode": "grid_scout",
+        "requires_blender": true,
+        "tile_count": 11,
+        "tile_preset": "auto_square_moodboard",
+        "reuse_outputs": true
+      },
+      "outputs": ["examples/output/diffuser_light_object_scout/metadata.json", "examples/output/diffuser_light_object_scout/contact_sheet.png"],
+      "prerequisites": [],
+      "docs_asset": "docs/assets/diffuser-light-object-scout.svg"
+    },
+    {
       "name": "metal_edge_light_scout",
       "script": "examples/metal_edge_light_scout.py",
       "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/metal_edge_light_scout.py",

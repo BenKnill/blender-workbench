@@ -22,6 +22,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `examples/layered_material_scout.py`: component-level skin/SSS board for diffuse, shallow/deep scatter, specular, wet highlight, and bump weights.
 - `examples/metal_edge_light_scout.py`: hard-surface metal board for roughness, bevels, scratches, and rim/edge lighting.
 - `examples/mesh_light_scout.py`: same-view emissive mesh/softbox lighting stride board.
+- `examples/diffuser_light_object_scout.py`: visible translucent diffuser-object board for shell opacity, internal emitter, printed pattern, shape, tint, softness, and receiver reads.
 - `examples/soft_atmosphere_scout.py`: feathered haze/light-card tuning board for edge falloff, alpha, glow, and noise.
 - `examples/smoke_billboard_scout.py`: general transparent-card smoke board for alpha, edge feather, noise, fake scatter, layer count, spacing, and parallax.
 - `examples/subsurface_scout.py`: subsurface material board for wax, jelly, opal, roughness, and backlight.
@@ -385,6 +386,19 @@ python3 tools/sweep_review_page.py examples/output/mesh_light_scout
 ```
 
 ![Mesh light scout contact sheet](docs/assets/mesh-light-scout.jpg)
+
+## Learning Recipe: Diffuser Light Objects
+
+Run the visible translucent diffuser scout:
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/diffuser_light_object_scout.py
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/diffuser_light_object_scout.py -- --pick china_ball
+```
+
+This uses `blender_workbench.recipes.diffuser_light_object` to compare shell opacity, transmission, SSS, inner emitter size/strength, printed pattern density, shell shape, tint, softness, and distance. The scene keeps matte hard-surface, organic, and glossy receivers fixed so the board judges the light object as both a visible prop and an actual source.
+
+![Diffuser light object scout diagram](docs/assets/diffuser-light-object-scout.svg)
 
 ## Learning Recipe: Terrain Environment
 
