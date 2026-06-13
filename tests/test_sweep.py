@@ -33,7 +33,18 @@ from blender_workbench.recipes.terrain_environment import (
     terrain_environment_variants,
 )
 from blender_workbench.recipes.transparency import TransparencySettings, coerce_transparency_settings, transparency_variants
-from blender_workbench.sweep import RenderConfig, SweepVariant, TileSpec, grid_variants, named_variants, select_variant, settings_to_jsonable
+from blender_workbench.sweep import (
+    RenderConfig,
+    RenderResult,
+    SweepVariant,
+    TileSpec,
+    grid_variants,
+    named_variants,
+    select_variant,
+    settings_to_jsonable,
+    variants_from_sweep_metadata,
+    write_readme,
+)
 
 
 class SweepTests(unittest.TestCase):
@@ -124,6 +135,56 @@ class SweepTests(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, "Unknown variant"):
             select_variant(variants, "missing")
+
+    def test_variants_from_sweep_metadata_reconstructs_pickable_settings(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            sweep_dir = Path(tmp)
+            (sweep_dir / "metadata.json").write_text(
+                json.dumps(
+                    {
+                        "variants": [
+                            {
+                                "name": "bright_wide",
+                                "label": "wide",
+                                "note": "promising thumbnail",
+                                "settings": {"width": 1.6, "alpha": 0.05},
+                            }
+                        ]
+                    }
+                )
+            )
+
+            variants = variants_from_sweep_metadata(sweep_dir)
+
+        self.assertEqual(variants[0].name, "bright_wide")
+        self.assertEqual(variants[0].label, "wide")
+        self.assertEqual(variants[0].note, "promising thumbnail")
+        self.assertEqual(variants[0].settings["width"], 1.6)
+        self.assertEqual(select_variant(variants, "wide").name, "bright_wide")
+
+    def test_write_readme_pushes_grid_to_selected_render(self):
+        result = RenderResult(
+            name="wide_shell",
+            raw="runs/demo/wide_shell.raw.png",
+            finished=None,
+            settings={"width": 1.4},
+            note="good silhouette",
+        )
+
+        with tempfile.TemporaryDirectory() as tmp:
+            out_dir = Path(tmp)
+            write_readme(
+                out_dir,
+                "Demo Sweep",
+                [result],
+                promotion_command="blender --background --python examples/demo.py -- --pick {pick}",
+            )
+            text = (out_dir / "README.md").read_text()
+
+        self.assertIn("pick `wide_shell` or `1`", text)
+        self.assertIn("Do not stop at the contact sheet", text)
+        self.assertIn("render_selected_from_sweep", text)
+        self.assertIn("blender --background --python examples/demo.py -- --pick wide_shell", text)
 
     def test_tile_spec_auto_columns_make_square_boards(self):
         tile = TileSpec.auto_micro_grid()

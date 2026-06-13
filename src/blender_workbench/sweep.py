@@ -246,6 +246,47 @@ def _relative_or_absolute(path: Path, root: Path) -> str:
         return str(path)
 
 
+def _safe_output_name(value: str) -> str:
+    safe = "".join(char if char.isalnum() or char in ("-", "_") else "_" for char in value)
+    return safe.strip("_") or "selected"
+
+
+def variants_from_sweep_metadata(sweep_dir: Path) -> list[SweepVariant]:
+    """Rebuild pickable variants from a prior sweep's `metadata.json`.
+
+    This is the durable path after visual inspection: render the grid, choose a
+    tile from the artifact, then promote from the recorded settings rather than
+    relying on a script to reconstruct the same variant list perfectly.
+    """
+    sweep_dir = Path(sweep_dir)
+    metadata_path = sweep_dir / "metadata.json"
+    payload = json.loads(metadata_path.read_text())
+    variants = payload.get("variants")
+    if not isinstance(variants, list):
+        raise ValueError(f"{metadata_path} does not contain a variants list")
+
+    rebuilt: list[SweepVariant] = []
+    for index, item in enumerate(variants, start=1):
+        if not isinstance(item, Mapping):
+            raise ValueError(f"{metadata_path} variant {index} is not an object")
+        name = item.get("name")
+        if not isinstance(name, str) or not name:
+            raise ValueError(f"{metadata_path} variant {index} is missing a name")
+        if "settings" not in item:
+            raise ValueError(f"{metadata_path} variant {name!r} is missing settings")
+        label = item.get("label")
+        note = item.get("note")
+        rebuilt.append(
+            SweepVariant(
+                name=name,
+                settings=item["settings"],
+                label=label if isinstance(label, str) else None,
+                note=note if isinstance(note, str) else None,
+            )
+        )
+    return rebuilt
+
+
 def _engine_candidates(requested: str) -> tuple[str, ...]:
     aliases = {
         "EEVEE": ("BLENDER_EEVEE_NEXT", "BLENDER_EEVEE"),
@@ -434,11 +475,50 @@ def write_contact_sheet(results: list[RenderResult], root: Path, out_path: Path,
         path.unlink(missing_ok=True)
 
 
-def write_readme(out_dir: Path, title: str, results: list[RenderResult], notes: list[str] | None = None) -> None:
+def _promotion_command_for_result(template: str, result: RenderResult, index: int) -> str:
+    try:
+        return template.format(
+            pick=result.name,
+            name=result.name,
+            index=index,
+            label=result.label or result.name,
+        )
+    except KeyError as error:
+        missing = error.args[0]
+        raise ValueError(f"Unknown promotion command placeholder {{{missing}}}") from error
+
+
+def _sweep_workflow_metadata(results: list[RenderResult], promotion_command: str | None) -> dict[str, Any]:
+    workflow: dict[str, Any] = {
+        "stage": "sweep_grid",
+        "next": "inspect_contact_sheet_pick_variant_render_selected",
+        "pick_handles": [
+            {
+                "index": index,
+                "name": result.name,
+                "label": result.label,
+                "note": result.note,
+            }
+            for index, result in enumerate(results, start=1)
+        ],
+    }
+    if promotion_command:
+        workflow["promotion_command_template"] = promotion_command
+    return workflow
+
+
+def write_readme(
+    out_dir: Path,
+    title: str,
+    results: list[RenderResult],
+    notes: list[str] | None = None,
+    promotion_command: str | None = None,
+) -> None:
     lines = [f"# {title}", "", "Rendered variants:", ""]
     for index, result in enumerate(results, start=1):
         detail = f": {result.note}" if result.note else ""
-        lines.append(f"{index}. `{Path(result.finished or result.raw).name}`{detail}")
+        label = f", label `{result.label}`" if result.label and result.label != result.name else ""
+        lines.append(f"{index}. pick `{result.name}` or `{index}`{label} -> `{Path(result.finished or result.raw).name}`{detail}")
     if notes:
         lines.extend(["", "Notes:", ""])
         lines.extend(f"- {note}" for note in notes)
@@ -447,8 +527,30 @@ def write_readme(out_dir: Path, title: str, results: list[RenderResult], notes: 
             "",
             "Next:",
             "",
-            "- Pick the most promising tile by `name` in `metadata.json`.",
-            "- Render that pick with `render_selected_variant(...)` and a heavier config such as `RENDER_PRESETS['hero_check']`.",
+            "- Inspect `contact_sheet.png` and pick the tile that best survives thumbnail scale while moving in the desired direction.",
+            "- Do not stop at the contact sheet; promote one pick into a selected render before copying settings into a scene.",
+            "- Pick by exact `name` or by 1-based index from the list above.",
+            "- Prefer `render_selected_from_sweep(...)` so the selected render is rebuilt from this sweep's `metadata.json`.",
+            "- Use `render_selected_variant(...)` only when the script already has the same variant list in memory.",
+            "- Render with a heavier config such as `RENDER_PRESETS['hero_check']`.",
+        ]
+    )
+    if promotion_command and results:
+        command = _promotion_command_for_result(promotion_command, results[0], 1)
+        lines.extend(
+            [
+                "",
+                "Promotion command template:",
+                "",
+                "```bash",
+                command,
+                "```",
+                "",
+                "Replace the example pick with your chosen `name` or index.",
+            ]
+        )
+    lines.extend(
+        [
             "",
             "`metadata.json` contains the full settings for each tile.",
             "",
@@ -561,6 +663,7 @@ def render_sweep(
     postprocess: Callable[[Path, Path], bool] | None = postprocess_glow_contrast,
     title: str = "Blender Sweep",
     notes: list[str] | None = None,
+    promotion_command: str | None = None,
     square: bool = False,
 ) -> list[RenderResult]:
     """Render a sequence of variants from one scene-builder function.
@@ -591,7 +694,7 @@ def render_sweep(
         )
 
     write_contact_sheet(results, root, out_dir / "contact_sheet.png", cfg.tile)
-    write_readme(out_dir, title, results, notes)
+    write_readme(out_dir, title, results, notes, promotion_command=promotion_command)
     (out_dir / "metadata.json").write_text(
         json.dumps(
             {
@@ -600,6 +703,7 @@ def render_sweep(
                     "columns": cfg.tile.columns_for_count(len(results)),
                     "tile": settings_to_jsonable(cfg.tile),
                 },
+                "workflow": _sweep_workflow_metadata(results, promotion_command),
                 "total_seconds": time.perf_counter() - sweep_started,
                 "variants": [dataclasses.asdict(result) for result in results],
             },
@@ -661,3 +765,34 @@ def render_selected_variant(
         )
     )
     return result
+
+
+def render_selected_from_sweep(
+    *,
+    sweep_dir: Path,
+    pick: str | int,
+    build_scene: Callable[[Any], None],
+    out_dir: Path | None = None,
+    root: Path | None = None,
+    config: RenderConfig | None = None,
+    postprocess: Callable[[Path, Path], bool] | None = postprocess_glow_contrast,
+    title: str = "Selected Blender Render",
+    notes: list[str] | None = None,
+) -> RenderResult:
+    """Promote one tile from a prior sweep grid into a heavier selected render."""
+    sweep_dir = Path(sweep_dir)
+    variant_list = variants_from_sweep_metadata(sweep_dir)
+    selected = select_variant(variant_list, pick)
+    target_out_dir = out_dir or sweep_dir / "selected" / _safe_output_name(selected.name)
+    return render_selected_variant(
+        variants=variant_list,
+        pick=pick,
+        build_scene=build_scene,
+        out_dir=target_out_dir,
+        root=root,
+        config=config,
+        postprocess=postprocess,
+        title=title,
+        notes=notes,
+        source_sweep_dir=sweep_dir,
+    )

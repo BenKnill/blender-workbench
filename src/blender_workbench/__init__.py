@@ -20,9 +20,11 @@ from .sweep import (
     configure_render,
     grid_variants,
     named_variants,
+    render_selected_from_sweep,
     render_selected_variant,
     render_sweep,
     select_variant,
+    variants_from_sweep_metadata,
 )
 
 __all__ = [
@@ -55,6 +57,7 @@ __all__ = [
     "render_postprocess_sweep",
     "promote_from_metadata",
     "preflight_examples",
+    "render_selected_from_sweep",
     "render_selected_variant",
     "render_sweep",
     "select_metadata_variant",
@@ -62,4 +65,5 @@ __all__ = [
     "soft_band_alpha_profile",
     "stride_axis",
     "two_axis_variants",
+    "variants_from_sweep_metadata",
 ]

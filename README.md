@@ -6,7 +6,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 
 ## What This Provides
 
-- `blender_workbench.sweep`: render a list/grid of variants, write raw/finished PNGs, metadata, README, contact sheets, and selected hero renders.
+- `blender_workbench.sweep`: render a list/grid of variants, write raw/finished PNGs, metadata, README, contact sheets, and selected hero renders promoted from sweep metadata.
 - `blender_workbench.camera`: orbit-camera helpers plus lens/distance matching for perspective studies.
 - `blender_workbench.example_manifest`: inspect example commands, expected outputs, docs assets, and generated-input prerequisites.
 - `blender_workbench.materials`: small material helpers with explicit alpha, emission, and subsurface semantics.
@@ -18,6 +18,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `examples/camera_perspective_scout.py`: same-view lens and scene-depth cue stride board.
 - `examples/gobo_lighting_scout.py`: projected-shadow/gobo lighting board from the BlenderArt lighting resources.
 - `examples/mesh_light_scout.py`: same-view emissive mesh/softbox lighting stride board.
+- `examples/soft_atmosphere_scout.py`: feathered haze/light-card tuning board for edge falloff, alpha, glow, and noise.
 - `examples/subsurface_scout.py`: subsurface material board for wax, jelly, opal, roughness, and backlight.
 - `examples/terrain_environment_scout.py`: same-view landscape/environment mood board for relief, strata, haze, backlight, and foreground scale.
 - `examples/transparency_scout.py`: transparency, transmission, roughness, IOR, tint, and thickness board.
@@ -69,7 +70,7 @@ For dependent examples, the report prints the exact upstream command needed to c
 3. Use `render_sweep(...)` with one fixed camera first.
 4. Inspect `contact_sheet.png`.
 5. Widen or narrow the sweep based on what the sheet shows.
-6. Render the chosen tile with `render_selected_variant(...)` before folding it into the main scene.
+6. Render the chosen tile with `render_selected_from_sweep(...)` before folding it into the main scene.
 
 ## Design Bias
 
@@ -85,7 +86,7 @@ Useful imports for new experiments:
 from dataclasses import replace
 
 from blender_workbench.presets import RENDER_PRESETS, SWEEP_AXES, TILE_PRESETS, stride_axis, two_axis_variants
-from blender_workbench.sweep import named_variants, render_selected_variant, render_sweep
+from blender_workbench.sweep import named_variants, render_selected_from_sweep, render_sweep
 
 variants = two_axis_variants(
     SWEEP_AXES["plume_alpha_strength"],
@@ -98,15 +99,14 @@ render_sweep(
     build_scene=build_scene,
     out_dir=OUT,
     config=replace(RENDER_PRESETS["cycles_preview"], tile=TILE_PRESETS["micro_grid"]),
+    promotion_command="/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/my_scout.py -- --pick {pick}",
 )
 
-render_selected_variant(
-    variants=variants,
+render_selected_from_sweep(
+    sweep_dir=OUT,
     pick="balanced_bell",
     build_scene=build_scene,
-    out_dir=OUT / "selected" / "balanced_bell",
     config=RENDER_PRESETS["hero_check"],
-    source_sweep_dir=OUT,
 )
 ```
 
@@ -119,7 +119,7 @@ PYTHONPATH=src /Applications/Blender.app/Contents/MacOS/Blender --background --p
 
 The default contact sheet is now a tiny square auto-grid. Use `tiny_grid`/`auto_tiny_grid` when you want lots of tiles, `micro_grid`/`auto_micro_grid` when labels need more room, `hero_pair` for larger before/after comparisons, `balanced_grid` for readable 3x3 studies, `square_moodboard` for palette and shape boards, and `filmstrip` only when sequence order matters more than square comparison.
 
-Use `shape_scout` for silhouette/form, `material_scout` for quick color and transparency reads, `cycles_preview` when lighting matters, and `hero_check` only through `render_selected_variant(...)` after a smaller sheet has picked a direction.
+Use `shape_scout` for silhouette/form, `material_scout` for quick color and transparency reads, `cycles_preview` when lighting matters, and `hero_check` only through `render_selected_from_sweep(...)` after a smaller sheet has picked a direction.
 
 For named moodboards, skip row/column ceremony:
 
@@ -234,6 +234,24 @@ This uses `blender_workbench.postprocess` to reuse one raw render and compare gl
 
 ![Postprocess look scout contact sheet](docs/assets/postprocess-look-scout.jpg)
 
+## Learning Recipe: Soft Atmosphere Cards
+
+Run the haze/light-card scout:
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/soft_atmosphere_scout.py
+```
+
+This uses `blender_workbench.primitives.add_soft_horizon_band` to compare hard-edge failure, falloff width, alpha, glow strength, procedural breakup, and warm/cool color. Use it before adding horizon glow, haze sheets, or stylized light cards to selected renders.
+
+After inspecting the sheet, promote one tile:
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/soft_atmosphere_scout.py -- --pick soft_card_base_soft
+```
+
+![Soft atmosphere scout contact sheet](docs/assets/soft-atmosphere-scout.jpg)
+
 ## Learning Recipe: Subsurface
 
 Run the translucent material scout:
@@ -268,6 +286,12 @@ Run the stronger plume scout:
 
 This uses `blender_workbench.recipes.rocket_plume` to cross plume alpha/strength with broad vacuum expansion shape. It is a demanding recipe, but the workbench should remain a general sweep tool rather than a rocket-only optimizer.
 
+After inspecting the sheet, promote the best tile:
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/rocket_plume_scout.py -- --pick vacuum_balanced_fan
+```
+
 ![Rocket plume scout contact sheet](docs/assets/rocket-plume-scout.jpg)
 
 Run the plume density-texture scout:
@@ -277,5 +301,11 @@ Run the plume density-texture scout:
 ```
 
 This scout treats plume texture as spatial density: wisps, clumps, ribbons, and turbulence through the plume volume, not just shader noise on a cone. The overdone region is an aesthetic target; `whiteout_fail` is the true too-far anchor.
+
+After inspecting the texture sheet, promote the chosen density treatment:
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/rocket_plume_texture_scout.py -- --pick texture_overdone
+```
 
 ![Rocket plume texture scout contact sheet](docs/assets/rocket-plume-texture-scout.jpg)

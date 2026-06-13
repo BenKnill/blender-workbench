@@ -17,6 +17,13 @@ from .rocket_plume import (
     rocket_plume_scout_variants,
     rocket_plume_texture_variants,
 )
+from .soft_atmosphere import (
+    SOFT_ATMOSPHERE_CAMERA,
+    SoftAtmosphereSettings,
+    build_soft_atmosphere_scene,
+    coerce_soft_atmosphere_settings,
+    soft_atmosphere_variants,
+)
 from .subsurface import (
     SUBSURFACE_CAMERA,
     SubsurfaceSettings,
@@ -48,6 +55,8 @@ __all__ = [
     "MeshLightSettings",
     "ROCKET_PLUME_CAMERA",
     "RocketPlumeSettings",
+    "SOFT_ATMOSPHERE_CAMERA",
+    "SoftAtmosphereSettings",
     "SUBSURFACE_CAMERA",
     "SubsurfaceSettings",
     "TERRAIN_ENVIRONMENT_CAMERA",
@@ -58,6 +67,7 @@ __all__ = [
     "build_gobo_lighting_scene",
     "build_mesh_light_scene",
     "build_rocket_plume_scene",
+    "build_soft_atmosphere_scene",
     "build_subsurface_scene",
     "build_terrain_environment_scene",
     "build_transparency_scene",
@@ -66,6 +76,7 @@ __all__ = [
     "coerce_gobo_settings",
     "coerce_mesh_light_settings",
     "coerce_rocket_plume_settings",
+    "coerce_soft_atmosphere_settings",
     "coerce_subsurface_settings",
     "coerce_terrain_environment_settings",
     "coerce_transparency_settings",
@@ -73,6 +84,7 @@ __all__ = [
     "mesh_light_variants",
     "rocket_plume_scout_variants",
     "rocket_plume_texture_variants",
+    "soft_atmosphere_variants",
     "subsurface_variants",
     "terrain_environment_variants",
     "transparency_variants",
