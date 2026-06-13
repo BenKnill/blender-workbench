@@ -4,5 +4,5 @@ __pycache__/
 .DS_Store
 examples/output/
 runs/
+*.blend
 *.blend1
-

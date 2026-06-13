@@ -10,7 +10,8 @@ Use this repo when a Blender idea needs fast visual comparison instead of one-of
 4. Read the contact sheet before changing the scene.
 5. Pick the best tile by exact variant name or 1-based index.
 6. Render that pick with `render_selected_from_sweep(...)`.
-7. Promote the selected settings into a named preset only after the heavier render still works.
+7. Save a `.blend` for GUI inspection when the viewport would reveal setup, camera, material, or light-placement mistakes faster than another PNG.
+8. Promote the selected settings into a named preset only after the heavier render or GUI handoff still works.
 
 ## Sweep Design
 
@@ -56,10 +57,11 @@ render_selected_from_sweep(
     pick="mesh_fill_p1",
     build_scene=build_scene,
     config=RENDER_PRESETS["hero_check"],
+    save_blend=True,
 )
 ```
 
-The selected render writes `selected.json`, preserving the pick, settings, render config, source sweep, and final file paths.
+The selected render writes `selected.json`, preserving the pick, settings, render config, source sweep, final file paths, and any exported `.blend` path plus an `open -a Blender ...` command. Pass `render_image=False` with `save_blend=True`, or use an example's `--export-blend-only`, for a fast viewport handoff without a selected PNG.
 
 ## Pick Smoke Checks
 
@@ -95,7 +97,7 @@ If the visual decision happens later from `contact_sheet.png` and `metadata.json
 
 ```bash
 PYTHONPATH=src /Applications/Blender.app/Contents/MacOS/Blender --background --python-expr \
-'import blender_workbench.promote as p; p.main(["--sweep", "examples/output/mesh_light_scout", "--pick", "mesh_fill_p1", "--recipe", "blender_workbench.recipes.mesh_light:build_mesh_light_scene", "--camera-name", "mesh_light_camera"])'
+'import blender_workbench.promote as p; p.main(["--sweep", "examples/output/mesh_light_scout", "--pick", "mesh_fill_p1", "--recipe", "blender_workbench.recipes.mesh_light:build_mesh_light_scene", "--camera-name", "mesh_light_camera", "--save-blend"])'
 ```
 
 The `--pick` value accepts the same 1-based index, exact variant name, or exact label as `render_selected_from_sweep(...)`. The command writes `selected/<pick>/selected.json` with source sweep provenance and the recovered settings from metadata.
