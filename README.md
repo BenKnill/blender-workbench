@@ -121,6 +121,8 @@ python3 tools/example_pick_smoke.py --name soft_atmosphere_scout --run --hero-sa
 
 The promotion-status command surfaces grids that still need a visual pick or have stale selected-render provenance. The smoke helper prints the planned Blender command from existing `metadata.json`; with `--run`, it verifies `selected.json`, source-sweep provenance, and rendered output files.
 
+Pick-smoke default planning prefers non-protected roles such as `candidate` and `baseline`, avoids `failure_anchor` / `negative_control` picks unless explicitly requested, and marks roleless or unverified metadata as `ready_unverified_metadata`. Treat that status as a regeneration nudge before trusting a default pick from old sweep output.
+
 Before promoting a transparent, volumetric, SSS, caustic, denoised, or postprocess-heavy winner, run a profile drift check for the chosen tile instead of rerendering the full grid:
 
 ```bash
