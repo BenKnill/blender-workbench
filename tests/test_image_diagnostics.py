@@ -71,7 +71,7 @@ class ImageDiagnosticsTests(unittest.TestCase):
                 settings=variant.settings,
             )
 
-        def fake_contact_sheet(_results, _root, out_path, _tile):
+        def fake_contact_sheet(_results, _root, out_path, _tile, **_kwargs):
             write_gray_png(out_path, [[12, 12], [12, 12]])
 
         with tempfile.TemporaryDirectory() as tmp:
