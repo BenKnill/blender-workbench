@@ -16,6 +16,11 @@ from blender_workbench.recipes.rocket_plume import (
     rocket_plume_texture_variants,
 )
 from blender_workbench.recipes.subsurface import SubsurfaceSettings, coerce_subsurface_settings, subsurface_variants
+from blender_workbench.recipes.terrain_environment import (
+    TerrainEnvironmentSettings,
+    coerce_terrain_environment_settings,
+    terrain_environment_variants,
+)
 from blender_workbench.recipes.transparency import TransparencySettings, coerce_transparency_settings, transparency_variants
 from blender_workbench.sweep import RenderConfig, SweepVariant, TileSpec, grid_variants, named_variants, select_variant, settings_to_jsonable
 
@@ -205,6 +210,22 @@ class SweepTests(unittest.TestCase):
         self.assertIsInstance(settings, MeshLightSettings)
         self.assertEqual(settings.panel_width, 2.0)
         self.assertEqual(settings.fill_strength, 12.0)
+        self.assertFalse(hasattr(settings, "unused"))
+
+    def test_terrain_environment_recipe_exposes_landscape_board(self):
+        variants = terrain_environment_variants(prefix="test")
+        settings = coerce_terrain_environment_settings({"terrain_relief": 0.8, "haze_alpha": 0.4, "unused": True})
+        names = [variant.name for variant in variants]
+
+        self.assertEqual(len(variants), 25)
+        self.assertIn("test_relief_m2", names)
+        self.assertIn("test_strata_p2", names)
+        self.assertIn("test_haze_base", names)
+        self.assertIn("test_light_p1", names)
+        self.assertIn("test_fg_p2", names)
+        self.assertIsInstance(settings, TerrainEnvironmentSettings)
+        self.assertEqual(settings.terrain_relief, 0.8)
+        self.assertEqual(settings.haze_alpha, 0.4)
         self.assertFalse(hasattr(settings, "unused"))
 
     def test_camera_perspective_recipe_exposes_lens_distance_board(self):

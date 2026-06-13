@@ -24,6 +24,13 @@ from .subsurface import (
     coerce_subsurface_settings,
     subsurface_variants,
 )
+from .terrain_environment import (
+    TERRAIN_ENVIRONMENT_CAMERA,
+    TerrainEnvironmentSettings,
+    build_terrain_environment_scene,
+    coerce_terrain_environment_settings,
+    terrain_environment_variants,
+)
 from .transparency import (
     TRANSPARENCY_CAMERA,
     TransparencySettings,
@@ -43,6 +50,8 @@ __all__ = [
     "RocketPlumeSettings",
     "SUBSURFACE_CAMERA",
     "SubsurfaceSettings",
+    "TERRAIN_ENVIRONMENT_CAMERA",
+    "TerrainEnvironmentSettings",
     "TRANSPARENCY_CAMERA",
     "TransparencySettings",
     "build_camera_perspective_scene",
@@ -50,6 +59,7 @@ __all__ = [
     "build_mesh_light_scene",
     "build_rocket_plume_scene",
     "build_subsurface_scene",
+    "build_terrain_environment_scene",
     "build_transparency_scene",
     "camera_perspective_variants",
     "coerce_camera_perspective_settings",
@@ -57,11 +67,13 @@ __all__ = [
     "coerce_mesh_light_settings",
     "coerce_rocket_plume_settings",
     "coerce_subsurface_settings",
+    "coerce_terrain_environment_settings",
     "coerce_transparency_settings",
     "gobo_lighting_variants",
     "mesh_light_variants",
     "rocket_plume_scout_variants",
     "rocket_plume_texture_variants",
     "subsurface_variants",
+    "terrain_environment_variants",
     "transparency_variants",
 ]

@@ -15,6 +15,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `examples/gobo_lighting_scout.py`: projected-shadow/gobo lighting board from the BlenderArt lighting resources.
 - `examples/mesh_light_scout.py`: same-view emissive mesh/softbox lighting stride board.
 - `examples/subsurface_scout.py`: subsurface material board for wax, jelly, opal, roughness, and backlight.
+- `examples/terrain_environment_scout.py`: same-view landscape/environment mood board for relief, strata, haze, backlight, and foreground scale.
 - `examples/transparency_scout.py`: transparency, transmission, roughness, IOR, tint, and thickness board.
 - `examples/mini_plume_sweep.py`: a compact Blender script showing the intended workflow.
 - `examples/light_texture_scout.py`: named light-jitter and texture-magnitude board.
@@ -169,6 +170,24 @@ After inspecting the sheet, promote one tile:
 ```
 
 ![Mesh light scout contact sheet](docs/assets/mesh-light-scout.jpg)
+
+## Learning Recipe: Terrain Environment
+
+Run the landscape/environment mood scout:
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/terrain_environment_scout.py
+```
+
+This uses `blender_workbench.recipes.terrain_environment` to compare terrain relief, strata contrast, horizon haze, backlight, and foreground scale as a 5x5 same-view stride sheet. It is based on the BlenderArt issue 39 landscape/Europa and virtual-environment prompts.
+
+After inspecting the sheet, promote one tile:
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/terrain_environment_scout.py -- --pick terrain_haze_p2
+```
+
+![Terrain environment scout contact sheet](docs/assets/terrain-environment-scout.jpg)
 
 ## Learning Recipe: Subsurface
 

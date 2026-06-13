@@ -32,6 +32,7 @@ config = replace(
 - Treat every contact sheet as a shortlist step: pick one promising tile and run one selected render before editing the scene again.
 - Keep camera perspective scouts cheap: the variable is usually lens or scene depth cues, not samples.
 - Keep mesh-light scouts low-sample until shape, distance, and fill are chosen; emitter noise is acceptable in the first board.
+- Keep terrain environment scouts flat-shaded and low-grid until relief, haze, and horizon mood are chosen.
 - Keep `build_scene(settings)` cheap: avoid simulations, huge mesh generation, high subdivision, and expensive boolean stacks in the first pass.
 - Add detail in stages: silhouette, material, lighting, camera, then heavier bake.
 - When a numeric sweep looks timid, increase the `stride_axis(...)` stride and rerun. When every tile fails, reduce the stride or add failure anchors at the extremes.
@@ -54,5 +55,6 @@ For stacked transparent materials, watch `transparent_max_bounces`. Too low can 
 - Shape: `shape_scout` + `micro_grid`, then promote one winner with `render_selected_variant(...)`.
 - Camera: `cycles_preview` with low samples if shadows/markers matter; otherwise `shape_scout` is enough for framing.
 - Transparency: `material_scout` first, then selected `cycles_preview` or `hero_check` if alpha sorting or glow is misleading.
+- Environment: `cycles_preview` with tiny tiles for atmosphere, then promote one horizon/foreground combination.
 - Caustics: start with `cycles_preview`, keep the grid small, then use `hero_check` only for the final two or three variants.
 - Long exposure: scout streak length and framing with `shape_scout`, then test glow and haze with `cycles_preview`.
