@@ -1,6 +1,7 @@
 import unittest
 
 from blender_workbench.presets import RENDER_PRESETS, SWEEP_AXES, TILE_PRESETS, one_axis_variants, two_axis_variants
+from blender_workbench.recipes.rocket_plume import RocketPlumeSettings, coerce_rocket_plume_settings, rocket_plume_scout_variants
 from blender_workbench.sweep import RenderConfig, SweepVariant, grid_variants, settings_to_jsonable
 
 
@@ -56,7 +57,24 @@ class SweepTests(unittest.TestCase):
         data = settings_to_jsonable(config)
 
         self.assertEqual(data["engine"], "CYCLES")
+        self.assertEqual(data["transparent_max_bounces"], 18)
         self.assertIn("tile", data)
+
+    def test_rocket_plume_recipe_coerces_known_settings(self):
+        settings = coerce_rocket_plume_settings({"width": 1.7, "length": 0.8, "samples": 99})
+
+        self.assertIsInstance(settings, RocketPlumeSettings)
+        self.assertEqual(settings.width, 1.7)
+        self.assertEqual(settings.length, 0.8)
+        self.assertFalse(hasattr(settings, "samples"))
+
+    def test_rocket_plume_scout_is_three_by_three(self):
+        variants = rocket_plume_scout_variants(prefix="test")
+
+        self.assertEqual(len(variants), 9)
+        self.assertEqual(variants[0].name, "test_ghost_needle")
+        self.assertIn("shell_alpha", variants[0].settings)
+        self.assertIn("width", variants[0].settings)
 
 
 if __name__ == "__main__":

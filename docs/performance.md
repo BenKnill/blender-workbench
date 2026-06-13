@@ -42,6 +42,8 @@ Each `metadata.json` records:
 
 If `build_seconds` is high, simplify geometry or precompute shared assets. If `render_seconds` is high, reduce samples, resolution, bounces, volumetrics, or tile count. If `postprocess_seconds` is high, disable glow/contrast until the sheet is narrowed.
 
+For stacked transparent materials, watch `transparent_max_bounces`. Too low can create dark termination artifacts; too high can slow dense sheets. Rocket plume previews default higher than ordinary previews because they layer shells, billows, and filaments.
+
 ## Useful Ladders
 
 - Shape: `shape_scout` + `micro_grid`, then rerun winners with `cycles_preview`.

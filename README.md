@@ -9,9 +9,12 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `blender_workbench.sweep`: render a list/grid of variants, write raw/finished PNGs, metadata, README, and a contact sheet.
 - `blender_workbench.materials`: small material helpers with explicit alpha semantics.
 - `blender_workbench.presets`: starter axes, render profiles, and tile layouts for common visual experiments.
+- `blender_workbench.recipes`: optional domain recipes, including a fast rocket vacuum plume scout.
 - `examples/mini_plume_sweep.py`: a compact Blender script showing the intended workflow.
+- `examples/rocket_plume_scout.py`: a stronger plume use case built on the general sweep API.
 - `docs/parameter-sweep-pattern.md`: the short operating pattern for future agents.
 - `docs/performance.md`: defaults for fast basics-first exploration.
+- `docs/rocket-plume.md`: recipe notes for broad, smoky, in-space engine plumes.
 
 ## Quick Start
 
@@ -67,3 +70,15 @@ render_sweep(
 Use `micro_grid` when you need lots of little tiles, `hero_pair` for before/after comparisons, `balanced_grid` for readable 3x3 studies, `square_moodboard` for palette and shape boards, and `filmstrip` for temporal or ordered sweeps.
 
 Use `shape_scout` for silhouette/form, `material_scout` for quick color and transparency reads, `cycles_preview` when lighting matters, and `hero_check` only after a smaller sheet has picked a direction.
+
+## Featured Recipe: Rocket Plume
+
+Run the stronger plume scout:
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/rocket_plume_scout.py
+```
+
+This uses `blender_workbench.recipes.rocket_plume` to cross plume alpha/strength with broad vacuum expansion shape. It is a demanding recipe, but the workbench should remain a general sweep tool rather than a rocket-only optimizer.
+
+![Rocket plume scout contact sheet](docs/assets/rocket-plume-scout.jpg)

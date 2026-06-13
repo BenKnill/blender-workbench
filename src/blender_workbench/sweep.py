@@ -40,26 +40,28 @@ class TileSpec:
     columns: int = 4
     label_height: int = 28
     background: str = "black"
+    show_notes: bool = False
+    label_max_chars: int | None = None
 
     @classmethod
     def hero_pair(cls) -> "TileSpec":
-        return cls(width=440, height=286, columns=2, label_height=30)
+        return cls(width=440, height=286, columns=2, label_height=30, show_notes=True, label_max_chars=58)
 
     @classmethod
     def balanced_grid(cls) -> "TileSpec":
-        return cls(width=320, height=220, columns=3, label_height=28)
+        return cls(width=320, height=220, columns=3, label_height=28, label_max_chars=36)
 
     @classmethod
     def micro_grid(cls, columns: int = 8) -> "TileSpec":
-        return cls(width=168, height=126, columns=columns, label_height=18)
+        return cls(width=168, height=126, columns=columns, label_height=18, label_max_chars=18)
 
     @classmethod
     def square_moodboard(cls, columns: int = 5) -> "TileSpec":
-        return cls(width=220, height=220, columns=columns, label_height=24)
+        return cls(width=220, height=220, columns=columns, label_height=24, label_max_chars=24)
 
     @classmethod
     def filmstrip(cls, columns: int = 6) -> "TileSpec":
-        return cls(width=280, height=170, columns=columns, label_height=24)
+        return cls(width=280, height=170, columns=columns, label_height=24, label_max_chars=32)
 
 
 @dataclass(frozen=True)
@@ -71,6 +73,7 @@ class RenderConfig:
     use_denoising: bool = True
     use_persistent_data: bool = True
     max_bounces: int | None = 6
+    transparent_max_bounces: int | None = 16
     view_transform: str = "Filmic"
     look: str = "High Contrast"
     exposure: float = 0.0
@@ -87,6 +90,7 @@ class RenderConfig:
             engine="BLENDER_WORKBENCH",
             samples=1,
             use_denoising=False,
+            transparent_max_bounces=None,
             view_transform="Standard",
             look="Medium High Contrast",
             tile=TileSpec.micro_grid(columns=8),
@@ -100,6 +104,7 @@ class RenderConfig:
             engine="EEVEE",
             samples=12,
             use_denoising=False,
+            transparent_max_bounces=None,
             view_transform="Filmic",
             look="Medium High Contrast",
             tile=TileSpec.micro_grid(columns=6),
@@ -113,6 +118,7 @@ class RenderConfig:
             engine="CYCLES",
             samples=32,
             max_bounces=4,
+            transparent_max_bounces=18,
             tile=TileSpec.balanced_grid(),
         )
 
@@ -124,6 +130,7 @@ class RenderConfig:
             engine="CYCLES",
             samples=96,
             max_bounces=8,
+            transparent_max_bounces=24,
             tile=TileSpec.hero_pair(),
         )
 
@@ -203,6 +210,8 @@ def configure_render(config: RenderConfig) -> str:
         _set_if_present(scene.cycles, "use_persistent_data", config.use_persistent_data)
         if config.max_bounces is not None:
             _set_if_present(scene.cycles, "max_bounces", config.max_bounces)
+        if config.transparent_max_bounces is not None:
+            _set_if_present(scene.cycles, "transparent_max_bounces", config.transparent_max_bounces)
     elif engine.startswith("BLENDER_EEVEE") and hasattr(scene, "eevee"):
         _set_if_present(scene.eevee, "taa_render_samples", config.samples)
         _set_if_present(scene.eevee, "taa_samples", config.samples)
@@ -271,10 +280,11 @@ def write_contact_sheet(results: list[RenderResult], root: Path, out_path: Path,
         thumb = out_path.parent / f"_{index:03d}_{result.name}.thumb.png"
         body_height = max(1, tile.height - tile.label_height)
         label = result.label or result.name
-        if result.note:
+        if tile.show_notes and result.note:
             label = f"{label} - {result.note}"
-        if len(label) > 44:
-            label = f"{label[:41]}..."
+        label_max_chars = tile.label_max_chars or max(10, tile.width // 8)
+        if len(label) > label_max_chars:
+            label = f"{label[: max(1, label_max_chars - 3)]}..."
         unlabeled_cmd = [
             magick,
             str(image_path),
@@ -322,7 +332,13 @@ def write_contact_sheet(results: list[RenderResult], root: Path, out_path: Path,
     rows: list[Path] = []
     for row_index in range(0, len(thumbs), tile.columns):
         row = out_path.parent / f"_row_{row_index // tile.columns}.png"
-        subprocess.run([magick, *[str(path) for path in thumbs[row_index : row_index + tile.columns]], "+append", str(row)], check=True)
+        row_paths = list(thumbs[row_index : row_index + tile.columns])
+        while len(row_paths) < tile.columns:
+            blank = out_path.parent / f"_blank_{row_index}_{len(row_paths)}.png"
+            subprocess.run([magick, "-size", f"{tile.width}x{tile.height}", f"xc:{tile.background}", str(blank)], check=True)
+            row_paths.append(blank)
+            thumbs.append(blank)
+        subprocess.run([magick, *[str(path) for path in row_paths], "+append", str(row)], check=True)
         rows.append(row)
     subprocess.run([magick, *[str(path) for path in rows], "-append", str(out_path)], check=True)
 
