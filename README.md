@@ -55,7 +55,7 @@ To triage a local learning PDF before turning it into a recipe or issue:
 python3 tools/pdf_triage.py ../reference_materials/artistic_blender_pdfs/blenderart_issue_39_compositing_sep_2012.pdf
 ```
 
-The helper writes backend status, any extracted text or thumbnails, and a `notes.md` stub under `runs/pdf_triage/`.
+The helper writes backend status, any extracted text, native macOS page images/contact sheets when available, cover thumbnails, and a `notes.md` stub under `runs/pdf_triage/`.
 
 Check example prerequisites before running a docs refresh or dependent example:
 
