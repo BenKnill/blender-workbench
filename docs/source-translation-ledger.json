@@ -1,0 +1,121 @@
+{
+  "schema": 1,
+  "updated": "2026-06-13",
+  "purpose": "Map older Blender learning-source language to current Blender/workbench concepts before turning a lesson into a scout, target panel, or issue.",
+  "status_values": [
+    "use_as_is",
+    "translate",
+    "obsolete",
+    "replaced_by_helper",
+    "needs_manual_check"
+  ],
+  "manual_links": [
+    {
+      "label": "Blender Manual latest",
+      "url": "https://docs.blender.org/manual/en/latest/",
+      "note": "Use for current UI and concept naming."
+    },
+    {
+      "label": "Blender Manual 4.5 LTS",
+      "url": "https://docs.blender.org/manual/en/4.5/",
+      "note": "Useful stable version anchor near current LTS behavior."
+    }
+  ],
+  "entries": [
+    {
+      "id": "blender-basics-linked-data-to-fixtures",
+      "source_id": "blender_basics_2017",
+      "source_file": "../reference_materials/artistic_blender_pdfs/blender_basics_classroom_tutorial_book_2017.pdf",
+      "page_range": null,
+      "old_term_or_workflow": "Classroom-era Append/Link, library data, and broad UI walkthrough steps.",
+      "modern_concept": "Current Blender asset/library linking and reusable scene fixtures.",
+      "prefer_workbench": "Use a future fixture/reference-scene library path from issue #29 rather than copying old UI steps directly.",
+      "status": "needs_manual_check",
+      "version_notes": "Treat broad classroom exercises as artistic/structural prompts; verify any UI panel names against the current manual before implementation.",
+      "related": {
+        "issues": [29],
+        "docs": ["docs/learning-notes.md"]
+      }
+    },
+    {
+      "id": "blenderart16-old-lamps-to-mesh-light-scout",
+      "source_id": "blenderart_issue_16_lighting_rendering",
+      "source_file": "../reference_materials/artistic_blender_pdfs/blenderart_issue_16_lighting_rendering_may_2008.pdf",
+      "page_range": null,
+      "old_term_or_workflow": "Older lamp, area-light, and mesh-light tutorial language.",
+      "modern_concept": "Current light objects, emissive mesh materials, and explicit same-view lighting sweeps.",
+      "prefer_workbench": "Prefer blender_workbench.recipes.mesh_light and examples/mesh_light_scout.py for controlled current-version comparisons.",
+      "status": "replaced_by_helper",
+      "version_notes": "Do not chase legacy lamp panel names; preserve the lighting setup idea and rebuild it through current object/material APIs.",
+      "related": {
+        "examples": ["examples/mesh_light_scout.py"],
+        "docs": ["docs/learning-notes.md"]
+      }
+    },
+    {
+      "id": "blenderart22-texture-environment-to-node-scouts",
+      "source_id": "blenderart_issue_22_texturing_environment_lighting",
+      "source_file": "../reference_materials/artistic_blender_pdfs/blenderart_issue_22_texturing_environment_lighting_jun_2009.pdf",
+      "page_range": null,
+      "old_term_or_workflow": "Older texture, environment, and lighting recipes tied to dated UI panels and node names.",
+      "modern_concept": "Current procedural texture/material nodes, environment mood construction, and explicit texture/light axes.",
+      "prefer_workbench": "Use examples/light_texture_scout.py and examples/terrain_environment_scout.py; add new procedural texture-node scouts through issue #22.",
+      "status": "translate",
+      "version_notes": "Translate the visual axis first: texture magnitude, scale, environment haze, and light mood are more durable than the old click path.",
+      "related": {
+        "issues": [22],
+        "examples": ["examples/light_texture_scout.py", "examples/terrain_environment_scout.py"]
+      }
+    },
+    {
+      "id": "blenderart27-cg-lighting-to-current-light-boards",
+      "source_id": "blenderart_issue_27_cg_lighting",
+      "source_file": "../reference_materials/artistic_blender_pdfs/blenderart_issue_27_cg_lighting_apr_2010.pdf",
+      "page_range": null,
+      "old_term_or_workflow": "CG lighting lessons framed around older Blender render/UI behavior.",
+      "modern_concept": "Current Cycles/Workbench/EEVEE lighting comparisons with fixed cameras, explicit failure anchors, and selected-render promotion.",
+      "prefer_workbench": "Prefer gobo, mesh-light, camera-perspective, and soft-atmosphere scouts before copying legacy renderer settings.",
+      "status": "translate",
+      "version_notes": "Keep the lighting/composition principle, then re-express it as a small parameter sweep using current render profiles.",
+      "related": {
+        "examples": [
+          "examples/gobo_lighting_scout.py",
+          "examples/mesh_light_scout.py",
+          "examples/camera_perspective_scout.py",
+          "examples/soft_atmosphere_scout.py"
+        ]
+      }
+    },
+    {
+      "id": "blenderart39-compositing-to-postprocess-helpers",
+      "source_id": "blenderart_issue_39_compositing",
+      "source_file": "../reference_materials/artistic_blender_pdfs/blenderart_issue_39_compositing_sep_2012.pdf",
+      "page_range": null,
+      "old_term_or_workflow": "Legacy compositor/glow/pass recipes and finishing-look UI steps.",
+      "modern_concept": "Current postprocess helper sweeps, render-pass diagnostics, and selected raw-image reuse.",
+      "prefer_workbench": "Prefer blender_workbench.postprocess, examples/postprocess_look_scout.py, and future render-pass diagnostics from issue #21.",
+      "status": "replaced_by_helper",
+      "version_notes": "Preserve the intended finish (bloom, contrast, warmth, pass diagnosis) rather than old node layout or button names.",
+      "related": {
+        "issues": [21],
+        "examples": ["examples/postprocess_look_scout.py"],
+        "docs": ["docs/learning-notes.md"]
+      }
+    },
+    {
+      "id": "blenderart42-inspiration-to-style-prompts",
+      "source_id": "blenderart_issue_42_general_inspiration",
+      "source_file": "../reference_materials/artistic_blender_pdfs/blenderart_issue_42_general_inspiration_sep_2013.pdf",
+      "page_range": null,
+      "old_term_or_workflow": "General artist/process inspiration that is less tied to exact Blender controls.",
+      "modern_concept": "Style prompts, composition constraints, and reference-attempt notes for current scouts.",
+      "prefer_workbench": "Use as concept language or target-panel guidance; only translate UI details after a concrete page range is triaged.",
+      "status": "use_as_is",
+      "version_notes": "Art-direction observations can often survive unchanged; implementation mechanics still need current-manual checks.",
+      "related": {
+        "issues": [32, 38, 40],
+        "docs": ["docs/learning-notes.md"]
+      }
+    }
+  ]
+}
