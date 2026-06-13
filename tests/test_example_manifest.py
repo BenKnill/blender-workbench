@@ -3,6 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from blender_workbench.artifact_fingerprint import make_artifact_fingerprint, write_fingerprint_record
 from blender_workbench.example_manifest import (
     format_preflight_report,
     load_manifest,
@@ -20,13 +21,17 @@ class ExampleManifestTests(unittest.TestCase):
             (root / "docs/assets").mkdir(parents=True)
             (root / "docs/assets/ready.jpg").write_text("asset")
             (root / "examples/output/ready").mkdir(parents=True)
-            (root / "examples/output/ready/metadata.json").write_text("{}")
+            metadata = root / "examples/output/ready/metadata.json"
+            metadata.write_text("{}")
+            fingerprint = make_artifact_fingerprint("demo", {"name": "ready"})
+            write_fingerprint_record(metadata.with_suffix(".fingerprint.json"), fingerprint)
             manifest = {
                 "examples": [
                     {
                         "name": "ready",
                         "command": "run ready",
                         "outputs": ["examples/output/ready/metadata.json"],
+                        "output_fingerprints": {"examples/output/ready/metadata.json": fingerprint["fingerprint"]},
                         "prerequisites": [],
                         "docs_asset": "docs/assets/ready.jpg",
                         "cost": {
@@ -70,6 +75,7 @@ class ExampleManifestTests(unittest.TestCase):
         self.assertTrue(results[0].runnable)
         self.assertEqual(results[0].status, "ready")
         self.assertEqual(results[0].outputs_present, ("examples/output/ready/metadata.json",))
+        self.assertEqual(results[0].output_statuses["examples/output/ready/metadata.json"], "present_fresh")
         self.assertFalse(results[1].runnable)
         self.assertEqual(results[1].status, "blocked_missing_prereq")
         self.assertEqual(results[1].missing_prerequisites[0]["command"], "run upstream")
@@ -77,6 +83,54 @@ class ExampleManifestTests(unittest.TestCase):
         self.assertIn("blocked: blocked_missing_prereq", report)
         self.assertIn("cost instant/shape_scout/BLENDER_WORKBENCH/grid_scout/Blender; 1 tiles", report)
         self.assertIn("upstream: run upstream", report)
+        self.assertIn("output freshness: present_fresh=1", report)
+
+    def test_preflight_reports_stale_and_unverified_outputs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            output_dir = root / "examples/output/demo"
+            output_dir.mkdir(parents=True)
+            fresh = output_dir / "fresh.json"
+            stale = output_dir / "stale.json"
+            unverified = output_dir / "unverified.json"
+            fresh.write_text("{}")
+            stale.write_text("{}")
+            unverified.write_text("{}")
+            fresh_fingerprint = make_artifact_fingerprint("demo", {"name": "fresh"})
+            stale_fingerprint = make_artifact_fingerprint("demo", {"name": "stale-old"})
+            expected_stale = make_artifact_fingerprint("demo", {"name": "stale-new"})
+            write_fingerprint_record(fresh.with_suffix(".fingerprint.json"), fresh_fingerprint)
+            write_fingerprint_record(stale.with_suffix(".fingerprint.json"), stale_fingerprint)
+            manifest = {
+                "examples": [
+                    {
+                        "name": "demo",
+                        "command": "run demo",
+                        "outputs": [
+                            "examples/output/demo/fresh.json",
+                            "examples/output/demo/stale.json",
+                            "examples/output/demo/unverified.json",
+                            "examples/output/demo/missing.json",
+                        ],
+                        "output_fingerprints": {
+                            "examples/output/demo/fresh.json": fresh_fingerprint["fingerprint"],
+                            "examples/output/demo/stale.json": expected_stale["fingerprint"],
+                        },
+                        "prerequisites": [],
+                        "docs_asset": "docs/assets/missing.jpg",
+                        "cost": {"profile": "shape_scout", "engine": "BLENDER_WORKBENCH", "runtime": "instant", "mode": "grid_scout"},
+                    }
+                ]
+            }
+            manifest_path = root / "manifest.json"
+            manifest_path.write_text(json.dumps(manifest))
+
+            result = preflight_examples(manifest_path=manifest_path, root=root)[0]
+
+        self.assertEqual(result.output_statuses["examples/output/demo/fresh.json"], "present_fresh")
+        self.assertEqual(result.output_statuses["examples/output/demo/stale.json"], "present_stale")
+        self.assertEqual(result.output_statuses["examples/output/demo/unverified.json"], "present_unverified")
+        self.assertEqual(result.output_statuses["examples/output/demo/missing.json"], "missing")
 
     def test_preflight_filters_ready_examples_by_cost(self):
         with tempfile.TemporaryDirectory() as tmp:

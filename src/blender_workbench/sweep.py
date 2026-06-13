@@ -12,6 +12,14 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from .artifact_fingerprint import (
+    fingerprint_matches,
+    fingerprint_status,
+    make_artifact_fingerprint,
+    render_cache_fingerprint,
+    write_fingerprint_record,
+)
+
 
 @dataclass(frozen=True)
 class SweepVariant:
@@ -38,6 +46,9 @@ class RenderResult:
     render_seconds: float | None = None
     postprocess_seconds: float | None = None
     skipped_existing: bool = False
+    cache_status: str | None = None
+    cache_warning: str | None = None
+    fingerprint: dict[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -644,6 +655,20 @@ def write_selected_readme(
     (out_dir / "README.md").write_text("\n".join(lines))
 
 
+def _source_sweep_fingerprint(source_sweep_dir: Path | None) -> dict[str, Any] | None:
+    if source_sweep_dir is None:
+        return None
+    metadata_path = Path(source_sweep_dir) / "metadata.json"
+    if not metadata_path.exists():
+        return None
+    try:
+        payload = json.loads(metadata_path.read_text())
+    except json.JSONDecodeError:
+        return None
+    fingerprint = payload.get("fingerprint")
+    return fingerprint if isinstance(fingerprint, dict) else None
+
+
 def _render_variant(
     *,
     variant: SweepVariant,
@@ -657,30 +682,46 @@ def _render_variant(
     save_blend_path: Path | None = None,
     render_image: bool = True,
 ) -> RenderResult:
-    import bpy
-
     suffix = f".{file_suffix}" if file_suffix else ""
     raw = out_dir / f"{variant.name}{suffix}.raw.png"
     finished = out_dir / f"{variant.name}{suffix}.finished.png"
+    expected_fingerprint = render_cache_fingerprint(
+        root=root,
+        variant_name=variant.name,
+        variant_settings=settings_to_jsonable(variant.settings),
+        render_config=settings_to_jsonable(config),
+        build_scene=build_scene,
+        postprocess=postprocess,
+        extra={"render_label": render_label, "file_suffix": file_suffix},
+    )
     wrote_finished = finished.exists()
+    cache_warning = None
     if config.reuse_existing and raw.exists() and not save_blend_path and render_image:
-        postprocess_started = time.perf_counter()
-        ran_postprocess = False
-        if not wrote_finished and postprocess:
-            ran_postprocess = True
-            wrote_finished = postprocess(raw, finished)
-        postprocess_seconds = time.perf_counter() - postprocess_started if ran_postprocess else 0.0
-        print(f"Reusing {render_label} variant {variant.name}")
-        return RenderResult(
-            name=variant.name,
-            raw=_relative_or_absolute(raw, root),
-            finished=_relative_or_absolute(finished, root) if wrote_finished else None,
-            settings=settings_to_jsonable(variant.settings),
-            label=variant.label,
-            note=variant.note,
-            postprocess_seconds=postprocess_seconds,
-            skipped_existing=True,
-        )
+        cache_status = fingerprint_status(raw, expected_fingerprint["fingerprint"])
+        if fingerprint_matches(raw, expected_fingerprint):
+            postprocess_started = time.perf_counter()
+            ran_postprocess = False
+            if not wrote_finished and postprocess:
+                ran_postprocess = True
+                wrote_finished = postprocess(raw, finished)
+            postprocess_seconds = time.perf_counter() - postprocess_started if ran_postprocess else 0.0
+            print(f"Reusing fresh {render_label} variant {variant.name}")
+            return RenderResult(
+                name=variant.name,
+                raw=_relative_or_absolute(raw, root),
+                finished=_relative_or_absolute(finished, root) if wrote_finished else None,
+                settings=settings_to_jsonable(variant.settings),
+                label=variant.label,
+                note=variant.note,
+                postprocess_seconds=postprocess_seconds,
+                skipped_existing=True,
+                cache_status=cache_status,
+                fingerprint=expected_fingerprint,
+            )
+        cache_warning = f"existing cache was {cache_status}; rerendered instead of reusing"
+        print(f"Existing {render_label} variant {variant.name} is {cache_status}; rerendering")
+
+    import bpy
 
     build_started = time.perf_counter()
     build_scene(variant.settings)
@@ -714,6 +755,8 @@ def _render_variant(
             build_seconds=build_seconds,
             render_seconds=0.0,
             postprocess_seconds=0.0,
+            cache_status="scene_export",
+            fingerprint=expected_fingerprint,
         )
 
     bpy.context.scene.render.filepath = str(raw)
@@ -724,6 +767,7 @@ def _render_variant(
     postprocess_started = time.perf_counter()
     wrote_finished = postprocess(raw, finished) if postprocess else False
     postprocess_seconds = time.perf_counter() - postprocess_started
+    write_fingerprint_record(raw.with_suffix(".fingerprint.json"), expected_fingerprint)
     return RenderResult(
         name=variant.name,
         raw=_relative_or_absolute(raw, root),
@@ -738,6 +782,9 @@ def _render_variant(
         build_seconds=build_seconds,
         render_seconds=render_seconds,
         postprocess_seconds=postprocess_seconds,
+        cache_status="rendered",
+        cache_warning=cache_warning,
+        fingerprint=expected_fingerprint,
     )
 
 
@@ -783,9 +830,24 @@ def render_sweep(
 
     write_contact_sheet(results, root, out_dir / "contact_sheet.png", cfg.tile)
     write_readme(out_dir, title, results, notes, promotion_command=promotion_command)
+    sweep_fingerprint = make_artifact_fingerprint(
+        "sweep_metadata",
+        {
+            "render_config": settings_to_jsonable(cfg),
+            "variants": [
+                {
+                    "name": result.name,
+                    "settings": result.settings,
+                    "fingerprint": result.fingerprint.get("fingerprint") if result.fingerprint else None,
+                }
+                for result in results
+            ],
+        },
+    )
     (out_dir / "metadata.json").write_text(
         json.dumps(
             {
+                "fingerprint": sweep_fingerprint,
                 "render_config": settings_to_jsonable(cfg),
                 "contact_sheet": {
                     "columns": cfg.tile.columns_for_count(len(results)),
@@ -841,9 +903,22 @@ def render_selected_variant(
     )
     write_selected_readme(out_dir, title, selected, result, notes=notes, source_sweep_dir=source_sweep_dir, root=root)
     source_value = _relative_or_absolute(source_sweep_dir, root) if source_sweep_dir else None
+    source_fingerprint = _source_sweep_fingerprint(source_sweep_dir)
+    selected_fingerprint = make_artifact_fingerprint(
+        "selected_render",
+        {
+            "pick": pick,
+            "source_sweep": source_value,
+            "source_sweep_fingerprint": source_fingerprint.get("fingerprint") if source_fingerprint else None,
+            "render_config": settings_to_jsonable(cfg),
+            "result_fingerprint": result.fingerprint.get("fingerprint") if result.fingerprint else None,
+        },
+    )
     payload = {
+        "fingerprint": selected_fingerprint,
         "pick": pick,
         "source_sweep": source_value,
+        "source_sweep_fingerprint": source_fingerprint,
         "selected": {
             "name": selected.name,
             "label": selected.label,
