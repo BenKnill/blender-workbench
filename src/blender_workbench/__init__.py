@@ -14,6 +14,7 @@ from .example_manifest import ExamplePreflight, format_preflight_report, load_ma
 from .example_pick_smoke import PickSmokePlan, PickSmokeResult, pick_smoke_plans, run_pick_smoke, verify_selected_json
 from .handoff import build_handoff_prompt_card, format_handoff_markdown, prompt_card_from_reference_prompt, write_handoff_card
 from .learning_coverage import format_learning_coverage_report, uncovered_learning_prompts, validate_learning_coverage
+from .new_scout import ScoutPlan, build_scout_plan, format_scout_plan, write_scout_scaffold
 from .postprocess import (
     PostprocessLookSettings,
     coerce_postprocess_look_settings,
@@ -58,6 +59,7 @@ __all__ = [
     "ArtifactDescriptor",
     "build_artifact_index",
     "build_handoff_prompt_card",
+    "build_scout_plan",
     "camera_distance_for_matching_framing",
     "fingerprint_status",
     "collect_capability_report",
@@ -68,6 +70,7 @@ __all__ = [
     "format_capability_report",
     "format_handoff_markdown",
     "format_learning_coverage_report",
+    "format_scout_plan",
     "RenderConfig",
     "RenderResult",
     "RENDER_PRESETS",
@@ -117,6 +120,7 @@ __all__ = [
     "render_sweep",
     "run_pick_smoke",
     "scan_artifacts",
+    "ScoutPlan",
     "select_metadata_variant",
     "selected_pick_from_review",
     "select_variant",
@@ -133,4 +137,5 @@ __all__ = [
     "write_review_page",
     "write_handoff_card",
     "write_review_log",
+    "write_scout_scaffold",
 ]

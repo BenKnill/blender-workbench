@@ -43,6 +43,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `tools/reference_manifest.py`: verify the adjacent `../reference_materials` shelf by checksum, size, and derived-resource fingerprints.
 - `tools/artifact_index.py`: scan current outputs and legacy study folders into a versioned artifact index/report.
 - `tools/workbench_doctor.py`: machine-readable and human-readable local capability preflight.
+- `tools/new_scout.py`: dry-run or write the expected recipe/example/docs/manifest/test scaffold for a new scout.
 - `tools/sweep_review_page.py`: generate static `review.html` pages for full-size sweep tile inspection.
 - `tools/review_sweep.py`: write structured `review.json` notes for winners, rejects, and rerun guidance.
 - `tools/example_pick_smoke.py`: opt-in low-sample Blender smoke checks for example `--pick` promotion paths.
@@ -123,6 +124,15 @@ The promotion-status command surfaces grids that still need a visual pick or hav
 Prefer fast diagnostic sweeps before expensive hero bakes. A good sweep makes failure modes visible: too opaque, too noisy, too flat, wrong color, bad framing, over-bloomed, under-structured.
 
 Generated renders belong in ignored output directories, not the repo history.
+
+When turning a learning-resource prompt into a new exercise, scaffold the repo contract first:
+
+```bash
+python3 tools/new_scout.py --name caustic_water --docs-title "Caustic Water Scout" --dry-run
+```
+
+The dry run lists the recipe module, example script, tests, docs asset, manifest entry, and selected-render path.
+Add `--write` only when you want template files created; existing files are left untouched unless `--force` is passed.
 
 ## Starter Defaults
 
