@@ -205,6 +205,8 @@ def mark_range(
     source_id: str,
     pages: str,
     status: str,
+    title: str | None = None,
+    priority: int | None = None,
     tags: Iterable[str] = (),
     issue: int | None = None,
     triage_output: str | None = None,
@@ -222,7 +224,11 @@ def mark_range(
     entry = matches[0] if matches else {"pages": normalized_pages}
     if not matches:
         ranges.append(entry)
+    if title:
+        entry["title"] = title
     entry["status"] = status
+    if priority is not None:
+        entry["priority"] = priority
     entry["tags"] = dedupe([*entry.get("tags", []), *tags])
     if issue is not None:
         entry["issue"] = issue
@@ -238,6 +244,50 @@ def mark_range(
         source["status"] = status
     index["updated"] = date.today().isoformat()
     return entry
+
+
+def parse_toc_entry(value: str) -> dict[str, Any]:
+    pages, sep, title_tags = value.partition("=")
+    if not sep:
+        raise ValueError(f"TOC entry must use PAGES=TITLE[:tag,tag]: {value}")
+    title, tag_sep, tag_text = title_tags.partition(":")
+    title = title.strip()
+    if not title:
+        raise ValueError(f"TOC entry is missing a title: {value}")
+    first, last = parse_pages(pages.strip())
+    tags = [tag.strip() for tag in tag_text.split(",")] if tag_sep else []
+    return {"pages": pages_text(first, last), "title": title, "tags": dedupe(tags)}
+
+
+def import_toc_ranges(
+    index: dict[str, Any],
+    *,
+    source_id: str,
+    entries: Iterable[str],
+    status: str = "candidate",
+    tags: Iterable[str] = (),
+    priority: int | None = None,
+    triage_output: str | None = None,
+    note: str | None = "TOC",
+) -> list[dict[str, Any]]:
+    imported = []
+    for raw_entry in entries:
+        parsed = parse_toc_entry(raw_entry)
+        entry_note = f"{note}: {parsed['title']}" if note else None
+        imported.append(
+            mark_range(
+                index,
+                source_id=source_id,
+                pages=parsed["pages"],
+                status=status,
+                title=parsed["title"],
+                priority=priority,
+                tags=[*tags, *parsed["tags"]],
+                triage_output=triage_output,
+                note=entry_note,
+            )
+        )
+    return imported
 
 
 def next_items(
@@ -256,9 +306,10 @@ def next_items(
                 {
                     "source_id": source["source_id"],
                     "title": source["title"],
+                    "range_title": entry.get("title"),
                     "pages": entry["pages"],
                     "status": entry["status"],
-                    "priority": source.get("priority", 50),
+                    "priority": entry.get("priority", source.get("priority", 50)),
                     "tags": dedupe([*source.get("tags", []), *entry.get("tags", [])]),
                     "triage_command": triage_command(source, entry["pages"]),
                 }
@@ -296,9 +347,10 @@ def format_queue_report(items: list[dict[str, Any]]) -> str:
     lines = ["Next PDF skim queue:", ""]
     for item in items:
         tag_text = f"; tags {', '.join(item['tags'])}" if item.get("tags") else ""
+        range_title = f"; {item['range_title']}" if item.get("range_title") else ""
         lines.append(
             f"- {item['source_id']} pages {item['pages']}: {item['status']}; "
-            f"priority {item['priority']}{tag_text}"
+            f"priority {item['priority']}{range_title}{tag_text}"
         )
         lines.append(f"  triage: {item['triage_command']}")
     return "\n".join(lines)
@@ -332,6 +384,16 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     mark_parser.add_argument("--example")
     mark_parser.add_argument("--note")
     mark_parser.add_argument("--json", action="store_true", default=argparse.SUPPRESS, help=argparse.SUPPRESS)
+
+    toc_parser = subparsers.add_parser("import-toc", help="promote contents-page entries into candidate ranges")
+    toc_parser.add_argument("source", help="source id or unique prefix")
+    toc_parser.add_argument("--entry", action="append", required=True, help="PAGES=TITLE[:tag,tag], e.g. 10-11=Mesh Lights:lighting")
+    toc_parser.add_argument("--status", default="candidate", choices=LESSON_STATUSES)
+    toc_parser.add_argument("--tag", action="append", default=[])
+    toc_parser.add_argument("--priority", type=int)
+    toc_parser.add_argument("--triage-output")
+    toc_parser.add_argument("--note", default="TOC")
+    toc_parser.add_argument("--json", action="store_true", default=argparse.SUPPRESS, help=argparse.SUPPRESS)
     return parser.parse_args(_script_args(argv))
 
 
@@ -374,6 +436,24 @@ def main(argv: list[str] | None = None) -> dict[str, Any] | list[dict[str, Any]]
         else:
             print(f"Marked {args.source} pages {entry['pages']} as {entry['status']}")
         return entry
+
+    if command == "import-toc":
+        entries = import_toc_ranges(
+            index,
+            source_id=args.source,
+            entries=args.entry,
+            status=args.status,
+            tags=args.tag,
+            priority=args.priority,
+            triage_output=args.triage_output,
+            note=args.note,
+        )
+        write_index(index, args.index)
+        if args.json:
+            print(json.dumps(entries, indent=2))
+        else:
+            print(f"Imported {len(entries)} TOC range(s) for {args.source}")
+        return entries
 
     items = next_items(index, limit=args.limit, statuses=args.status or QUEUE_STATUSES)
     if args.json:

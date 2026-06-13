@@ -69,14 +69,121 @@
       "title": "Blenderart Issue 27 CG Lighting Apr 2010",
       "path": "../reference_materials/artistic_blender_pdfs/blenderart_issue_27_cg_lighting_apr_2010.pdf",
       "page_count": 41,
-      "status": "unskimmed",
+      "status": "candidate",
       "priority": 95,
       "tags": [
         "lighting"
       ],
       "source_url": "https://archive.org/details/BlenderArt-Magazine-Issue-27",
       "sha256": "de681b8977c6f41755c236e70923160af1a5911d5065dc80880ccb009be14f46",
-      "ranges": []
+      "ranges": [
+        {
+          "pages": "5-6",
+          "title": "Fun with Shadows",
+          "status": "candidate",
+          "priority": 97,
+          "tags": [
+            "toc",
+            "shadow",
+            "lighting"
+          ],
+          "triage_output": "runs/pdf_triage/blenderart_issue_27_cg_lighting_p1_8",
+          "note": "TOC: Fun with Shadows"
+        },
+        {
+          "pages": "7-9",
+          "title": "Ambient Occlusion",
+          "status": "candidate",
+          "priority": 97,
+          "tags": [
+            "toc",
+            "ambient_occlusion",
+            "lighting"
+          ],
+          "triage_output": "runs/pdf_triage/blenderart_issue_27_cg_lighting_p1_8",
+          "note": "TOC: Ambient Occlusion"
+        },
+        {
+          "pages": "10-11",
+          "title": "Mesh Lights",
+          "status": "candidate",
+          "priority": 97,
+          "tags": [
+            "toc",
+            "mesh_light",
+            "lighting"
+          ],
+          "triage_output": "runs/pdf_triage/blenderart_issue_27_cg_lighting_p1_8",
+          "note": "TOC: Mesh Lights"
+        },
+        {
+          "pages": "12-15",
+          "title": "Studio Pack Shot",
+          "status": "candidate",
+          "priority": 97,
+          "tags": [
+            "toc",
+            "product_lighting",
+            "camera",
+            "lighting"
+          ],
+          "triage_output": "runs/pdf_triage/blenderart_issue_27_cg_lighting_p1_8",
+          "note": "TOC: Studio Pack Shot"
+        },
+        {
+          "pages": "16-20",
+          "title": "Robbie the Robot",
+          "status": "candidate",
+          "priority": 97,
+          "tags": [
+            "toc",
+            "character_lighting",
+            "lighting"
+          ],
+          "triage_output": "runs/pdf_triage/blenderart_issue_27_cg_lighting_p1_8",
+          "note": "TOC: Robbie the Robot"
+        },
+        {
+          "pages": "21-22",
+          "title": "Using Textured Light to Spice Up a Scene",
+          "status": "candidate",
+          "priority": 97,
+          "tags": [
+            "toc",
+            "light_texture",
+            "texture",
+            "lighting"
+          ],
+          "triage_output": "runs/pdf_triage/blenderart_issue_27_cg_lighting_p1_8",
+          "note": "TOC: Using Textured Light to Spice Up a Scene"
+        },
+        {
+          "pages": "23-24",
+          "title": "Lighting the Vault",
+          "status": "candidate",
+          "priority": 97,
+          "tags": [
+            "toc",
+            "set_lighting",
+            "lighting"
+          ],
+          "triage_output": "runs/pdf_triage/blenderart_issue_27_cg_lighting_p1_8",
+          "note": "TOC: Lighting the Vault"
+        },
+        {
+          "pages": "25-27",
+          "title": "Lighting Troubleshooting Tips",
+          "status": "candidate",
+          "priority": 97,
+          "tags": [
+            "toc",
+            "troubleshooting",
+            "lighting"
+          ],
+          "triage_output": "runs/pdf_triage/blenderart_issue_27_cg_lighting_p1_8",
+          "note": "TOC: Lighting Troubleshooting Tips"
+        }
+      ]
     },
     {
       "source_id": "blenderart_issue_39_compositing",
