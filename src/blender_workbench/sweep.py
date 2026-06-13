@@ -36,6 +36,26 @@ class TileSpec:
     label_height: int = 28
     background: str = "black"
 
+    @classmethod
+    def hero_pair(cls) -> "TileSpec":
+        return cls(width=440, height=286, columns=2, label_height=30)
+
+    @classmethod
+    def balanced_grid(cls) -> "TileSpec":
+        return cls(width=320, height=220, columns=3, label_height=28)
+
+    @classmethod
+    def micro_grid(cls, columns: int = 8) -> "TileSpec":
+        return cls(width=168, height=126, columns=columns, label_height=18)
+
+    @classmethod
+    def square_moodboard(cls, columns: int = 5) -> "TileSpec":
+        return cls(width=220, height=220, columns=columns, label_height=24)
+
+    @classmethod
+    def filmstrip(cls, columns: int = 6) -> "TileSpec":
+        return cls(width=280, height=170, columns=columns, label_height=24)
+
 
 @dataclass(frozen=True)
 class RenderConfig:
