@@ -2,6 +2,7 @@
 
 from .camera import add_orbit_camera, camera_distance_for_matching_framing, look_at, orbit_location
 from .presets import RENDER_PRESETS, SWEEP_AXES, TILE_PRESETS, SweepAxis, one_axis_variants, stride_axis, two_axis_variants
+from .primitives import add_soft_horizon_band, soft_band_alpha_profile
 from .sweep import (
     RenderConfig,
     RenderResult,
@@ -17,6 +18,7 @@ from .sweep import (
 
 __all__ = [
     "add_orbit_camera",
+    "add_soft_horizon_band",
     "camera_distance_for_matching_framing",
     "RenderConfig",
     "RenderResult",
@@ -35,6 +37,7 @@ __all__ = [
     "render_selected_variant",
     "render_sweep",
     "select_variant",
+    "soft_band_alpha_profile",
     "stride_axis",
     "two_axis_variants",
 ]

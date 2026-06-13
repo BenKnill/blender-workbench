@@ -29,3 +29,4 @@ This is a compact map from the local BlenderArt/resource shelf to workbench exer
 - Same-y boards usually mean the stride is too small. Use 5x5 stride sheets with one variable per row before adding more hand-picked named cases.
 - Visible light geometry is a useful diagnostic object, not only a renderer feature. Mesh-light boards should show both illumination on the subject and the light source's shape/gel behavior when possible.
 - Environment boards need foreground, midground, and horizon diagnostics in the same tile. Terrain relief alone is too abstract unless haze, strata, and silhouette scale are visible together.
+- Selected renders are better at exposing hard card edges than tiny contact sheets. Use reusable feathered primitives for horizon glow, haze sheets, and stylized light cards.

@@ -52,6 +52,7 @@ Keep one deliberate failure anchor in material sheets. It calibrates the eye and
 - light source size: pin, softbox, sky panel
 - mesh light: emissive size, distance, height, fill, gel/shape
 - terrain environment: relief, strata contrast, horizon haze, backlight, foreground scale
+- soft atmosphere cards: feather steps, alpha, glow strength, band height
 - sunset haze: sky color, horizon color, haze density
 - moonrise trail: streak warmth, halo radius, sky exposure
 - glow bloom: dry, rim, washed

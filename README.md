@@ -9,6 +9,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `blender_workbench.sweep`: render a list/grid of variants, write raw/finished PNGs, metadata, README, contact sheets, and selected hero renders.
 - `blender_workbench.camera`: orbit-camera helpers plus lens/distance matching for perspective studies.
 - `blender_workbench.materials`: small material helpers with explicit alpha, emission, and subsurface semantics.
+- `blender_workbench.primitives`: reusable low-cost scene primitives such as feathered horizon/light bands.
 - `blender_workbench.presets`: starter axes, render profiles, and tile layouts for common visual experiments.
 - `blender_workbench.recipes`: optional domain recipes, including a fast rocket vacuum plume scout.
 - `examples/camera_perspective_scout.py`: same-view lens and scene-depth cue stride board.
@@ -180,6 +181,8 @@ Run the landscape/environment mood scout:
 ```
 
 This uses `blender_workbench.recipes.terrain_environment` to compare terrain relief, strata contrast, horizon haze, backlight, and foreground scale as a 5x5 same-view stride sheet. It is based on the BlenderArt issue 39 landscape/Europa and virtual-environment prompts.
+
+The recipe uses `blender_workbench.primitives.add_soft_horizon_band` for the low glow card, because hard rectangular haze/light cards can pass in tiny tiles and then fail in the selected hero render.
 
 After inspecting the sheet, promote one tile:
 

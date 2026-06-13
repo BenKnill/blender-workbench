@@ -2,6 +2,7 @@ import unittest
 
 from blender_workbench.camera import camera_distance_for_matching_framing, orbit_location
 from blender_workbench.presets import RENDER_PRESETS, SWEEP_AXES, TILE_PRESETS, one_axis_variants, stride_axis, two_axis_variants
+from blender_workbench.primitives import soft_band_alpha_profile
 from blender_workbench.recipes.camera_perspective import (
     CameraPerspectiveSettings,
     camera_perspective_variants,
@@ -130,6 +131,21 @@ class SweepTests(unittest.TestCase):
 
         self.assertEqual([label for label, _ in axis.values], ["m2", "base", "p2"])
         self.assertEqual([settings["texture_magnitude"] for _, settings in axis.values], [0.0, 0.5, 1.0])
+
+    def test_soft_band_alpha_profile_feathers_edges(self):
+        profile = soft_band_alpha_profile(0.8, feather_steps=3)
+
+        self.assertEqual(len(profile), 7)
+        self.assertEqual(profile, tuple(reversed(profile)))
+        self.assertAlmostEqual(profile[3], 0.8)
+        self.assertLess(profile[0], profile[1])
+        self.assertLess(profile[1], profile[2])
+
+    def test_soft_band_alpha_profile_validates_inputs(self):
+        with self.assertRaisesRegex(ValueError, "alpha"):
+            soft_band_alpha_profile(1.2)
+        with self.assertRaisesRegex(ValueError, "feather_steps"):
+            soft_band_alpha_profile(0.5, feather_steps=-1)
 
     def test_render_config_profiles_are_ordered_by_cost(self):
         self.assertEqual(RenderConfig.shape_scout().engine, "BLENDER_WORKBENCH")

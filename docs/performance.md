@@ -33,6 +33,7 @@ config = replace(
 - Keep camera perspective scouts cheap: the variable is usually lens or scene depth cues, not samples.
 - Keep mesh-light scouts low-sample until shape, distance, and fill are chosen; emitter noise is acceptable in the first board.
 - Keep terrain environment scouts flat-shaded and low-grid until relief, haze, and horizon mood are chosen.
+- Prefer feathered card primitives over full volumetrics when the visual question is only horizon glow or light-sheet softness.
 - Keep `build_scene(settings)` cheap: avoid simulations, huge mesh generation, high subdivision, and expensive boolean stacks in the first pass.
 - Add detail in stages: silhouette, material, lighting, camera, then heavier bake.
 - When a numeric sweep looks timid, increase the `stride_axis(...)` stride and rerun. When every tile fails, reduce the stride or add failure anchors at the extremes.

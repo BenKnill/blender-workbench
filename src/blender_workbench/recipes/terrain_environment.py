@@ -8,6 +8,7 @@ from typing import Any
 
 from blender_workbench.camera import add_orbit_camera, look_at
 from blender_workbench.materials import emission_material, principled_material
+from blender_workbench.primitives import add_soft_horizon_band
 from blender_workbench.sweep import SweepVariant
 
 
@@ -218,7 +219,6 @@ def _add_sky_and_haze(settings: TerrainEnvironmentSettings) -> None:
 
     sky = principled_material("cold europa sky", (0.055, 0.075, 0.105, 1.0), roughness=1.0)
     glow_color = _mix((0.50, 0.62, 1.0, 1.0), (1.0, 0.54, 0.22, 1.0), settings.sun_warmth)
-    glow = emission_material("horizon glow band", glow_color, 0.18 + settings.horizon_glow * 0.65)
     sun = emission_material("small low sun disk", glow_color, 1.8 + settings.horizon_glow * 2.2)
 
     bpy.ops.mesh.primitive_plane_add(size=8.2, location=(0, 5.05, 1.75), rotation=(math.pi / 2, 0, 0))
@@ -227,11 +227,16 @@ def _add_sky_and_haze(settings: TerrainEnvironmentSettings) -> None:
     sky_obj.scale.z = 0.65
     sky_obj.data.materials.append(sky)
 
-    bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 4.98, 0.72))
-    glow_obj = bpy.context.object
-    glow_obj.name = "low horizon glow strip"
-    glow_obj.scale = (4.2, 0.018, 0.24 + settings.horizon_glow * 0.22)
-    glow_obj.data.materials.append(glow)
+    add_soft_horizon_band(
+        name="low horizon glow",
+        location=(0, 4.98, 0.72),
+        width=7.4,
+        height=0.34 + settings.horizon_glow * 0.32,
+        color=glow_color,
+        strength=0.28 + settings.horizon_glow * 0.85,
+        alpha=0.36 + settings.horizon_glow * 0.26,
+        feather_steps=4,
+    )
 
     sun_x = math.sin(math.radians(settings.sun_angle)) * 2.4
     sun_z = 0.93 + math.cos(math.radians(settings.sun_angle)) * 0.22
