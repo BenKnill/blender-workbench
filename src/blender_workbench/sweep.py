@@ -23,6 +23,7 @@ from .fixtures import fixture_provenance
 from .handoff import write_handoff_card
 from .image_diagnostics import analyze_sweep_images, format_diagnostics_readme, write_diagnostics
 from .review_page import write_review_page
+from .scene_sanity import run_scene_sanity, summarize_scene_sanity
 
 
 VARIANT_ROLES = (
@@ -109,6 +110,7 @@ class RenderResult:
     cache_status: str | None = None
     cache_warning: str | None = None
     fingerprint: dict[str, Any] | None = None
+    scene_sanity: dict[str, Any] | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "role", normalize_variant_role(self.role))
@@ -972,6 +974,7 @@ def write_readme(
     promotion_command: str | None = None,
     profile_comparison_command: str | None = None,
     diagnostics: dict[str, Any] | None = None,
+    scene_sanity: Mapping[str, Any] | None = None,
     reference_targets: Iterable[ReferenceTarget | Mapping[str, Any]] | None = None,
 ) -> None:
     lines = [f"# {title}", "", "Rendered variants:", ""]
@@ -989,6 +992,15 @@ def write_readme(
         lines.extend(f"- {note}" for note in notes)
     if diagnostics:
         lines.extend(["", *format_diagnostics_readme(diagnostics)])
+    if scene_sanity:
+        lines.extend(["", "Scene sanity:", ""])
+        lines.append(f"- status: `{scene_sanity.get('status', 'unknown')}`")
+        warnings = scene_sanity.get("warnings") or []
+        for warning in warnings[:8]:
+            subject = f" `{warning.get('subject')}`" if warning.get("subject") else ""
+            lines.append(f"- {warning.get('code')}{subject}: {warning.get('message')}")
+        if len(warnings) > 8:
+            lines.append(f"- ... {len(warnings) - 8} more warning(s) in `metadata.json`")
     target_lines = format_reference_targets_readme(reference_targets or ())
     if target_lines:
         lines.extend(["", *target_lines])
@@ -1262,6 +1274,8 @@ def _render_variant(
     render_label: str = "sweep",
     save_blend_path: Path | None = None,
     render_image: bool = True,
+    scene_expectations: Mapping[str, Any] | None = None,
+    strict_scene_sanity: bool = False,
 ) -> RenderResult:
     suffix = f".{file_suffix}" if file_suffix else ""
     raw = out_dir / f"{variant.name}{suffix}.raw.png"
@@ -1314,7 +1328,22 @@ def _render_variant(
     build_seconds = time.perf_counter() - build_started
     engine = configure_render(config)
     if config.camera_name:
-        bpy.context.scene.camera = bpy.data.objects[config.camera_name]
+        camera_obj = bpy.data.objects.get(config.camera_name)
+        if camera_obj is not None:
+            bpy.context.scene.camera = camera_obj
+    scene_sanity = None
+    if scene_expectations is not None:
+        report = run_scene_sanity(
+            bpy.context.scene,
+            config=config,
+            expectations=scene_expectations,
+            strict=strict_scene_sanity,
+            output_dir=out_dir,
+        )
+        scene_sanity = report.to_jsonable()
+        if not report.passed:
+            warning_codes = ", ".join(warning.code for warning in report.warnings)
+            raise ValueError(f"Scene sanity failed for {variant.name}: {warning_codes}")
 
     blend_value = None
     open_blend_command = None
@@ -1348,6 +1377,7 @@ def _render_variant(
             postprocess_seconds=0.0,
             cache_status="scene_export",
             fingerprint=expected_fingerprint,
+            scene_sanity=scene_sanity,
         )
 
     bpy.context.scene.render.filepath = str(raw)
@@ -1381,6 +1411,7 @@ def _render_variant(
         cache_status="rendered",
         cache_warning=cache_warning,
         fingerprint=expected_fingerprint,
+        scene_sanity=scene_sanity,
     )
 
 
@@ -1398,6 +1429,8 @@ def render_sweep(
     profile_comparison_command: str | None = None,
     reference_targets: Iterable[ReferenceTarget | Mapping[str, Any]] | None = None,
     fixtures: Iterable[str] | None = None,
+    scene_expectations: Mapping[str, Any] | None = None,
+    strict_scene_sanity: bool = False,
     square: bool = False,
 ) -> list[RenderResult]:
     """Render a sequence of variants from one scene-builder function.
@@ -1426,11 +1459,14 @@ def render_sweep(
                 root=root,
                 config=cfg,
                 postprocess=postprocess,
+                scene_expectations=scene_expectations,
+                strict_scene_sanity=strict_scene_sanity,
             )
         )
 
     write_contact_sheet(results, root, out_dir / "contact_sheet.png", cfg.tile, reference_targets=target_list)
     diagnostics = write_sweep_diagnostics(out_dir, results, root=root)
+    scene_sanity = summarize_scene_sanity(result.scene_sanity for result in results)
     write_readme(
         out_dir,
         title,
@@ -1439,6 +1475,7 @@ def render_sweep(
         promotion_command=promotion_command,
         profile_comparison_command=profile_comparison_command,
         diagnostics=diagnostics,
+        scene_sanity=scene_sanity,
         reference_targets=target_list,
     )
     sweep_fingerprint = make_artifact_fingerprint(
@@ -1446,6 +1483,7 @@ def render_sweep(
         {
             "render_config": settings_to_jsonable(cfg),
             "fixtures": fixture_metadata,
+            "scene_sanity": scene_sanity,
             "variants": [
                 {
                     "name": result.name,
@@ -1471,6 +1509,7 @@ def render_sweep(
                 "workflow": _sweep_workflow_metadata(results, promotion_command, profile_comparison_command),
                 "diagnostics": diagnostics,
                 "fixtures": fixture_metadata,
+                "scene_sanity": scene_sanity,
                 "total_seconds": time.perf_counter() - sweep_started,
                 "variants": [dataclasses.asdict(result) for result in results],
             },

@@ -118,18 +118,30 @@ Before promoting a transparent, volumetric, SSS, caustic, denoised, or postproce
 
 The comparison writes `profile_comparison/<pick>/profile_comparison.json` and `profile_comparison.png` with source sweep provenance, the chosen pick, each render config, postprocess state, warnings, and output paths. Use it when a cheap Workbench, Eevee, or low-sample Cycles sheet might change under `hero_check` because of alpha sorting, denoising, transparent bounces, volumetrics, caustics, or glow.
 
+Scene sanity checks are separate from dependency manifests and selected-render smoke tests. Dependency preflight answers "can this example run from this checkout?"; pick smoke answers "does the promotion command produce selected artifacts?"; scene sanity answers "did `build_scene(settings)` create the expected camera, world, objects, materials, and render settings before this grid is rendered?"
+
+Examples can opt in with recipe-specific expectations:
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/mesh_light_scout.py -- --check-scene
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/mesh_light_scout.py -- --strict-scene
+```
+
+When enabled through `render_sweep(..., scene_expectations=...)`, warnings are non-fatal by default and are recorded under `scene_sanity` in `metadata.json`. Use `strict_scene_sanity=True` or an example's `--strict-scene` path for CI-style failures.
+
 ## Agent Loop
 
 1. Define a small dataclass or dict of meaningful parameters.
 2. Write `build_scene(settings)` so it constructs the entire scene from those parameters.
-3. Use `render_sweep(...)` with one fixed camera first.
-4. Inspect `contact_sheet.png`.
-5. Record the visual decision in `review.json` with `tools/review_sweep.py`.
-6. Widen or narrow the sweep based on what the sheet shows.
-7. Render the chosen tile with `render_selected_from_sweep(...)` before folding it into the main scene.
-8. For noise, texture, jitter, or placement-heavy winners, run `render_selected_replicates_from_sweep(...)` across a few seeds/phases before promotion.
-9. For profile-sensitive winners, run `render_profile_comparison_from_sweep(...)` or an example's `--compare-profiles` path before promotion.
-10. When viewport inspection would help, add `save_blend=True` or use an example's `--save-blend` / `--export-blend-only` path and open the saved `.blend`.
+3. Add scene expectations for stable camera/object/world assumptions when a grid would be expensive to misrender.
+4. Use `render_sweep(...)` with one fixed camera first.
+5. Inspect `contact_sheet.png`.
+6. Record the visual decision in `review.json` with `tools/review_sweep.py`.
+7. Widen or narrow the sweep based on what the sheet shows.
+8. Render the chosen tile with `render_selected_from_sweep(...)` before folding it into the main scene.
+9. For noise, texture, jitter, or placement-heavy winners, run `render_selected_replicates_from_sweep(...)` across a few seeds/phases before promotion.
+10. For profile-sensitive winners, run `render_profile_comparison_from_sweep(...)` or an example's `--compare-profiles` path before promotion.
+11. When viewport inspection would help, add `save_blend=True` or use an example's `--save-blend` / `--export-blend-only` path and open the saved `.blend`.
 
 ## Design Bias
 

@@ -10,10 +10,28 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from blender_workbench.presets import RENDER_PRESETS, TILE_PRESETS
 from blender_workbench.recipes.mesh_light import MESH_LIGHT_CAMERA, build_mesh_light_scene, mesh_light_variants
-from blender_workbench.sweep import render_profile_comparison_from_sweep, render_selected_from_sweep, render_sweep
+from blender_workbench.scene_sanity import SceneSanityExpectations, format_scene_sanity_report, run_scene_sanity
+from blender_workbench.sweep import configure_render, render_profile_comparison_from_sweep, render_selected_from_sweep, render_sweep
 
 
 OUT = ROOT / "examples" / "output" / "mesh_light_scout"
+MESH_LIGHT_SCENE_EXPECTATIONS = SceneSanityExpectations(
+    expected_camera=MESH_LIGHT_CAMERA,
+    expected_objects=(
+        "mesh light floor",
+        "mesh light wall",
+        "matte light read sphere",
+        "emissive softbox mesh",
+    ),
+    expected_materials=(
+        "visible emissive mesh light",
+        "matte hero object",
+        "mesh light floor",
+        "mesh light wall",
+    ),
+    require_world=True,
+    min_subject_objects=6,
+)
 
 
 def _script_args(argv: list[str] | None = None) -> list[str]:
@@ -27,6 +45,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Render a mesh-light scout grid, or promote one picked tile.")
     parser.add_argument("--pick", help="variant name, label, or 1-based index to render with the hero profile")
     parser.add_argument("--compare-profiles", action="store_true", help="rerender the picked tile under preview and hero profiles")
+    parser.add_argument("--check-scene", action="store_true", help="build one tile and print scene sanity warnings without rendering")
+    parser.add_argument("--strict-scene", action="store_true", help="fail scene sanity warnings instead of recording them as non-fatal")
     parser.add_argument("--hero-samples", type=int, default=96, help="Cycles samples for --pick")
     parser.add_argument("--save-blend", action="store_true", help="also save a selected .blend for GUI review")
     parser.add_argument("--export-blend-only", action="store_true", help="save the selected .blend and skip image rendering")
@@ -56,6 +76,32 @@ def _profile_comparison_configs(hero_samples: int):
 def main(argv: list[str] | None = None) -> None:
     args = parse_args(argv)
     variants = mesh_light_variants()
+    config = replace(
+        RENDER_PRESETS["cycles_preview"],
+        resolution_x=540,
+        resolution_y=360,
+        samples=24,
+        max_bounces=6,
+        camera_name=MESH_LIGHT_CAMERA,
+        tile=TILE_PRESETS["auto_tiny_grid"],
+    )
+    if args.check_scene:
+        import bpy
+
+        build_mesh_light_scene(variants[0].settings)
+        configure_render(config)
+        bpy.context.scene.camera = bpy.data.objects[MESH_LIGHT_CAMERA]
+        report = run_scene_sanity(
+            bpy.context.scene,
+            config=config,
+            expectations=MESH_LIGHT_SCENE_EXPECTATIONS,
+            strict=args.strict_scene,
+            output_dir=OUT,
+        )
+        print(format_scene_sanity_report(report))
+        if not report.passed:
+            raise SystemExit(2)
+        return
     if args.compare_profiles:
         render_profile_comparison_from_sweep(
             sweep_dir=OUT,
@@ -96,15 +142,6 @@ def main(argv: list[str] | None = None) -> None:
         )
         return
 
-    config = replace(
-        RENDER_PRESETS["cycles_preview"],
-        resolution_x=540,
-        resolution_y=360,
-        samples=24,
-        max_bounces=6,
-        camera_name=MESH_LIGHT_CAMERA,
-        tile=TILE_PRESETS["auto_tiny_grid"],
-    )
     render_sweep(
         variants=variants,
         build_scene=build_mesh_light_scene,
@@ -119,6 +156,8 @@ def main(argv: list[str] | None = None) -> None:
         ],
         promotion_command="/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/mesh_light_scout.py -- --pick {pick}",
         profile_comparison_command="/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/mesh_light_scout.py -- --pick {pick} --compare-profiles",
+        scene_expectations=MESH_LIGHT_SCENE_EXPECTATIONS,
+        strict_scene_sanity=args.strict_scene,
         square=True,
     )
 

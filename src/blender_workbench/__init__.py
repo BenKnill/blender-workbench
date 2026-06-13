@@ -30,6 +30,15 @@ from .promote import import_recipe_callable, load_sweep_variants, promote_from_m
 from .promotion_status import PromotionStatus, format_promotion_report, promotion_statuses
 from .review_log import load_review_log, review_summary, selected_pick_from_review, write_review_log
 from .review_page import write_review_page
+from .scene_sanity import (
+    SceneSanityExpectations,
+    SceneSanityReport,
+    SceneSanityWarning,
+    coerce_scene_expectations,
+    format_scene_sanity_report,
+    run_scene_sanity,
+    summarize_scene_sanity,
+)
 from .sweep import (
     RenderConfig,
     RenderResult,
@@ -162,8 +171,15 @@ __all__ = [
     "variants_from_sweep_metadata",
     "verify_selected_json",
     "review_summary",
+    "SceneSanityExpectations",
+    "SceneSanityReport",
+    "SceneSanityWarning",
     "write_review_page",
     "write_handoff_card",
+    "coerce_scene_expectations",
+    "format_scene_sanity_report",
+    "run_scene_sanity",
+    "summarize_scene_sanity",
     "write_profile_comparison_readme",
     "write_reference_attempt_pair",
     "write_review_log",
