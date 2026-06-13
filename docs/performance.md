@@ -38,6 +38,8 @@ config = replace(
 - Add detail in stages: silhouette, material, lighting, camera, then heavier bake.
 - When a numeric sweep looks timid, increase the `stride_axis(...)` stride and rerun. When every tile fails, reduce the stride or add failure anchors at the extremes.
 - When a whole recipe looks timid, prefer widening its stride kwargs over adding more hand-named cases.
+- Check `diagnostics.json` after each sweep for low visual spread, dark/blown-out tiles, or low contrast.
+  Use those warnings to decide whether to widen/narrow the next board; do not treat them as aesthetic scoring.
 
 ## Reading Timing Metadata
 

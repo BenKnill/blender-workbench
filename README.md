@@ -124,6 +124,9 @@ Prefer fast diagnostic sweeps before expensive hero bakes. A good sweep makes fa
 
 Generated renders belong in ignored output directories, not the repo history.
 
+Each sweep writes `diagnostics.json` and a short README section with brightness, contrast, and tile-distance warnings.
+Treat these diagnostics as a fast guardrail for timid or unreadable boards; they steer reruns, but they do not choose an aesthetic winner.
+
 ## Starter Defaults
 
 Useful imports for new experiments:

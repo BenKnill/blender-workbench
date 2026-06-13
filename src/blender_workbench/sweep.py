@@ -20,6 +20,7 @@ from .artifact_fingerprint import (
     write_fingerprint_record,
 )
 from .handoff import write_handoff_card
+from .image_diagnostics import analyze_sweep_images, format_diagnostics_readme, write_diagnostics
 from .review_page import write_review_page
 
 
@@ -777,6 +778,7 @@ def write_readme(
     results: list[RenderResult],
     notes: list[str] | None = None,
     promotion_command: str | None = None,
+    diagnostics: dict[str, Any] | None = None,
 ) -> None:
     lines = [f"# {title}", "", "Rendered variants:", ""]
     for index, result in enumerate(results, start=1):
@@ -791,6 +793,8 @@ def write_readme(
     if notes:
         lines.extend(["", "Notes:", ""])
         lines.extend(f"- {note}" for note in notes)
+    if diagnostics:
+        lines.extend(["", *format_diagnostics_readme(diagnostics)])
     lines.extend(
         [
             "",
@@ -827,6 +831,24 @@ def write_readme(
         ]
     )
     (out_dir / "README.md").write_text("\n".join(lines))
+
+
+def write_sweep_diagnostics(out_dir: Path, results: list[RenderResult], *, root: Path) -> dict[str, Any]:
+    images = []
+    for result in results:
+        image = result.finished or result.raw
+        if not image:
+            continue
+        path = Path(image)
+        if not path.is_absolute():
+            path = root / path
+        images.append((result.name, path))
+    diagnostics = analyze_sweep_images(images)
+    for tile in diagnostics.get("tiles", []):
+        if isinstance(tile, dict) and isinstance(tile.get("path"), str):
+            tile["path"] = _relative_or_absolute(Path(tile["path"]), root)
+    write_diagnostics(out_dir / "diagnostics.json", diagnostics)
+    return diagnostics
 
 
 def write_selected_readme(
@@ -1128,7 +1150,8 @@ def render_sweep(
         )
 
     write_contact_sheet(results, root, out_dir / "contact_sheet.png", cfg.tile)
-    write_readme(out_dir, title, results, notes, promotion_command=promotion_command)
+    diagnostics = write_sweep_diagnostics(out_dir, results, root=root)
+    write_readme(out_dir, title, results, notes, promotion_command=promotion_command, diagnostics=diagnostics)
     sweep_fingerprint = make_artifact_fingerprint(
         "sweep_metadata",
         {
@@ -1154,6 +1177,7 @@ def render_sweep(
                     "tile": settings_to_jsonable(cfg.tile),
                 },
                 "workflow": _sweep_workflow_metadata(results, promotion_command),
+                "diagnostics": diagnostics,
                 "total_seconds": time.perf_counter() - sweep_started,
                 "variants": [dataclasses.asdict(result) for result in results],
             },
