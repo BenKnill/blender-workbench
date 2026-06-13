@@ -8,6 +8,7 @@ from blender_workbench.recipes.camera_perspective import (
     coerce_camera_perspective_settings,
 )
 from blender_workbench.recipes.gobo_lighting import GoboLightingSettings, coerce_gobo_settings, gobo_lighting_variants
+from blender_workbench.recipes.mesh_light import MeshLightSettings, coerce_mesh_light_settings, mesh_light_variants
 from blender_workbench.recipes.rocket_plume import (
     RocketPlumeSettings,
     coerce_rocket_plume_settings,
@@ -171,6 +172,22 @@ class SweepTests(unittest.TestCase):
         self.assertIsInstance(settings, SubsurfaceSettings)
         self.assertEqual(settings.subsurface_weight, 0.5)
         self.assertEqual(settings.core_light_energy, 99)
+        self.assertFalse(hasattr(settings, "unused"))
+
+    def test_mesh_light_recipe_exposes_same_view_lighting_board(self):
+        variants = mesh_light_variants(prefix="test")
+        settings = coerce_mesh_light_settings({"panel_width": 2.0, "fill_strength": 12.0, "unused": True})
+        names = [variant.name for variant in variants]
+
+        self.assertEqual(len(variants), 25)
+        self.assertIn("test_size_m2", names)
+        self.assertIn("test_dist_p2", names)
+        self.assertIn("test_height_base", names)
+        self.assertIn("test_fill_p2", names)
+        self.assertIn("test_gel_m2", names)
+        self.assertIsInstance(settings, MeshLightSettings)
+        self.assertEqual(settings.panel_width, 2.0)
+        self.assertEqual(settings.fill_strength, 12.0)
         self.assertFalse(hasattr(settings, "unused"))
 
     def test_camera_perspective_recipe_exposes_lens_distance_board(self):

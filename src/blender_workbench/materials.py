@@ -121,6 +121,21 @@ def textured_transparent_emission_material(
     return mat
 
 
+def emission_material(name: str, color, strength: float):
+    bpy = _bpy()
+    mat = bpy.data.materials.new(name)
+    mat.use_nodes = True
+
+    nodes = mat.node_tree.nodes
+    nodes.clear()
+    emission = nodes.new(type="ShaderNodeEmission")
+    emission.inputs["Color"].default_value = color
+    emission.inputs["Strength"].default_value = strength
+    out = nodes.new(type="ShaderNodeOutputMaterial")
+    mat.node_tree.links.new(emission.outputs["Emission"], out.inputs["Surface"])
+    return mat
+
+
 def principled_material(
     name: str,
     color,

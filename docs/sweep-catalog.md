@@ -50,6 +50,7 @@ Keep one deliberate failure anchor in material sheets. It calibrates the eye and
 
 - light source jitter: locked, handheld, restless
 - light source size: pin, softbox, sky panel
+- mesh light: emissive size, distance, height, fill, gel/shape
 - sunset haze: sky color, horizon color, haze density
 - moonrise trail: streak warmth, halo radius, sky exposure
 - glow bloom: dry, rim, washed
@@ -68,6 +69,7 @@ Color sweeps should avoid one-note palettes. Put at least one cool/warm contrast
 - named texture cases with `auto_square_moodboard` and `square=True`
 - `examples/camera_perspective_scout.py` for a same-view 5x5 lens/foreground/background/grid/subject stride sheet
 - `examples/gobo_lighting_scout.py` for projected shadow texture, gel color, and light softness
+- `examples/mesh_light_scout.py` for a same-view 5x5 emissive mesh size/distance/height/fill/gel sheet
 - `examples/subsurface_scout.py` for translucent wax/jelly/opal material reads with thickness and backlight
 - `examples/transparency_scout.py` for a 5x5 alpha/roughness/IOR/thickness/tint stride sheet
 - `examples/light_texture_scout.py` for a concrete named light-jitter plus texture-magnitude board

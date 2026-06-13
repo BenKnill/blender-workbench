@@ -8,11 +8,12 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 
 - `blender_workbench.sweep`: render a list/grid of variants, write raw/finished PNGs, metadata, README, and a contact sheet.
 - `blender_workbench.camera`: orbit-camera helpers plus lens/distance matching for perspective studies.
-- `blender_workbench.materials`: small material helpers with explicit alpha and subsurface semantics.
+- `blender_workbench.materials`: small material helpers with explicit alpha, emission, and subsurface semantics.
 - `blender_workbench.presets`: starter axes, render profiles, and tile layouts for common visual experiments.
 - `blender_workbench.recipes`: optional domain recipes, including a fast rocket vacuum plume scout.
 - `examples/camera_perspective_scout.py`: same-view lens and scene-depth cue stride board.
 - `examples/gobo_lighting_scout.py`: projected-shadow/gobo lighting board from the BlenderArt lighting resources.
+- `examples/mesh_light_scout.py`: same-view emissive mesh/softbox lighting stride board.
 - `examples/subsurface_scout.py`: subsurface material board for wax, jelly, opal, roughness, and backlight.
 - `examples/transparency_scout.py`: transparency, transmission, roughness, IOR, tint, and thickness board.
 - `examples/mini_plume_sweep.py`: a compact Blender script showing the intended workflow.
@@ -141,6 +142,18 @@ Run the projected-shadow lighting scout:
 This uses `blender_workbench.recipes.gobo_lighting` to compare shadow hardness, blocker distance, gobo pattern, and warm/cool gel color as a dense square tile board.
 
 ![Gobo lighting scout contact sheet](docs/assets/gobo-lighting-scout.jpg)
+
+## Learning Recipe: Mesh Lights
+
+Run the emissive geometry lighting scout:
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/mesh_light_scout.py
+```
+
+This uses `blender_workbench.recipes.mesh_light` to compare emissive mesh size, distance, height, fill, and gel/shape as a 5x5 same-view stride sheet. It is based on the BlenderArt mesh-light and studio pack-shot lessons.
+
+![Mesh light scout contact sheet](docs/assets/mesh-light-scout.jpg)
 
 ## Learning Recipe: Subsurface
 
