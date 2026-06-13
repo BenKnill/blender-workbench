@@ -18,6 +18,8 @@ Start with the cheapest render profile that can answer the visual question. Shap
 - `auto_square_moodboard`: named case boards without pre-deciding the row count.
 - `filmstrip`: ordered tiles for motion, time-of-day, long-exposure streak length, or camera path tests.
 
+Use `render_frame_sweep(...)` when the scene is one animated setup sampled over time rather than unrelated static cases. It builds the scene once, sets explicit frames, writes a filmstrip, and records frame/time/fps plus driver values in metadata. `examples/animated_texture_driver_scout.py` is the small driver-motion example.
+
 For named cases, prefer `named_variants(...)` plus `render_sweep(..., square=True)`. Use row/column axes only when the comparison really is a crossed parameter grid.
 
 For numeric parameters, use `stride_axis(...)` when you expect to adjust the sweep width repeatedly. If the resulting sheet looks timid, increase `stride`; if every tile fails, reduce it.

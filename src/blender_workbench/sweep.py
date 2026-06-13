@@ -134,6 +134,19 @@ class ReferenceTarget:
 
 
 @dataclass(frozen=True)
+class FrameSample:
+    frame: int
+    label: str | None = None
+    note: str | None = None
+    driver_values: Mapping[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        if self.frame < 0:
+            raise ValueError("frame samples must be non-negative")
+        object.__setattr__(self, "driver_values", dict(self.driver_values))
+
+
+@dataclass(frozen=True)
 class TileSpec:
     width: int = 112
     height: int = 112
@@ -570,6 +583,57 @@ def coerce_reference_targets(targets: Iterable[ReferenceTarget | Mapping[str, An
 
 def reference_targets_to_metadata(targets: Iterable[ReferenceTarget | Mapping[str, Any]]) -> list[dict[str, Any]]:
     return [settings_to_jsonable(target) for target in coerce_reference_targets(targets)]
+
+
+def coerce_frame_samples(samples: Iterable[int | FrameSample | Mapping[str, Any]]) -> tuple[FrameSample, ...]:
+    values: list[FrameSample] = []
+    for item in samples:
+        if isinstance(item, FrameSample):
+            sample = item
+        elif isinstance(item, Mapping):
+            data = dict(item)
+            sample = FrameSample(
+                frame=int(data["frame"]),
+                label=data.get("label"),
+                note=data.get("note"),
+                driver_values=data.get("driver_values", {}),
+            )
+        else:
+            sample = FrameSample(frame=int(item))
+        values.append(sample)
+    if not values:
+        raise ValueError("frame sweep requires at least one frame sample")
+    return tuple(values)
+
+
+def _frame_sample_time(frame: int, fps: float) -> float:
+    if fps <= 0:
+        raise ValueError("fps must be positive")
+    return round(max(0, frame - 1) / fps, 4)
+
+
+def _frame_sample_variant(sample: FrameSample, *, fps: float, scene_settings: Any) -> SweepVariant:
+    frame_label = sample.label or f"f{sample.frame}"
+    frame_settings = {
+        "frame": sample.frame,
+        "time_seconds": _frame_sample_time(sample.frame, fps),
+        "fps": fps,
+        "driver_values": dict(sample.driver_values),
+        "scene_settings": settings_to_jsonable(scene_settings),
+    }
+    return SweepVariant(
+        name=f"frame_{sample.frame:04d}",
+        label=frame_label,
+        settings=frame_settings,
+        note=sample.note,
+        tags=("frame_sweep",),
+    )
+
+
+def _default_frame_setter(frame: int) -> None:
+    import bpy
+
+    bpy.context.scene.frame_set(frame)
 
 
 def _reference_target_path(target: ReferenceTarget, root: Path) -> Path | None:
@@ -1511,6 +1575,167 @@ def render_sweep(
                 "fixtures": fixture_metadata,
                 "scene_sanity": scene_sanity,
                 "total_seconds": time.perf_counter() - sweep_started,
+                "variants": [dataclasses.asdict(result) for result in results],
+            },
+            indent=2,
+        )
+    )
+    write_review_page(out_dir, root=root)
+    return results
+
+
+def write_frame_sweep_readme(
+    out_dir: Path,
+    title: str,
+    frame_samples: Iterable[FrameSample],
+    results: list[RenderResult],
+    *,
+    fps: float,
+    notes: list[str] | None = None,
+) -> None:
+    lines = [
+        f"# {title}",
+        "",
+        "Frame-sampled filmstrip:",
+        "",
+    ]
+    samples = list(frame_samples)
+    for index, (sample, result) in enumerate(zip(samples, results, strict=True), start=1):
+        output = result.finished or result.raw
+        output_name = Path(output).name if output else "(no image render)"
+        driver = ", ".join(f"{key}={value}" for key, value in sample.driver_values.items())
+        driver_text = f", driver `{driver}`" if driver else ""
+        note = f": {sample.note}" if sample.note else ""
+        lines.append(
+            f"{index}. frame `{sample.frame}` at `{_frame_sample_time(sample.frame, fps):.4f}s`{driver_text} -> `{output_name}`{note}"
+        )
+    if notes:
+        lines.extend(["", "Notes:", ""])
+        lines.extend(f"- {note}" for note in notes)
+    lines.extend(
+        [
+            "",
+            "Next:",
+            "",
+            "- Inspect `contact_sheet.png` as a temporal sequence, not as unrelated named cases.",
+            "- If one frame looks good but neighbors fail, adjust the driver, arc, camera path, or sample spacing before promotion.",
+            "- Promote a selected frame or short subrange with the same scene settings and a heavier render config.",
+            "",
+            "`metadata.json` records frame numbers, time, fps, driver values, render config, and output paths.",
+            "",
+        ]
+    )
+    (out_dir / "README.md").write_text("\n".join(lines))
+
+
+def _frame_sweep_workflow_metadata(samples: Iterable[FrameSample]) -> dict[str, Any]:
+    return {
+        "stage": "frame_sweep",
+        "status": "needs_visual_review",
+        "required_decision": "review_motion_or_driver_arc_across_sampled_frames",
+        "temporal_board_not_static_variant_grid": True,
+        "done_when": "frame sweep is reviewed and a frame or subrange is accepted or rerun",
+        "frame_handles": [
+            {
+                "index": index,
+                "frame": sample.frame,
+                "label": sample.label,
+                "note": sample.note,
+                "driver_values": dict(sample.driver_values),
+            }
+            for index, sample in enumerate(samples, start=1)
+        ],
+    }
+
+
+def render_frame_sweep(
+    *,
+    frame_samples: Iterable[int | FrameSample | Mapping[str, Any]],
+    build_scene: Callable[[Any], None],
+    out_dir: Path,
+    root: Path | None = None,
+    scene_settings: Any | None = None,
+    fps: float = 24.0,
+    set_frame: Callable[[int], None] | None = None,
+    config: RenderConfig | None = None,
+    postprocess: Callable[[Path, Path], bool] | None = postprocess_glow_contrast,
+    title: str = "Frame Sample Filmstrip",
+    notes: list[str] | None = None,
+) -> list[RenderResult]:
+    """Render selected frames from one animated scene into a filmstrip board."""
+    samples = coerce_frame_samples(frame_samples)
+    cfg = config or dataclasses.replace(RenderConfig.cycles_preview(), tile=TileSpec.filmstrip(columns=min(6, len(samples))))
+    root = root or Path.cwd()
+    out_dir.mkdir(parents=True, exist_ok=True)
+    scene_settings_value = scene_settings or {}
+    build_scene(scene_settings_value)
+    frame_setter = set_frame or _default_frame_setter
+    variants = [_frame_sample_variant(sample, fps=fps, scene_settings=scene_settings_value) for sample in samples]
+
+    results: list[RenderResult] = []
+    sweep_started = time.perf_counter()
+    for sample, variant in zip(samples, variants, strict=True):
+        results.append(
+            _render_variant(
+                variant=variant,
+                build_scene=lambda settings, _sample=sample: frame_setter(int(settings["frame"])),
+                out_dir=out_dir,
+                root=root,
+                config=cfg,
+                postprocess=postprocess,
+                file_suffix="frame",
+                render_label="frame sweep",
+            )
+        )
+
+    write_contact_sheet(results, root, out_dir / "contact_sheet.png", cfg.tile)
+    diagnostics = write_sweep_diagnostics(out_dir, results, root=root)
+    write_frame_sweep_readme(out_dir, title, samples, results, fps=fps, notes=notes)
+    frame_payloads = [
+        {
+            "index": index,
+            "frame": sample.frame,
+            "time_seconds": _frame_sample_time(sample.frame, fps),
+            "label": sample.label or f"f{sample.frame}",
+            "note": sample.note,
+            "driver_values": dict(sample.driver_values),
+            "result": dataclasses.asdict(result),
+        }
+        for index, (sample, result) in enumerate(zip(samples, results, strict=True), start=1)
+    ]
+    fingerprint = make_artifact_fingerprint(
+        "frame_sweep_metadata",
+        {
+            "frame_samples": [
+                {
+                    "frame": sample.frame,
+                    "driver_values": dict(sample.driver_values),
+                    "result_fingerprint": result.fingerprint.get("fingerprint") if result.fingerprint else None,
+                }
+                for sample, result in zip(samples, results, strict=True)
+            ],
+            "fps": fps,
+            "render_config": settings_to_jsonable(cfg),
+            "scene_settings": settings_to_jsonable(scene_settings_value),
+        },
+    )
+    (out_dir / "metadata.json").write_text(
+        json.dumps(
+            {
+                "fingerprint": fingerprint,
+                "mode": "frame_sweep",
+                "title": title,
+                "fps": fps,
+                "source_scene_settings": settings_to_jsonable(scene_settings_value),
+                "render_config": settings_to_jsonable(cfg),
+                "contact_sheet": {
+                    "columns": cfg.tile.columns_for_count(len(results)),
+                    "tile": settings_to_jsonable(cfg.tile),
+                },
+                "workflow": _frame_sweep_workflow_metadata(samples),
+                "diagnostics": diagnostics,
+                "total_seconds": time.perf_counter() - sweep_started,
+                "frames": frame_payloads,
                 "variants": [dataclasses.asdict(result) for result in results],
             },
             indent=2,
