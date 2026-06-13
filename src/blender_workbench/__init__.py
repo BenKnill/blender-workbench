@@ -16,6 +16,7 @@ from .presets import RENDER_PRESETS, SWEEP_AXES, TILE_PRESETS, SweepAxis, one_ax
 from .primitives import add_soft_horizon_band, soft_band_alpha_profile
 from .promote import import_recipe_callable, load_sweep_variants, promote_from_metadata, select_metadata_variant
 from .promotion_status import PromotionStatus, format_promotion_report, promotion_statuses
+from .review_log import load_review_log, review_summary, selected_pick_from_review, write_review_log
 from .review_page import write_review_page
 from .sweep import (
     RenderConfig,
@@ -60,6 +61,7 @@ __all__ = [
     "expand_required_tools",
     "import_recipe_callable",
     "load_manifest",
+    "load_review_log",
     "load_sweep_variants",
     "look_at",
     "make_artifact_fingerprint",
@@ -87,11 +89,14 @@ __all__ = [
     "render_sweep",
     "run_pick_smoke",
     "select_metadata_variant",
+    "selected_pick_from_review",
     "select_variant",
     "soft_band_alpha_profile",
     "stride_axis",
     "two_axis_variants",
     "variants_from_sweep_metadata",
     "verify_selected_json",
+    "review_summary",
     "write_review_page",
+    "write_review_log",
 ]

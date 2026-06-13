@@ -41,6 +41,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `tools/reference_manifest.py`: verify the adjacent `../reference_materials` shelf by checksum, size, and derived-resource fingerprints.
 - `tools/workbench_doctor.py`: machine-readable and human-readable local capability preflight.
 - `tools/sweep_review_page.py`: generate static `review.html` pages for full-size sweep tile inspection.
+- `tools/review_sweep.py`: write structured `review.json` notes for winners, rejects, and rerun guidance.
 - `tools/example_pick_smoke.py`: opt-in low-sample Blender smoke checks for example `--pick` promotion paths.
 - `tools/sweep_promotion_status.py`: scan sweep outputs for grids that still need a visual pick and selected render.
 
@@ -98,9 +99,10 @@ The promotion-status command surfaces grids that still need a visual pick or hav
 2. Write `build_scene(settings)` so it constructs the entire scene from those parameters.
 3. Use `render_sweep(...)` with one fixed camera first.
 4. Inspect `contact_sheet.png`.
-5. Widen or narrow the sweep based on what the sheet shows.
-6. Render the chosen tile with `render_selected_from_sweep(...)` before folding it into the main scene.
-7. When viewport inspection would help, add `save_blend=True` or use an example's `--save-blend` / `--export-blend-only` path and open the saved `.blend`.
+5. Record the visual decision in `review.json` with `tools/review_sweep.py`.
+6. Widen or narrow the sweep based on what the sheet shows.
+7. Render the chosen tile with `render_selected_from_sweep(...)` before folding it into the main scene.
+8. When viewport inspection would help, add `save_blend=True` or use an example's `--save-blend` / `--export-blend-only` path and open the saved `.blend`.
 
 ## Design Bias
 
@@ -140,6 +142,19 @@ render_selected_from_sweep(
     save_blend=True,
 )
 ```
+
+After inspecting a dense sheet, write a review log before promotion:
+
+```bash
+python3 tools/review_sweep.py examples/output/my_scout \
+  --winner balanced_bell \
+  --promising ghost_bell \
+  --reject solid_fail=too_opaque \
+  --next-action render_selected \
+  --next "keep width, reduce shell alpha stride"
+```
+
+`review.json` records the winner, rejected tiles, qualitative notes, next action, and promotion command. When a review winner exists, `render_selected_from_sweep(...)` and `blender_workbench.promote` can omit `pick`/`--pick` and default to that recorded winner.
 
 If you only have the generated sweep folder, promote from `metadata.json` and a recipe builder:
 
