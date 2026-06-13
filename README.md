@@ -8,6 +8,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 
 - `blender_workbench.sweep`: render a list/grid of variants, write raw/finished PNGs, metadata, README, contact sheets, and selected hero renders.
 - `blender_workbench.camera`: orbit-camera helpers plus lens/distance matching for perspective studies.
+- `blender_workbench.example_manifest`: inspect example commands, expected outputs, docs assets, and generated-input prerequisites.
 - `blender_workbench.materials`: small material helpers with explicit alpha, emission, and subsurface semantics.
 - `blender_workbench.postprocess`: reuse one raw render for finishing-look contact sheets.
 - `blender_workbench.primitives`: reusable low-cost scene primitives such as feathered horizon/light bands.
@@ -25,6 +26,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `examples/light_texture_scout.py`: named light-jitter and texture-magnitude board.
 - `examples/rocket_plume_scout.py`: a stronger plume use case built on the general sweep API.
 - `examples/rocket_plume_texture_scout.py`: dense plume texture board from smooth through overdone to whiteout.
+- `examples/manifest.json`: runnable-example manifest for clean-checkout preflights and docs refresh order.
 - `docs/parameter-sweep-pattern.md`: the short operating pattern for future agents.
 - `docs/performance.md`: defaults for fast basics-first exploration.
 - `docs/learning-notes.md`: short map from local BlenderArt resources to implemented sweep ideas.
@@ -50,6 +52,15 @@ python3 tools/pdf_triage.py ../reference_materials/artistic_blender_pdfs/blender
 ```
 
 The helper writes backend status, any extracted text or thumbnails, and a `notes.md` stub under `runs/pdf_triage/`.
+
+Check example prerequisites before running a docs refresh or dependent example:
+
+```bash
+python3 tools/example_preflight.py
+python3 tools/example_preflight.py --name postprocess_look_scout
+```
+
+For dependent examples, the report prints the exact upstream command needed to create missing generated inputs.
 
 ## Agent Loop
 
