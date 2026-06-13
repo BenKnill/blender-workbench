@@ -70,7 +70,7 @@ Keep one deliberate `failure_anchor` in material sheets. It calibrates the eye a
 - terrain environment: relief, strata contrast, horizon haze, backlight, foreground scale
 - soft atmosphere cards: feather steps, alpha, glow strength, band height
 - sunset haze: sky color, horizon color, haze density
-- moonrise trail: streak warmth, halo radius, sky exposure
+- moonrise trail: streak length/angle, terminal softness, halo radius/strength, sky exposure, horizon haze, warmth, foreground contrast
 - glow bloom: dry, rim, washed
 - camera jitter: tripod, breathing, loose
 - camera perspective: wide/close, normal/mid, portrait/far, tele/flat
@@ -113,6 +113,7 @@ Postprocess sweeps should reuse one raw render when the scene is already selecte
 - `examples/smoke_billboard_scout.py` for a general smoke-card alpha, edge feather, noise, fake scatter, and parallax board before volumetrics
 - `examples/subsurface_scout.py` for finished translucent wax/jelly/opal material reads with thickness and backlight
 - `examples/sunset_haze_scout.py` for an ordered dusk/moonrise/afterglow filmstrip using `SUNSET_HAZE`
+- `examples/long_exposure_moonrise_scout.py` for cheap moon-trail geometry before real motion blur or bespoke glowing capsules
 - `examples/transparency_scout.py` for a 5x5 alpha/roughness/IOR/thickness/tint stride sheet
 - `examples/light_texture_scout.py` for a concrete named light-jitter plus texture-magnitude board
 - `examples/procedural_texture_scout.py` for a BlenderArt issue 22 surface texture-node board before reusing a material preset
