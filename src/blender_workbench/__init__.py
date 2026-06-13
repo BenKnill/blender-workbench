@@ -2,6 +2,7 @@
 
 from .camera import add_orbit_camera, camera_distance_for_matching_framing, look_at, orbit_location
 from .example_manifest import ExamplePreflight, format_preflight_report, load_manifest, preflight_examples
+from .example_pick_smoke import PickSmokePlan, PickSmokeResult, pick_smoke_plans, run_pick_smoke, verify_selected_json
 from .postprocess import (
     PostprocessLookSettings,
     coerce_postprocess_look_settings,
@@ -51,6 +52,9 @@ __all__ = [
     "named_variants",
     "one_axis_variants",
     "orbit_location",
+    "PickSmokePlan",
+    "PickSmokeResult",
+    "pick_smoke_plans",
     "magick_look_postprocess",
     "PostprocessLookSettings",
     "postprocess_look_variants",
@@ -60,10 +64,12 @@ __all__ = [
     "render_selected_from_sweep",
     "render_selected_variant",
     "render_sweep",
+    "run_pick_smoke",
     "select_metadata_variant",
     "select_variant",
     "soft_band_alpha_profile",
     "stride_axis",
     "two_axis_variants",
     "variants_from_sweep_metadata",
+    "verify_selected_json",
 ]

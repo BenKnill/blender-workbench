@@ -72,6 +72,14 @@
       "docs_asset": "docs/assets/rocket-plume-texture-scout.jpg"
     },
     {
+      "name": "soft_atmosphere_scout",
+      "script": "examples/soft_atmosphere_scout.py",
+      "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/soft_atmosphere_scout.py",
+      "outputs": ["examples/output/soft_atmosphere_scout/metadata.json", "examples/output/soft_atmosphere_scout/contact_sheet.png"],
+      "prerequisites": [],
+      "docs_asset": "docs/assets/soft-atmosphere-scout.jpg"
+    },
+    {
       "name": "subsurface_scout",
       "script": "examples/subsurface_scout.py",
       "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/subsurface_scout.py",

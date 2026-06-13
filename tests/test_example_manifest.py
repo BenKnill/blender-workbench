@@ -73,6 +73,14 @@ class ExampleManifestTests(unittest.TestCase):
             "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/terrain_environment_scout.py -- --pick terrain_relief_p2",
         )
 
+    def test_real_manifest_lists_every_top_level_example_script(self):
+        root = Path.cwd()
+        examples = load_manifest(root=root)
+        manifest_scripts = {example["script"] for example in examples}
+        actual_scripts = {str(path.relative_to(root)) for path in (root / "examples").glob("*.py")}
+
+        self.assertEqual(actual_scripts - manifest_scripts, set())
+
 
 if __name__ == "__main__":
     unittest.main()

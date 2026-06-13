@@ -61,6 +61,17 @@ render_selected_from_sweep(
 
 The selected render writes `selected.json`, preserving the pick, settings, render config, source sweep, and final file paths.
 
+## Pick Smoke Checks
+
+When an example exposes `--pick`, prove the promotion path with a tiny selected render before opening a PR:
+
+```bash
+python3 tools/example_pick_smoke.py --name soft_atmosphere_scout
+python3 tools/example_pick_smoke.py --name soft_atmosphere_scout --run --hero-samples 4
+```
+
+The smoke helper chooses a real variant from existing `metadata.json`, runs the example's `--pick` path through Blender only when `--run` is passed, then checks `selected.json`, source sweep provenance, and output files.
+
 ## Postprocess Sweep
 
 When the scene is already selected, reuse one raw render for finishing looks:
