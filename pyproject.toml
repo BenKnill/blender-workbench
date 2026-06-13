@@ -1,0 +1,10 @@
+[project]
+name = "blender-workbench"
+version = "0.1.0"
+description = "Reusable Blender parameter sweep helpers with contact-sheet tiles and metadata."
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
