@@ -40,7 +40,8 @@ Each manifest entry records the example command, expected output files, docs ass
 ## Contact Sheet Rules
 
 - Keep the camera locked unless framing is the parameter under test.
-- Include at least one failure anchor when the failure mode is informative.
+- Include at least one explicit `failure_anchor` role when the failure mode is informative.
+- Use `baseline` for neutral/reference tiles, `candidate` for normal sweep choices, `aesthetic_extreme` for useful overdone edges, and `negative_control` when the tile is deliberately wrong.
 - Put generated images under ignored output folders such as `examples/output/` or `runs/`.
 - Keep `metadata.json` next to the tiles so visual picks can become reproducible presets.
 - Prefer small diagnostic renders, then spend samples on the winner with `RENDER_PRESETS["hero_check"]`.

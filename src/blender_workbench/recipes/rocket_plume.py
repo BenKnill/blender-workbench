@@ -409,6 +409,20 @@ def rocket_plume_texture_variants(*, prefix: str = "texture") -> list[SweepVaria
         },
         prefix=prefix,
         note="rocket plume texture stride scout",
+        roles={
+            "smooth": "baseline",
+            "overdone": "aesthetic_extreme",
+            "over_lace": "aesthetic_extreme",
+            "over_cloud": "aesthetic_extreme",
+            "whiteout_fail": "failure_anchor",
+        },
+        tags_by_name={
+            "smooth": ("texture_baseline",),
+            "overdone": ("texture_extreme",),
+            "over_lace": ("texture_extreme",),
+            "over_cloud": ("texture_extreme",),
+            "whiteout_fail": ("whiteout", "too_far"),
+        },
     )
 
 

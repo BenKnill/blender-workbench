@@ -58,6 +58,8 @@ def variants_from_metadata(metadata: dict[str, Any]) -> list[SweepVariant]:
                 label=entry.get("label"),
                 note=entry.get("note"),
                 settings=settings,
+                role=entry.get("role") or "candidate",
+                tags=entry.get("tags") or (),
             )
         )
     return variants
@@ -98,6 +100,7 @@ def promote_from_metadata(
     notes: list[str] | None = None,
     save_blend: bool = False,
     render_image: bool = True,
+    allow_anchor_promotion: bool = False,
 ) -> RenderResult:
     source_sweep_dir = metadata_path_for_sweep(sweep_dir).parent
     variants = load_sweep_variants(sweep_dir)
@@ -127,6 +130,7 @@ def promote_from_metadata(
         source_sweep_dir=source_sweep_dir,
         save_blend=save_blend,
         render_image=render_image,
+        allow_anchor_promotion=allow_anchor_promotion,
     )
 
 
@@ -143,6 +147,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--postprocess-glow", action="store_true", help="apply the workbench glow/contrast postprocess after rendering")
     parser.add_argument("--save-blend", action="store_true", help="also save selected/<pick>/<pick>.blend for GUI review")
     parser.add_argument("--export-blend-only", action="store_true", help="save the selected .blend and skip image rendering")
+    parser.add_argument("--allow-anchor-promotion", action="store_true", help="allow deliberate failure/negative-control picks")
     return parser.parse_args(_script_args(argv))
 
 
@@ -160,6 +165,7 @@ def main(argv: list[str] | None = None) -> RenderResult:
         title=args.title,
         save_blend=args.save_blend or args.export_blend_only,
         render_image=not args.export_blend_only,
+        allow_anchor_promotion=args.allow_anchor_promotion,
     )
     print(f"Promoted {result.name}: {result.finished or result.raw or result.blend}")
     return result

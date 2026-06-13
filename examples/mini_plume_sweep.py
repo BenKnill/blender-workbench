@@ -81,7 +81,13 @@ VARIANTS = [
     SweepVariant("thin_shell", {"shell_alpha": 0.04, "shell_strength": 0.55, "filament_alpha": 0.14, "filament_strength": 0.8, "filament_count": 20, "width": 1.0, "length": 1.0}),
     SweepVariant("wide_shell", {"shell_alpha": 0.03, "shell_strength": 0.50, "filament_alpha": 0.10, "filament_strength": 0.7, "filament_count": 18, "width": 1.35, "length": 0.9}),
     SweepVariant("filament_heavy", {"shell_alpha": 0.015, "shell_strength": 0.38, "filament_alpha": 0.28, "filament_strength": 1.0, "filament_count": 42, "width": 1.0, "length": 1.0}),
-    SweepVariant("opaque_failure", {"shell_alpha": 0.18, "shell_strength": 0.75, "filament_alpha": 0.08, "filament_strength": 0.5, "filament_count": 10, "width": 1.0, "length": 1.0}, note="failure anchor: too solid"),
+    SweepVariant(
+        "opaque_failure",
+        {"shell_alpha": 0.18, "shell_strength": 0.75, "filament_alpha": 0.08, "filament_strength": 0.5, "filament_count": 10, "width": 1.0, "length": 1.0},
+        note="failure anchor: too solid",
+        role="failure_anchor",
+        tags=("too_solid",),
+    ),
 ]
 
 

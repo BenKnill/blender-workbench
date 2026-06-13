@@ -41,6 +41,7 @@ from blender_workbench.sweep import (
     TileSpec,
     grid_variants,
     named_variants,
+    normalize_variant_role,
     select_variant,
     settings_to_jsonable,
     _sweep_workflow_metadata,
@@ -116,11 +117,20 @@ class SweepTests(unittest.TestCase):
             },
             base={"fixed_camera": True},
             prefix="mat",
+            roles={"clean": "baseline"},
+            tags_by_name={"rugged": ("candidate_texture",)},
         )
 
         self.assertEqual([variant.name for variant in variants], ["mat_clean", "mat_rugged"])
         self.assertEqual(variants[1].label, "rugged")
         self.assertTrue(variants[1].settings["fixed_camera"])
+        self.assertEqual(variants[0].role, "baseline")
+        self.assertEqual(variants[1].tags, ("candidate_texture",))
+
+    def test_variant_role_validation_rejects_unknown_roles(self):
+        self.assertEqual(normalize_variant_role(None), "candidate")
+        with self.assertRaisesRegex(ValueError, "Unknown variant role"):
+            SweepVariant("bad_role", {}, role="surprise")
 
     def test_select_variant_accepts_index_name_or_label(self):
         variants = [
@@ -150,6 +160,8 @@ class SweepTests(unittest.TestCase):
                                 "name": "bright_wide",
                                 "label": "wide",
                                 "note": "promising thumbnail",
+                                "role": "aesthetic_extreme",
+                                "tags": ["glow_edge", "glow_edge", "hero_candidate"],
                                 "settings": {"width": 1.6, "alpha": 0.05},
                             }
                         ]
@@ -162,8 +174,55 @@ class SweepTests(unittest.TestCase):
         self.assertEqual(variants[0].name, "bright_wide")
         self.assertEqual(variants[0].label, "wide")
         self.assertEqual(variants[0].note, "promising thumbnail")
+        self.assertEqual(variants[0].role, "aesthetic_extreme")
+        self.assertEqual(variants[0].tags, ("glow_edge", "hero_candidate"))
         self.assertEqual(variants[0].settings["width"], 1.6)
         self.assertEqual(select_variant(variants, "wide").name, "bright_wide")
+
+    def test_readme_and_workflow_metadata_include_roles(self):
+        results = [
+            RenderResult(
+                name="neutral",
+                raw="runs/demo/neutral.raw.png",
+                finished=None,
+                settings={},
+                role="baseline",
+            ),
+            RenderResult(
+                name="wide_shell",
+                raw="runs/demo/wide_shell.raw.png",
+                finished=None,
+                settings={"width": 1.4},
+            ),
+            RenderResult(
+                name="solid_fail",
+                raw="runs/demo/solid_fail.raw.png",
+                finished=None,
+                settings={},
+                role="failure_anchor",
+                tags=("too_solid",),
+            ),
+            RenderResult(
+                name="overdone",
+                raw="runs/demo/overdone.raw.png",
+                finished=None,
+                settings={},
+                role="aesthetic_extreme",
+            ),
+        ]
+
+        with tempfile.TemporaryDirectory() as tmp:
+            out_dir = Path(tmp)
+            write_readme(out_dir, "Demo Sweep", results)
+            text = (out_dir / "README.md").read_text()
+        workflow = _sweep_workflow_metadata(results, None)
+
+        self.assertIn("role `baseline`", text)
+        self.assertIn("role `candidate`", text)
+        self.assertIn("role `failure_anchor`, tags `too_solid`", text)
+        self.assertIn("role `aesthetic_extreme`", text)
+        self.assertEqual(workflow["pick_handles"][2]["role"], "failure_anchor")
+        self.assertEqual(workflow["pick_handles"][2]["tags"], ("too_solid",))
 
     def test_write_readme_pushes_grid_to_selected_render(self):
         result = RenderResult(
@@ -209,7 +268,18 @@ class SweepTests(unittest.TestCase):
         self.assertTrue(workflow["selected_render_required_before_scene_promotion"])
         self.assertEqual(workflow["done_when"], "selected/<pick>/selected.json exists for one chosen tile")
         self.assertEqual(workflow["pick_handles"][0]["name"], "wide_shell")
+        self.assertEqual(workflow["pick_handles"][0]["role"], "candidate")
         self.assertEqual(workflow["pick_handles"][0]["promotion_command"], "blender --background --python examples/demo.py -- --pick wide_shell")
+
+    def test_selected_render_blocks_failure_anchor_without_override(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaisesRegex(ValueError, "Refusing to promote"):
+                render_selected_variant(
+                    variants=[SweepVariant("solid_fail", {"width": 1.4}, role="failure_anchor")],
+                    pick="solid_fail",
+                    build_scene=lambda _settings: None,
+                    out_dir=Path(tmp),
+                )
 
     def test_selected_blend_export_writes_readme_and_metadata_without_render(self):
         calls = []
@@ -263,6 +333,7 @@ class SweepTests(unittest.TestCase):
         self.assertEqual(calls[0]["save_blend_path"].name, "wide_shell.blend")
         self.assertTrue(payload["result"]["render_skipped"])
         self.assertIsNone(payload["result"]["raw"])
+        self.assertEqual(payload["selected"]["role"], "candidate")
         self.assertEqual(payload["blend_export"]["path"], "examples/output/demo/selected/wide_shell/wide_shell.blend")
         self.assertEqual(payload["blend_export"]["camera_name"], "DemoCamera")
         self.assertFalse(payload["blend_export"]["render_image"])
@@ -390,6 +461,10 @@ class SweepTests(unittest.TestCase):
         self.assertEqual(len(variants), 16)
         self.assertIn("test_overdone", names)
         self.assertEqual(variants[-1].name, "test_whiteout_fail")
+        self.assertEqual(variants[0].role, "baseline")
+        self.assertEqual(variants[-1].role, "failure_anchor")
+        self.assertEqual(variants[-1].tags, ("whiteout", "too_far"))
+        self.assertEqual(next(variant for variant in variants if variant.label == "overdone").role, "aesthetic_extreme")
         self.assertGreater(variants[-1].settings["plume_texture_magnitude"], variants[0].settings["plume_texture_magnitude"])
         self.assertGreater(variants[-1].settings["density_wisp_count"], variants[0].settings["density_wisp_count"])
         self.assertGreater(variants[-1].settings["density_clump_count"], variants[0].settings["density_clump_count"])

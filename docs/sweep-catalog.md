@@ -45,7 +45,7 @@ Shape sweeps should usually happen before material polish. If the thumbnail is n
 - texture magnitude: clean, marked, craggy, overdone
 - texture scale: fine, medium, broad
 
-Keep one deliberate failure anchor in material sheets. It calibrates the eye and makes the good tile more legible.
+Keep one deliberate `failure_anchor` in material sheets. It calibrates the eye and makes the good tile more legible.
 
 ## Color And Light Sweeps
 

@@ -6,7 +6,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 
 ## What This Provides
 
-- `blender_workbench.sweep`: render a list/grid of variants, write raw/finished PNGs, metadata, README, contact sheets, and selected hero renders promoted from sweep metadata.
+- `blender_workbench.sweep`: render a list/grid of variants, write raw/finished PNGs, role-tagged metadata, README, contact sheets, and selected hero renders promoted from sweep metadata.
 - `blender_workbench.camera`: orbit-camera helpers plus lens/distance matching for perspective studies.
 - `blender_workbench.example_manifest`: inspect example commands, expected outputs, docs assets, and generated-input prerequisites.
 - `blender_workbench.materials`: small material helpers with explicit alpha, emission, and subsurface semantics.
