@@ -27,6 +27,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `examples/light_texture_scout.py`: named light-jitter and texture-magnitude board.
 - `examples/rocket_plume_scout.py`: a stronger plume use case built on the general sweep API.
 - `examples/rocket_plume_texture_scout.py`: dense plume texture board from smooth through overdone to whiteout.
+- `examples/silhouette_shape_scout.py`: blind unlabeled shape-first board for silhouette judgment.
 - `examples/manifest.json`: runnable-example manifest for clean-checkout preflights and docs refresh order.
 - `docs/parameter-sweep-pattern.md`: the short operating pattern for future agents.
 - `docs/performance.md`: defaults for fast basics-first exploration.
@@ -251,6 +252,18 @@ After inspecting the sheet, promote one tile:
 ```
 
 ![Soft atmosphere scout contact sheet](docs/assets/soft-atmosphere-scout.jpg)
+
+## Learning Recipe: Silhouette Shape
+
+Run the blind shape-first scout:
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/silhouette_shape_scout.py
+```
+
+This uses unlabeled micro thumbnails so the first judgment is outline readability rather than variant names. Rerun with `-- --labels` to reveal labels, or promote a pick with `-- --pick sil_swept` before material polish.
+
+![Silhouette shape scout contact sheet](docs/assets/silhouette-shape-scout.jpg)
 
 ## Learning Recipe: Subsurface
 

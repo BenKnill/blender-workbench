@@ -42,6 +42,7 @@ class TileSpec:
     label_height: int = 14
     background: str = "black"
     show_notes: bool = False
+    show_labels: bool = True
     label_max_chars: int | None = 12
     label_point_size: int | None = None
 
@@ -88,6 +89,9 @@ class TileSpec:
 
     def with_auto_columns(self) -> "TileSpec":
         return dataclasses.replace(self, columns=None)
+
+    def without_labels(self) -> "TileSpec":
+        return dataclasses.replace(self, show_labels=False, label_height=0)
 
 
 @dataclass(frozen=True)
@@ -407,13 +411,6 @@ def write_contact_sheet(results: list[RenderResult], root: Path, out_path: Path,
     for index, result in enumerate(results):
         image_path = root / (result.finished or result.raw)
         thumb = out_path.parent / f"_{index:03d}_{result.name}.thumb.png"
-        body_height = max(1, tile.height - tile.label_height)
-        label = result.label or result.name
-        if tile.show_notes and result.note:
-            label = f"{label} - {result.note}"
-        label_max_chars = tile.label_max_chars or max(10, tile.width // 8)
-        if len(label) > label_max_chars:
-            label = f"{label[: max(1, label_max_chars - 3)]}..."
         unlabeled_cmd = [
             magick,
             str(image_path),
@@ -425,6 +422,18 @@ def write_contact_sheet(results: list[RenderResult], root: Path, out_path: Path,
             f"{tile.width}x{tile.height}",
             str(thumb),
         ]
+        if not tile.show_labels or tile.label_height <= 0:
+            subprocess.run(unlabeled_cmd, check=True)
+            thumbs.append(thumb)
+            continue
+
+        body_height = max(1, tile.height - tile.label_height)
+        label = result.label or result.name
+        if tile.show_notes and result.note:
+            label = f"{label} - {result.note}"
+        label_max_chars = tile.label_max_chars or max(10, tile.width // 8)
+        if len(label) > label_max_chars:
+            label = f"{label[: max(1, label_max_chars - 3)]}..."
         labeled_cmd = [
             magick,
             str(image_path),
