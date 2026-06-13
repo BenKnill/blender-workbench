@@ -12,6 +12,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `blender_workbench.postprocess`: reuse one raw render for finishing-look contact sheets.
 - `blender_workbench.primitives`: reusable low-cost scene primitives such as feathered horizon/light bands.
 - `blender_workbench.presets`: starter axes, render profiles, and tile layouts for common visual experiments.
+- `blender_workbench.promote`: promote a picked tile from an existing `metadata.json` without rerendering the full sheet.
 - `blender_workbench.recipes`: optional domain recipes, including a fast rocket vacuum plume scout.
 - `examples/camera_perspective_scout.py`: same-view lens and scene-depth cue stride board.
 - `examples/gobo_lighting_scout.py`: projected-shadow/gobo lighting board from the BlenderArt lighting resources.
@@ -87,6 +88,13 @@ render_selected_variant(
     config=RENDER_PRESETS["hero_check"],
     source_sweep_dir=OUT,
 )
+```
+
+If you only have the generated sweep folder, promote from `metadata.json` and a recipe builder:
+
+```bash
+PYTHONPATH=src /Applications/Blender.app/Contents/MacOS/Blender --background --python-expr \
+'import blender_workbench.promote as p; p.main(["--sweep", "examples/output/mesh_light_scout", "--pick", "mesh_fill_p1", "--recipe", "blender_workbench.recipes.mesh_light:build_mesh_light_scene", "--camera-name", "mesh_light_camera"])'
 ```
 
 The default contact sheet is now a tiny square auto-grid. Use `tiny_grid`/`auto_tiny_grid` when you want lots of tiles, `micro_grid`/`auto_micro_grid` when labels need more room, `hero_pair` for larger before/after comparisons, `balanced_grid` for readable 3x3 studies, `square_moodboard` for palette and shape boards, and `filmstrip` only when sequence order matters more than square comparison.
