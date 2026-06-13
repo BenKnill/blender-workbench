@@ -111,12 +111,12 @@
       "lesson": "Use as art-direction language and turn concrete material/light-object ideas into small scouts or issues.",
       "status": "issue_open",
       "links": {
-        "examples": ["examples/metal_edge_light_scout.py"],
+        "examples": ["examples/metal_edge_light_scout.py", "examples/diffuser_light_object_scout.py"],
         "docs": ["docs/learning-notes.md", "docs/source-translation-ledger.json"],
         "issues": [14, 17, 23, 32],
-        "artifacts": ["docs/assets/metal-edge-light-scout.svg"]
+        "artifacts": ["docs/assets/metal-edge-light-scout.svg", "docs/assets/diffuser-light-object-scout.svg"]
       },
-      "notes": "Hard-surface metal has a dedicated scout; diffuser, layered material, and reference-guided scout issues cover the remaining work."
+      "notes": "Hard-surface metal and visible diffuser light objects have dedicated scouts; layered material and reference-guided scout issues cover the remaining work."
     },
     {
       "id": "spacex-plume-frame-references",

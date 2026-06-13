@@ -67,6 +67,7 @@ Keep one deliberate `failure_anchor` in material sheets. It calibrates the eye a
 - light source jitter: locked, handheld, restless
 - light source size: pin, softbox, sky panel
 - mesh light: emissive size, distance, height, fill, gel/shape
+- diffuser light object: translucent shell opacity/transmission/SSS, inner emitter, print density, shape, tint, softness, receiver distance
 - terrain environment: relief, strata contrast, horizon haze, backlight, foreground scale
 - soft atmosphere cards: feather steps, alpha, glow strength, band height
 - sunset haze: sky color, horizon color, haze density
@@ -108,6 +109,7 @@ Postprocess sweeps should reuse one raw render when the scene is already selecte
 - `examples/layered_material_scout.py` for a BlenderArt issue 16 style component board before committing to a finished skin/SSS shader
 - `examples/metal_edge_light_scout.py` for hard-surface metal roughness, bevel, scratch, and rim-light reads
 - `examples/mesh_light_scout.py` for a same-view 5x5 emissive mesh size/distance/height/fill/gel sheet
+- `examples/diffuser_light_object_scout.py` for visible translucent diffuser props that must also light matte, organic, and glossy receivers
 - `examples/terrain_environment_scout.py` for a same-view 5x5 landscape relief/strata/haze/backlight/foreground sheet
 - `examples/render_pass_diagnostic_scout.py` for fixed-scene pass diagnostics before compositor look sweeps
 - `examples/postprocess_look_scout.py` for a one-source finishing-look sheet
