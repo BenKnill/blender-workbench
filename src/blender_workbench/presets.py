@@ -101,6 +101,66 @@ CAUSTIC_WATER = SweepAxis(
     ),
 )
 
+LIGHT_SOURCE_JITTER = SweepAxis(
+    name="light_source_jitter",
+    note="small light position changes reveal whether the scene is robust or only works from one lucky angle",
+    values=(
+        ("locked", {"light_jitter_radius": 0.0, "light_jitter_count": 1, "light_energy_variance": 0.0}),
+        ("handheld", {"light_jitter_radius": 0.18, "light_jitter_count": 3, "light_energy_variance": 0.08}),
+        ("restless", {"light_jitter_radius": 0.42, "light_jitter_count": 5, "light_energy_variance": 0.18}),
+    ),
+)
+
+LIGHT_SOURCE_SIZE = SweepAxis(
+    name="light_source_size",
+    note="light size controls hard graphic shadows versus broad photographic wrap",
+    values=(
+        ("pin", {"key_light_size": 0.08, "key_light_energy": 420}),
+        ("softbox", {"key_light_size": 2.4, "key_light_energy": 520}),
+        ("sky_panel", {"key_light_size": 6.5, "key_light_energy": 740}),
+    ),
+)
+
+TEXTURE_MAGNITUDE = SweepAxis(
+    name="texture_magnitude",
+    note="texture magnitude should be swept separately from color so form does not get buried",
+    values=(
+        ("clean", {"texture_magnitude": 0.0, "noise_strength": 0.0, "surface_bump_strength": 0.0}),
+        ("grain", {"texture_magnitude": 0.22, "noise_strength": 0.18, "surface_bump_strength": 0.035}),
+        ("rugged", {"texture_magnitude": 0.58, "noise_strength": 0.44, "surface_bump_strength": 0.11}),
+    ),
+)
+
+TEXTURE_SCALE = SweepAxis(
+    name="texture_scale",
+    note="cross texture scale with magnitude to avoid mistaking frequency for strength",
+    values=(
+        ("fine", {"noise_scale": 42.0, "texture_scale": 0.35}),
+        ("medium", {"noise_scale": 14.0, "texture_scale": 1.0}),
+        ("broad", {"noise_scale": 4.2, "texture_scale": 2.8}),
+    ),
+)
+
+GLOW_BLOOM = SweepAxis(
+    name="glow_bloom",
+    note="bloom and halo sweeps are best kept small because too much glow erases structure",
+    values=(
+        ("dry", {"glow_radius": 0.0, "glow_strength": 0.0, "halo_alpha": 0.0}),
+        ("rim", {"glow_radius": 0.45, "glow_strength": 0.28, "halo_alpha": 0.08}),
+        ("washed", {"glow_radius": 1.2, "glow_strength": 0.72, "halo_alpha": 0.22}),
+    ),
+)
+
+CAMERA_JITTER = SweepAxis(
+    name="camera_jitter",
+    note="camera jitter tests whether composition survives small framing accidents",
+    values=(
+        ("tripod", {"camera_jitter": 0.0, "camera_roll_jitter": 0.0}),
+        ("breathing", {"camera_jitter": 0.035, "camera_roll_jitter": 0.4}),
+        ("loose", {"camera_jitter": 0.09, "camera_roll_jitter": 1.2}),
+    ),
+)
+
 SILHOUETTE_SHAPE = SweepAxis(
     name="silhouette_shape",
     note="shape sweeps should test readable outline before material polish",
@@ -119,6 +179,12 @@ SWEEP_AXES = {
         SUNSET_HAZE,
         SUBSURFACE_CANDY,
         CAUSTIC_WATER,
+        LIGHT_SOURCE_JITTER,
+        LIGHT_SOURCE_SIZE,
+        TEXTURE_MAGNITUDE,
+        TEXTURE_SCALE,
+        GLOW_BLOOM,
+        CAMERA_JITTER,
         SILHOUETTE_SHAPE,
     ]
 }
@@ -127,7 +193,9 @@ TILE_PRESETS = {
     "hero_pair": TileSpec.hero_pair(),
     "balanced_grid": TileSpec.balanced_grid(),
     "micro_grid": TileSpec.micro_grid(),
+    "auto_micro_grid": TileSpec.auto_micro_grid(),
     "square_moodboard": TileSpec.square_moodboard(),
+    "auto_square_moodboard": TileSpec.auto_square_moodboard(),
     "filmstrip": TileSpec.filmstrip(),
 }
 

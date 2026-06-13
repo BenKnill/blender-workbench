@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import dataclasses
 import json
+import math
 import shutil
 import subprocess
 import time
@@ -37,7 +38,7 @@ class RenderResult:
 class TileSpec:
     width: int = 320
     height: int = 210
-    columns: int = 4
+    columns: int | None = 4
     label_height: int = 28
     background: str = "black"
     show_notes: bool = False
@@ -56,12 +57,28 @@ class TileSpec:
         return cls(width=168, height=126, columns=columns, label_height=18, label_max_chars=18)
 
     @classmethod
+    def auto_micro_grid(cls) -> "TileSpec":
+        return cls(width=168, height=126, columns=None, label_height=18, label_max_chars=18)
+
+    @classmethod
     def square_moodboard(cls, columns: int = 5) -> "TileSpec":
         return cls(width=220, height=220, columns=columns, label_height=24, label_max_chars=24)
 
     @classmethod
+    def auto_square_moodboard(cls) -> "TileSpec":
+        return cls(width=220, height=220, columns=None, label_height=24, label_max_chars=24)
+
+    @classmethod
     def filmstrip(cls, columns: int = 6) -> "TileSpec":
         return cls(width=280, height=170, columns=columns, label_height=24, label_max_chars=32)
+
+    def columns_for_count(self, count: int) -> int:
+        if self.columns is not None:
+            return max(1, self.columns)
+        return max(1, math.ceil(math.sqrt(max(1, count))))
+
+    def with_auto_columns(self) -> "TileSpec":
+        return dataclasses.replace(self, columns=None)
 
 
 @dataclass(frozen=True)
@@ -162,6 +179,29 @@ def grid_variants(
             data.update(col_data)
             name = f"{row_label}{name_sep}{col_label}"
             variants.append(SweepVariant(name=name, label=name, settings=data))
+    return variants
+
+
+def named_variants(
+    cases: Mapping[str, Mapping[str, Any]] | Iterable[tuple[str, Mapping[str, Any]]],
+    *,
+    base: Mapping[str, Any] | None = None,
+    prefix: str | None = None,
+    note: str | None = None,
+) -> list[SweepVariant]:
+    """Build variants from already-named cases.
+
+    This is the lightest path for moodboards and named explorations where a
+    row/column grid would add ceremony instead of clarity.
+    """
+    case_items = cases.items() if isinstance(cases, Mapping) else cases
+    variants: list[SweepVariant] = []
+    base_data = dict(base or {})
+    for label, settings in case_items:
+        data = dict(base_data)
+        data.update(settings)
+        name = f"{prefix}_{label}" if prefix else label
+        variants.append(SweepVariant(name=name, label=label, settings=data, note=note))
     return variants
 
 
@@ -271,9 +311,10 @@ def _label_font_args() -> list[str]:
 
 def write_contact_sheet(results: list[RenderResult], root: Path, out_path: Path, tile: TileSpec) -> None:
     magick = shutil.which("magick")
-    if not magick:
+    if not magick or not results:
         return
 
+    columns = tile.columns_for_count(len(results))
     thumbs: list[Path] = []
     for index, result in enumerate(results):
         image_path = root / (result.finished or result.raw)
@@ -330,10 +371,10 @@ def write_contact_sheet(results: list[RenderResult], root: Path, out_path: Path,
         thumbs.append(thumb)
 
     rows: list[Path] = []
-    for row_index in range(0, len(thumbs), tile.columns):
-        row = out_path.parent / f"_row_{row_index // tile.columns}.png"
-        row_paths = list(thumbs[row_index : row_index + tile.columns])
-        while len(row_paths) < tile.columns:
+    for row_index in range(0, len(thumbs), columns):
+        row = out_path.parent / f"_row_{row_index // columns}.png"
+        row_paths = list(thumbs[row_index : row_index + columns])
+        while len(row_paths) < columns:
             blank = out_path.parent / f"_blank_{row_index}_{len(row_paths)}.png"
             subprocess.run([magick, "-size", f"{tile.width}x{tile.height}", f"xc:{tile.background}", str(blank)], check=True)
             row_paths.append(blank)
@@ -368,6 +409,7 @@ def render_sweep(
     postprocess: Callable[[Path, Path], bool] | None = postprocess_glow_contrast,
     title: str = "Blender Sweep",
     notes: list[str] | None = None,
+    square: bool = False,
 ) -> list[RenderResult]:
     """Render a sequence of variants from one scene-builder function.
 
@@ -377,13 +419,16 @@ def render_sweep(
     """
     import bpy
 
+    variant_list = list(variants)
     cfg = config or RenderConfig()
+    if square:
+        cfg = dataclasses.replace(cfg, tile=cfg.tile.with_auto_columns())
     root = root or Path.cwd()
     out_dir.mkdir(parents=True, exist_ok=True)
 
     results: list[RenderResult] = []
     sweep_started = time.perf_counter()
-    for variant in variants:
+    for variant in variant_list:
         raw = out_dir / f"{variant.name}.raw.png"
         finished = out_dir / f"{variant.name}.finished.png"
         wrote_finished = finished.exists()
@@ -443,6 +488,10 @@ def render_sweep(
         json.dumps(
             {
                 "render_config": settings_to_jsonable(cfg),
+                "contact_sheet": {
+                    "columns": cfg.tile.columns_for_count(len(results)),
+                    "tile": settings_to_jsonable(cfg.tile),
+                },
                 "total_seconds": time.perf_counter() - sweep_started,
                 "variants": [dataclasses.asdict(result) for result in results],
             },

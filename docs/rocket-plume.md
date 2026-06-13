@@ -49,6 +49,7 @@ render_sweep(
     build_scene=build_rocket_plume_scene,
     out_dir=OUT,
     config=config,
+    square=True,
 )
 ```
 

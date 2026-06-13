@@ -11,6 +11,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `blender_workbench.presets`: starter axes, render profiles, and tile layouts for common visual experiments.
 - `blender_workbench.recipes`: optional domain recipes, including a fast rocket vacuum plume scout.
 - `examples/mini_plume_sweep.py`: a compact Blender script showing the intended workflow.
+- `examples/light_texture_scout.py`: named light-jitter and texture-magnitude board.
 - `examples/rocket_plume_scout.py`: a stronger plume use case built on the general sweep API.
 - `docs/parameter-sweep-pattern.md`: the short operating pattern for future agents.
 - `docs/performance.md`: defaults for fast basics-first exploration.
@@ -51,7 +52,7 @@ Useful imports for new experiments:
 from dataclasses import replace
 
 from blender_workbench.presets import RENDER_PRESETS, SWEEP_AXES, TILE_PRESETS, two_axis_variants
-from blender_workbench.sweep import render_sweep
+from blender_workbench.sweep import named_variants, render_sweep
 
 variants = two_axis_variants(
     SWEEP_AXES["plume_alpha_strength"],
@@ -67,9 +68,33 @@ render_sweep(
 )
 ```
 
-Use `micro_grid` when you need lots of little tiles, `hero_pair` for before/after comparisons, `balanced_grid` for readable 3x3 studies, `square_moodboard` for palette and shape boards, and `filmstrip` for temporal or ordered sweeps.
+Use `micro_grid` when you need lots of little tiles, `auto_micro_grid` or `square=True` when the sheet should choose near-square columns, `hero_pair` for before/after comparisons, `balanced_grid` for readable 3x3 studies, `square_moodboard` for palette and shape boards, and `filmstrip` for temporal or ordered sweeps.
 
 Use `shape_scout` for silhouette/form, `material_scout` for quick color and transparency reads, `cycles_preview` when lighting matters, and `hero_check` only after a smaller sheet has picked a direction.
+
+For named moodboards, skip row/column ceremony:
+
+```python
+variants = named_variants(
+    {
+        "clean": {"texture_magnitude": 0.0},
+        "grain": {"texture_magnitude": 0.22, "noise_scale": 42.0},
+        "rugged": {"texture_magnitude": 0.58, "noise_scale": 8.0},
+    }
+)
+
+render_sweep(
+    variants=variants,
+    build_scene=build_scene,
+    out_dir=OUT,
+    config=replace(RENDER_PRESETS["material_scout"], tile=TILE_PRESETS["auto_micro_grid"]),
+    square=True,
+)
+```
+
+Good current axes include `light_source_jitter`, `light_source_size`, `texture_magnitude`, `texture_scale`, `glow_bloom`, and `camera_jitter`.
+
+![Light texture scout contact sheet](docs/assets/light-texture-scout.jpg)
 
 ## Featured Recipe: Rocket Plume
 

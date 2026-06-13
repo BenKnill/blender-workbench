@@ -6,6 +6,7 @@ When making or modifying a Blender experiment:
 
 - Prefer `blender_workbench.sweep.render_sweep` over bespoke loops.
 - Check `blender_workbench.presets.SWEEP_AXES` and `TILE_PRESETS` before inventing new parameters or contact-sheet layouts.
+- For already-named cases, use `named_variants(...)` and `render_sweep(..., square=True)` instead of forcing a fake row/column grid.
 - Start with `RENDER_PRESETS["shape_scout"]`, `["material_scout"]`, or `["cycles_preview"]`; do not default to expensive hero renders.
 - For rocket plume work, start with `blender_workbench.recipes.rocket_plume`; keep reusable improvements in generic sweep/material/preset helpers when they are not plume-specific.
 - Always keep numeric settings in metadata next to rendered tiles.
@@ -23,6 +24,7 @@ Good default sweep directions:
 - shape first: silhouette, scale, taper, bend, density
 - material second: alpha, roughness, subsurface radius, emission strength
 - lighting third: key color, horizon color, haze density, caustic scale
+- perturbations fourth: light source jitter, camera jitter, texture magnitude
 - composition last: camera height, focal length, crop, background contrast
 
 Performance defaults:

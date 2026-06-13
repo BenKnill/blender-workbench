@@ -1,7 +1,7 @@
 """Reusable helpers for Blender parameter-sweep visual workbenches."""
 
 from .presets import RENDER_PRESETS, SWEEP_AXES, TILE_PRESETS, SweepAxis, one_axis_variants, two_axis_variants
-from .sweep import RenderConfig, RenderResult, SweepVariant, TileSpec, configure_render, grid_variants, render_sweep
+from .sweep import RenderConfig, RenderResult, SweepVariant, TileSpec, configure_render, grid_variants, named_variants, render_sweep
 
 __all__ = [
     "RenderConfig",
@@ -14,6 +14,7 @@ __all__ = [
     "TileSpec",
     "configure_render",
     "grid_variants",
+    "named_variants",
     "one_axis_variants",
     "render_sweep",
     "two_axis_variants",

@@ -35,6 +35,7 @@ def main() -> None:
             "3x3 scout crossing transparent alpha/strength with broad vacuum-plume shape.",
             "The target is smoky, wide, and structured rather than a narrow orange torch.",
         ],
+        square=True,
     )
 
 

@@ -2,7 +2,7 @@ import unittest
 
 from blender_workbench.presets import RENDER_PRESETS, SWEEP_AXES, TILE_PRESETS, one_axis_variants, two_axis_variants
 from blender_workbench.recipes.rocket_plume import RocketPlumeSettings, coerce_rocket_plume_settings, rocket_plume_scout_variants
-from blender_workbench.sweep import RenderConfig, SweepVariant, grid_variants, settings_to_jsonable
+from blender_workbench.sweep import RenderConfig, SweepVariant, TileSpec, grid_variants, named_variants, settings_to_jsonable
 
 
 class SweepTests(unittest.TestCase):
@@ -22,9 +22,13 @@ class SweepTests(unittest.TestCase):
 
     def test_presets_offer_tile_and_axis_defaults(self):
         self.assertIn("plume_alpha_strength", SWEEP_AXES)
+        self.assertIn("light_source_jitter", SWEEP_AXES)
+        self.assertIn("texture_magnitude", SWEEP_AXES)
         self.assertIn("micro_grid", TILE_PRESETS)
+        self.assertIn("auto_micro_grid", TILE_PRESETS)
         self.assertIn("shape_scout", RENDER_PRESETS)
         self.assertGreaterEqual(TILE_PRESETS["micro_grid"].columns, 6)
+        self.assertIsNone(TILE_PRESETS["auto_micro_grid"].columns)
         self.assertLessEqual(RENDER_PRESETS["shape_scout"].samples, 1)
 
     def test_axis_helpers_merge_base_settings(self):
@@ -45,6 +49,28 @@ class SweepTests(unittest.TestCase):
         self.assertEqual(variants[0].settings["samples"], 32)
         self.assertIn("shell_alpha", variants[0].settings)
         self.assertIn("width", variants[0].settings)
+
+    def test_named_variants_are_lightweight_case_boards(self):
+        variants = named_variants(
+            {
+                "clean": {"texture_magnitude": 0.0},
+                "rugged": {"texture_magnitude": 0.7},
+            },
+            base={"fixed_camera": True},
+            prefix="mat",
+        )
+
+        self.assertEqual([variant.name for variant in variants], ["mat_clean", "mat_rugged"])
+        self.assertEqual(variants[1].label, "rugged")
+        self.assertTrue(variants[1].settings["fixed_camera"])
+
+    def test_tile_spec_auto_columns_make_square_boards(self):
+        tile = TileSpec.auto_micro_grid()
+
+        self.assertEqual(tile.columns_for_count(1), 1)
+        self.assertEqual(tile.columns_for_count(4), 2)
+        self.assertEqual(tile.columns_for_count(9), 3)
+        self.assertEqual(tile.columns_for_count(10), 4)
 
     def test_render_config_profiles_are_ordered_by_cost(self):
         self.assertEqual(RenderConfig.shape_scout().engine, "BLENDER_WORKBENCH")
