@@ -27,6 +27,7 @@ class ExamplePreflight:
     name: str
     command: str
     cost: dict[str, Any]
+    dependencies: tuple[str, ...]
     status: str
     runnable: bool
     required_capabilities: tuple[str, ...]
@@ -74,6 +75,82 @@ def select_examples(examples: list[dict[str, Any]], names: list[str] | None = No
     if missing:
         raise ValueError(f"Unknown example(s): {', '.join(missing)}")
     return selected
+
+
+def _producer_maps(examples: list[dict[str, Any]]) -> tuple[dict[str, str], dict[str, str]]:
+    output_producers: dict[str, str] = {}
+    script_producers: dict[str, str] = {}
+    for example in examples:
+        name = str(example.get("name", ""))
+        if not name:
+            continue
+        for output in example.get("outputs", []):
+            if output:
+                output_producers[str(output)] = name
+        script = example.get("script")
+        if script:
+            script_producers[str(script)] = name
+    return output_producers, script_producers
+
+
+def example_dependency_names(
+    example: dict[str, Any],
+    *,
+    output_producers: dict[str, str] | None = None,
+    script_producers: dict[str, str] | None = None,
+) -> tuple[str, ...]:
+    output_producers = output_producers or {}
+    script_producers = script_producers or {}
+    dependencies: list[str] = []
+    name = str(example.get("name", ""))
+    for prerequisite in example.get("prerequisites", []):
+        explicit = prerequisite.get("example") or prerequisite.get("upstream_example")
+        if explicit:
+            dependencies.append(str(explicit))
+        path = prerequisite.get("path")
+        if path and path in output_producers:
+            dependencies.append(output_producers[path])
+        command = str(prerequisite.get("command", ""))
+        for script, producer_name in script_producers.items():
+            if script and script in command:
+                dependencies.append(producer_name)
+    return tuple(dict.fromkeys(dependency for dependency in dependencies if dependency and dependency != name))
+
+
+def sort_examples_by_dependencies(examples: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    by_name = {str(example.get("name")): example for example in examples}
+    output_producers, script_producers = _producer_maps(examples)
+    dependencies_by_name = {
+        name: tuple(
+            dep
+            for dep in example_dependency_names(
+                example,
+                output_producers=output_producers,
+                script_producers=script_producers,
+            )
+            if dep in by_name
+        )
+        for name, example in by_name.items()
+    }
+    ordered: list[dict[str, Any]] = []
+    permanent: set[str] = set()
+    temporary: set[str] = set()
+
+    def visit(name: str) -> None:
+        if name in permanent:
+            return
+        if name in temporary:
+            raise ValueError(f"Example dependency cycle involving {name}")
+        temporary.add(name)
+        for dependency in dependencies_by_name[name]:
+            visit(dependency)
+        temporary.remove(name)
+        permanent.add(name)
+        ordered.append(by_name[name])
+
+    for name in by_name:
+        visit(name)
+    return ordered
 
 
 def cost_bucket_rank(bucket: str) -> int:
@@ -132,6 +209,7 @@ def preflight_example(
     check_tools: bool = False,
     which: Callable[[str], str | None] | None = None,
     path_exists: Callable[[Path], bool] | None = None,
+    dependencies: tuple[str, ...] = (),
 ) -> ExamplePreflight:
     root = root or Path.cwd()
     which = which or shutil.which
@@ -181,6 +259,7 @@ def preflight_example(
         name=example["name"],
         command=example["command"],
         cost=normalized_cost(example),
+        dependencies=dependencies,
         status=status,
         runnable=status == "ready",
         required_capabilities=required_capabilities,
@@ -206,13 +285,28 @@ def preflight_examples(
     ready_only: bool = False,
     max_cost: str | None = None,
     sort_by_cost: bool = False,
+    dependency_order: bool = False,
     check_tools: bool = False,
     which: Callable[[str], str | None] | None = None,
     path_exists: Callable[[Path], bool] | None = None,
 ) -> list[ExamplePreflight]:
     examples = select_examples(load_manifest(manifest_path, root=root), names)
+    if dependency_order:
+        examples = sort_examples_by_dependencies(examples)
+    output_producers, script_producers = _producer_maps(examples)
     results = [
-        preflight_example(example, root=root, check_tools=check_tools, which=which, path_exists=path_exists)
+        preflight_example(
+            example,
+            root=root,
+            check_tools=check_tools,
+            which=which,
+            path_exists=path_exists,
+            dependencies=example_dependency_names(
+                example,
+                output_producers=output_producers,
+                script_producers=script_producers,
+            ),
+        )
         for example in examples
     ]
     if ready_only:
@@ -220,7 +314,7 @@ def preflight_examples(
     if max_cost is not None:
         threshold = cost_bucket_rank(max_cost)
         results = [result for result in results if cost_bucket_rank(str(result.cost["runtime"])) <= threshold]
-    if sort_by_cost:
+    if sort_by_cost and not dependency_order:
         results = sorted(results, key=lambda result: (cost_bucket_rank(str(result.cost["runtime"])), result.name))
     return results
 
@@ -243,6 +337,8 @@ def format_preflight_report(results: list[ExamplePreflight]) -> str:
             f"{output_status}; {docs_status}"
         )
         lines.append(f"  command: {result.command}")
+        if result.dependencies:
+            lines.append(f"  dependencies: {', '.join(result.dependencies)}")
         if result.output_statuses:
             statuses = tuple(result.output_statuses.values())
             counts = {status: statuses.count(status) for status in sorted(set(statuses))}
@@ -275,6 +371,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--ready-only", action="store_true", help="only include examples whose prerequisites are present")
     parser.add_argument("--max-cost", choices=("instant", "quick", "medium", "heavy"), help="only include examples at or below this runtime bucket")
     parser.add_argument("--sort-by-cost", action="store_true", help="sort examples by runtime bucket before name")
+    parser.add_argument("--dependency-order", action="store_true", help="order examples so generated prerequisites appear before dependents")
     parser.add_argument("--check-tools", action="store_true", help="also check declared command-line tool capabilities")
     parser.add_argument("--json", action="store_true", help="print machine-readable preflight JSON")
     return parser.parse_args(_script_args(argv))
@@ -289,6 +386,7 @@ def main(argv: list[str] | None = None) -> list[ExamplePreflight]:
         ready_only=args.ready_only,
         max_cost=args.max_cost,
         sort_by_cost=args.sort_by_cost,
+        dependency_order=args.dependency_order,
         check_tools=args.check_tools,
     )
     if args.json:
