@@ -40,17 +40,19 @@
           "examples/layered_material_scout.py",
           "examples/subsurface_scout.py",
           "examples/transparency_scout.py",
-          "examples/soft_atmosphere_scout.py"
+          "examples/soft_atmosphere_scout.py",
+          "examples/smoke_billboard_scout.py"
         ],
         "docs": ["docs/learning-notes.md"],
-        "issues": [14, 16, 23],
+        "issues": [14, 16],
         "artifacts": [
           "docs/assets/layered-material-scout.svg",
           "docs/assets/subsurface-scout.jpg",
-          "docs/assets/transparency-scout.jpg"
+          "docs/assets/transparency-scout.jpg",
+          "docs/assets/smoke-billboard-scout.svg"
         ]
       },
-      "notes": "SSS, transparency, and layered material component diagnosis are implemented; alpha-billboard smoke and translucent diffuser light objects still need dedicated issue work."
+      "notes": "SSS, transparency, layered material component diagnosis, soft atmosphere, and alpha-billboard smoke are implemented; translucent diffuser light objects still need dedicated issue work."
     },
     {
       "id": "blenderart22-texture-environment-node-prompts",

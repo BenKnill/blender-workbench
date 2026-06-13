@@ -47,6 +47,14 @@ from .silhouette_shape import (
     coerce_silhouette_shape_settings,
     silhouette_shape_variants,
 )
+from .smoke_billboard import (
+    SMOKE_BILLBOARD_CAMERA,
+    SmokeBillboardSettings,
+    build_smoke_billboard_scene,
+    coerce_smoke_billboard_settings,
+    smoke_billboard_descriptor,
+    smoke_billboard_variants,
+)
 from .soft_atmosphere import (
     SOFT_ATMOSPHERE_CAMERA,
     SoftAtmosphereSettings,
@@ -94,6 +102,8 @@ __all__ = [
     "RocketPlumeSettings",
     "SILHOUETTE_SHAPE_CAMERA",
     "SilhouetteShapeSettings",
+    "SMOKE_BILLBOARD_CAMERA",
+    "SmokeBillboardSettings",
     "SOFT_ATMOSPHERE_CAMERA",
     "SoftAtmosphereSettings",
     "SUBSURFACE_CAMERA",
@@ -112,6 +122,7 @@ __all__ = [
     "build_procedural_texture_scene",
     "build_rocket_plume_scene",
     "build_silhouette_shape_scene",
+    "build_smoke_billboard_scene",
     "build_soft_atmosphere_scene",
     "build_subsurface_scene",
     "build_sunset_haze_scene",
@@ -126,6 +137,7 @@ __all__ = [
     "coerce_procedural_texture_settings",
     "coerce_rocket_plume_settings",
     "coerce_silhouette_shape_settings",
+    "coerce_smoke_billboard_settings",
     "coerce_soft_atmosphere_settings",
     "coerce_subsurface_settings",
     "coerce_sunset_haze_settings",
@@ -141,6 +153,8 @@ __all__ = [
     "rocket_plume_scout_variants",
     "rocket_plume_texture_variants",
     "silhouette_shape_variants",
+    "smoke_billboard_descriptor",
+    "smoke_billboard_variants",
     "soft_atmosphere_variants",
     "subsurface_variants",
     "sunset_haze_variants",
