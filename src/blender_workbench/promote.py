@@ -10,7 +10,15 @@ from pathlib import Path
 from typing import Any
 
 from blender_workbench.presets import RENDER_PRESETS
-from blender_workbench.sweep import RenderConfig, RenderResult, SweepVariant, postprocess_glow_contrast, render_selected_variant, select_variant
+from blender_workbench.sweep import (
+    RenderConfig,
+    RenderResult,
+    SweepVariant,
+    normalize_procedural_controls,
+    postprocess_glow_contrast,
+    render_selected_variant,
+    select_variant,
+)
 
 
 def _script_args(argv: list[str] | None = None) -> list[str]:
@@ -60,6 +68,11 @@ def variants_from_metadata(metadata: dict[str, Any]) -> list[SweepVariant]:
                 settings=settings,
                 role=entry.get("role") or "candidate",
                 tags=entry.get("tags") or (),
+                replicate_of=entry.get("replicate_of") if isinstance(entry.get("replicate_of"), str) else None,
+                replicate_index=entry.get("replicate_index") if isinstance(entry.get("replicate_index"), int) else None,
+                procedural_controls=normalize_procedural_controls(
+                    entry.get("procedural_controls") if isinstance(entry.get("procedural_controls"), dict) else None
+                ),
             )
         )
     return variants

@@ -100,7 +100,8 @@ The promotion-status command surfaces grids that still need a visual pick or hav
 4. Inspect `contact_sheet.png`.
 5. Widen or narrow the sweep based on what the sheet shows.
 6. Render the chosen tile with `render_selected_from_sweep(...)` before folding it into the main scene.
-7. When viewport inspection would help, add `save_blend=True` or use an example's `--save-blend` / `--export-blend-only` path and open the saved `.blend`.
+7. For noise, texture, jitter, or placement-heavy winners, run `render_selected_replicates_from_sweep(...)` across a few seeds/phases before promotion.
+8. When viewport inspection would help, add `save_blend=True` or use an example's `--save-blend` / `--export-blend-only` path and open the saved `.blend`.
 
 ## Design Bias
 
@@ -115,8 +116,8 @@ Useful imports for new experiments:
 ```python
 from dataclasses import replace
 
-from blender_workbench.presets import RENDER_PRESETS, SWEEP_AXES, TILE_PRESETS, stride_axis, two_axis_variants
-from blender_workbench.sweep import named_variants, render_selected_from_sweep, render_sweep
+from blender_workbench.presets import RENDER_PRESETS, SWEEP_AXES, TILE_PRESETS, seed_stride_axis, stride_axis, two_axis_variants
+from blender_workbench.sweep import named_variants, render_selected_from_sweep, render_selected_replicates_from_sweep, render_sweep
 
 variants = two_axis_variants(
     SWEEP_AXES["plume_alpha_strength"],
@@ -138,6 +139,15 @@ render_selected_from_sweep(
     build_scene=build_scene,
     config=RENDER_PRESETS["hero_check"],
     save_blend=True,
+)
+
+render_selected_replicates_from_sweep(
+    sweep_dir=OUT,
+    pick="balanced_bell",
+    build_scene=build_scene,
+    config=RENDER_PRESETS["hero_check"],
+    seeds=(0, 1, 2),
+    phases=(0.0, 0.33),
 )
 ```
 
@@ -176,6 +186,8 @@ render_sweep(
 ```
 
 Good current axes include `light_source_jitter`, `light_source_size`, `texture_magnitude`, `texture_scale`, `glow_bloom`, `camera_jitter`, `camera_perspective`, and `transparency_alpha`.
+
+Use `variation_seed`, `noise_phase`, or `texture_offset` settings when a recipe has procedural noise, jitter, billows, or placement. `metadata.json`, selected renders, and replicate outputs record these controls. `replicate_variants(...)` and `render_selected_replicates_from_sweep(...)` render one chosen tile across alternate seeds/phases without rerendering the full original grid; leave `survived_replicates` unknown until the strip is visually reviewed.
 
 For fast stride adjustment, build an axis around a center value:
 

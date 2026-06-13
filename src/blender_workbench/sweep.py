@@ -31,6 +31,14 @@ VARIANT_ROLES = (
     "reference_attempt",
 )
 PROTECTED_PROMOTION_ROLES = ("failure_anchor", "negative_control")
+PROCEDURAL_SETTING_KEYS = (
+    "seed",
+    "variation_seed",
+    "noise_seed",
+    "noise_phase",
+    "texture_offset",
+    "texture_phase",
+)
 
 
 def normalize_variant_role(role: str | None) -> str:
@@ -47,6 +55,12 @@ def normalize_variant_tags(tags: Iterable[str] | None) -> tuple[str, ...]:
     return tuple(dict.fromkeys(str(tag) for tag in tags if str(tag)))
 
 
+def normalize_procedural_controls(controls: Mapping[str, Any] | None) -> dict[str, Any]:
+    if controls is None:
+        return {}
+    return {str(key): value for key, value in dict(controls).items() if str(key)}
+
+
 @dataclass(frozen=True)
 class SweepVariant:
     name: str
@@ -55,10 +69,16 @@ class SweepVariant:
     note: str | None = None
     role: str = "candidate"
     tags: tuple[str, ...] = ()
+    replicate_of: str | None = None
+    replicate_index: int | None = None
+    procedural_controls: Mapping[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "role", normalize_variant_role(self.role))
         object.__setattr__(self, "tags", normalize_variant_tags(self.tags))
+        object.__setattr__(self, "procedural_controls", normalize_procedural_controls(self.procedural_controls))
+        if self.replicate_index is not None and self.replicate_index < 1:
+            raise ValueError("replicate_index must be 1-based when provided")
 
 
 @dataclass(frozen=True)
@@ -71,6 +91,9 @@ class RenderResult:
     note: str | None = None
     role: str = "candidate"
     tags: tuple[str, ...] = ()
+    replicate_of: str | None = None
+    replicate_index: int | None = None
+    procedural_controls: Mapping[str, Any] = field(default_factory=dict)
     blend: str | None = None
     open_blend_command: str | None = None
     render_skipped: bool = False
@@ -87,6 +110,9 @@ class RenderResult:
     def __post_init__(self) -> None:
         object.__setattr__(self, "role", normalize_variant_role(self.role))
         object.__setattr__(self, "tags", normalize_variant_tags(self.tags))
+        object.__setattr__(self, "procedural_controls", normalize_procedural_controls(self.procedural_controls))
+        if self.replicate_index is not None and self.replicate_index < 1:
+            raise ValueError("replicate_index must be 1-based when provided")
 
 
 @dataclass(frozen=True)
@@ -228,6 +254,95 @@ def settings_to_jsonable(settings: Any) -> Any:
     if hasattr(settings, "__dict__"):
         return dict(settings.__dict__)
     return settings
+
+
+def infer_procedural_controls(settings: Any) -> dict[str, Any]:
+    """Return seed/phase-like fields already present in variant settings."""
+    data = settings_to_jsonable(settings)
+    if not isinstance(data, Mapping):
+        return {}
+    return {key: data[key] for key in PROCEDURAL_SETTING_KEYS if key in data}
+
+
+def _variant_procedural_controls(variant: SweepVariant) -> dict[str, Any]:
+    controls = infer_procedural_controls(variant.settings)
+    controls.update(normalize_procedural_controls(variant.procedural_controls))
+    return controls
+
+
+def _settings_mapping_for_replicates(settings: Any) -> dict[str, Any]:
+    data = settings_to_jsonable(settings)
+    if not isinstance(data, Mapping):
+        raise TypeError("procedural replicate variants require mapping or dataclass settings")
+    return dict(data)
+
+
+def _replicate_token(value: Any) -> str:
+    text = str(value).replace("-", "m").replace(".", "p")
+    safe = "".join(char if char.isalnum() or char in ("-", "_") else "_" for char in text)
+    return safe.strip("_") or "value"
+
+
+def _procedural_text(controls: Mapping[str, Any], replicate_of: str | None = None, replicate_index: int | None = None) -> str:
+    bits = [f"{key}={value}" for key, value in controls.items()]
+    if replicate_of:
+        bits.insert(0, f"replicate {replicate_index or '?'} of {replicate_of}")
+    return ", ".join(bits)
+
+
+def replicate_variants(
+    base_variant: SweepVariant,
+    *,
+    seeds: Iterable[int] = (0, 1, 2),
+    phases: Iterable[float] | None = None,
+    seed_field: str = "variation_seed",
+    phase_field: str = "noise_phase",
+    role: str = "candidate",
+    tags: Iterable[str] = ("robustness_replicate",),
+) -> list[SweepVariant]:
+    """Expand one picked variant into seed/phase robustness replicates.
+
+    The original sweep stays untouched; each returned variant keeps the chosen
+    settings and only overrides the requested procedural fields.
+    """
+    seed_values = list(seeds)
+    phase_values = list(phases) if phases is not None else [None]
+    if not seed_values:
+        raise ValueError("replicate_variants requires at least one seed")
+    if not phase_values:
+        raise ValueError("replicate_variants requires at least one phase when phases are provided")
+
+    base_settings = _settings_mapping_for_replicates(base_variant.settings)
+    base_controls = _variant_procedural_controls(base_variant)
+    replicate_tags = normalize_variant_tags((*base_variant.tags, *normalize_variant_tags(tags)))
+    variants: list[SweepVariant] = []
+    for seed in seed_values:
+        for phase in phase_values:
+            settings = dict(base_settings)
+            controls = dict(base_controls)
+            name_parts = [base_variant.name]
+            if seed_field:
+                settings[seed_field] = seed
+                controls[seed_field] = seed
+                name_parts.append(f"seed{_replicate_token(seed)}")
+            if phase is not None and phase_field:
+                settings[phase_field] = phase
+                controls[phase_field] = phase
+                name_parts.append(f"phase{_replicate_token(phase)}")
+            variants.append(
+                SweepVariant(
+                    name="_".join(name_parts),
+                    label=base_variant.label or base_variant.name,
+                    settings=settings,
+                    note=base_variant.note,
+                    role=role,
+                    tags=replicate_tags,
+                    replicate_of=base_variant.name,
+                    replicate_index=len(variants) + 1,
+                    procedural_controls=controls,
+                )
+            )
+    return variants
 
 
 def grid_variants(
@@ -375,6 +490,11 @@ def variants_from_sweep_metadata(sweep_dir: Path) -> list[SweepVariant]:
                 note=note if isinstance(note, str) else None,
                 role=normalize_variant_role(item.get("role")),
                 tags=normalize_variant_tags(tags if isinstance(tags, (list, tuple)) else None),
+                replicate_of=item.get("replicate_of") if isinstance(item.get("replicate_of"), str) else None,
+                replicate_index=item.get("replicate_index") if isinstance(item.get("replicate_index"), int) else None,
+                procedural_controls=normalize_procedural_controls(
+                    item.get("procedural_controls") if isinstance(item.get("procedural_controls"), Mapping) else None
+                ),
             )
         )
     return rebuilt
@@ -604,6 +724,9 @@ def _sweep_workflow_metadata(results: list[RenderResult], promotion_command: str
             "note": result.note,
             "role": result.role,
             "tags": result.tags,
+            "replicate_of": result.replicate_of,
+            "replicate_index": result.replicate_index,
+            "procedural_controls": result.procedural_controls,
         }
         if promotion_command:
             handle["promotion_command"] = _promotion_command_for_result(promotion_command, result, index)
@@ -623,6 +746,30 @@ def _sweep_workflow_metadata(results: list[RenderResult], promotion_command: str
     return workflow
 
 
+def _replicate_workflow_metadata(selected: SweepVariant, results: list[RenderResult], source_sweep: str | None) -> dict[str, Any]:
+    return {
+        "stage": "selected_replicate_check",
+        "status": "needs_visual_review",
+        "source_sweep": source_sweep,
+        "selected_variant": selected.name,
+        "survived_replicates": None,
+        "required_decision": "compare_replicates_before_scene_promotion",
+        "done_when": "replicate images are reviewed and survived_replicates is recorded",
+        "replicate_handles": [
+            {
+                "index": index,
+                "name": result.name,
+                "role": result.role,
+                "tags": result.tags,
+                "replicate_of": result.replicate_of,
+                "replicate_index": result.replicate_index,
+                "procedural_controls": result.procedural_controls,
+            }
+            for index, result in enumerate(results, start=1)
+        ],
+    }
+
+
 def write_readme(
     out_dir: Path,
     title: str,
@@ -635,9 +782,11 @@ def write_readme(
         detail = f": {result.note}" if result.note else ""
         label = f", label `{result.label}`" if result.label and result.label != result.name else ""
         role = f", {_role_text(result.role, result.tags)}"
+        procedural = _procedural_text(result.procedural_controls, result.replicate_of, result.replicate_index)
+        procedural_detail = f", procedural `{procedural}`" if procedural else ""
         output = result.finished or result.raw
         output_name = Path(output).name if output else "(no image render)"
-        lines.append(f"{index}. pick `{result.name}` or `{index}`{label}{role} -> `{output_name}`{detail}")
+        lines.append(f"{index}. pick `{result.name}` or `{index}`{label}{role}{procedural_detail} -> `{output_name}`{detail}")
     if notes:
         lines.extend(["", "Notes:", ""])
         lines.extend(f"- {note}" for note in notes)
@@ -698,6 +847,9 @@ def write_selected_readme(
     lines.append(f"Role: `{variant.role}`")
     if variant.tags:
         lines.append(f"Tags: `{', '.join(variant.tags)}`")
+    procedural = _procedural_text(_variant_procedural_controls(variant), variant.replicate_of, variant.replicate_index)
+    if procedural:
+        lines.append(f"Procedural controls: `{procedural}`")
     if variant.note:
         lines.append(f"Note: {variant.note}")
     if source_sweep_dir:
@@ -751,6 +903,52 @@ def _source_sweep_fingerprint(source_sweep_dir: Path | None) -> dict[str, Any] |
     return fingerprint if isinstance(fingerprint, dict) else None
 
 
+def write_replicate_readme(
+    out_dir: Path,
+    title: str,
+    selected: SweepVariant,
+    results: list[RenderResult],
+    notes: list[str] | None = None,
+    source_sweep_dir: Path | None = None,
+    root: Path | None = None,
+) -> None:
+    lines = [
+        f"# {title}",
+        "",
+        f"Replicate check for selected variant: `{selected.name}`",
+        "Survived replicate checks: `unknown` until the replicate strip is visually reviewed.",
+        "",
+        "Do not promote a texture/noise-heavy tile solely because one procedural sample looked good.",
+    ]
+    if source_sweep_dir:
+        root = root or Path.cwd()
+        lines.append(f"Source sweep: `{_relative_or_absolute(source_sweep_dir, root)}`")
+    lines.extend(["", "Rendered replicates:", ""])
+    for index, result in enumerate(results, start=1):
+        procedural = _procedural_text(result.procedural_controls, result.replicate_of, result.replicate_index)
+        procedural_detail = f", procedural `{procedural}`" if procedural else ""
+        output = result.finished or result.raw
+        output_name = Path(output).name if output else "(no image render)"
+        lines.append(f"{index}. `{result.name}`{procedural_detail} -> `{output_name}`")
+    if notes:
+        lines.extend(["", "Notes:", ""])
+        lines.extend(f"- {note}" for note in notes)
+    lines.extend(
+        [
+            "",
+            "Next:",
+            "",
+            "- Inspect `replicates.png` and full-size raw/finished files.",
+            "- Mark the winner as survived only if the core visual read holds across the seed/phase changes.",
+            "- If one replicate collapses, rerun the broader sweep with more stable settings before promotion.",
+            "",
+            "`replicates.json` contains the picked settings, procedural controls, render config, and review status.",
+            "",
+        ]
+    )
+    (out_dir / "README.md").write_text("\n".join(lines))
+
+
 def _render_variant(
     *,
     variant: SweepVariant,
@@ -797,6 +995,9 @@ def _render_variant(
                 note=variant.note,
                 role=variant.role,
                 tags=variant.tags,
+                replicate_of=variant.replicate_of,
+                replicate_index=variant.replicate_index,
+                procedural_controls=_variant_procedural_controls(variant),
                 postprocess_seconds=postprocess_seconds,
                 skipped_existing=True,
                 cache_status=cache_status,
@@ -833,6 +1034,9 @@ def _render_variant(
             note=variant.note,
             role=variant.role,
             tags=variant.tags,
+            replicate_of=variant.replicate_of,
+            replicate_index=variant.replicate_index,
+            procedural_controls=_variant_procedural_controls(variant),
             blend=blend_value,
             open_blend_command=open_blend_command,
             render_skipped=True,
@@ -863,6 +1067,9 @@ def _render_variant(
         note=variant.note,
         role=variant.role,
         tags=variant.tags,
+        replicate_of=variant.replicate_of,
+        replicate_index=variant.replicate_index,
+        procedural_controls=_variant_procedural_controls(variant),
         blend=blend_value,
         open_blend_command=open_blend_command,
         engine=engine,
@@ -1021,6 +1228,9 @@ def render_selected_variant(
             "note": selected.note,
             "role": selected.role,
             "tags": selected.tags,
+            "replicate_of": selected.replicate_of,
+            "replicate_index": selected.replicate_index,
+            "procedural_controls": _variant_procedural_controls(selected),
             "settings": settings_to_jsonable(selected.settings),
         },
         "render_config": settings_to_jsonable(cfg),
@@ -1083,6 +1293,139 @@ def render_selected_from_sweep(
         title=title,
         notes=notes,
         source_sweep_dir=source_sweep_dir or sweep_dir,
+        save_blend=save_blend,
+        render_image=render_image,
+        allow_anchor_promotion=allow_anchor_promotion,
+    )
+
+
+def render_selected_replicates(
+    *,
+    variants: Iterable[SweepVariant],
+    pick: str | int,
+    build_scene: Callable[[Any], None],
+    out_dir: Path,
+    root: Path | None = None,
+    config: RenderConfig | None = None,
+    postprocess: Callable[[Path, Path], bool] | None = postprocess_glow_contrast,
+    title: str = "Selected Procedural Replicates",
+    notes: list[str] | None = None,
+    source_sweep_dir: Path | None = None,
+    seeds: Iterable[int] = (0, 1, 2),
+    phases: Iterable[float] | None = None,
+    seed_field: str = "variation_seed",
+    phase_field: str = "noise_phase",
+    save_blend: bool = False,
+    render_image: bool = True,
+    allow_anchor_promotion: bool = False,
+) -> list[RenderResult]:
+    """Render one selected variant across procedural seeds/phases."""
+    variant_list = list(variants)
+    selected = select_variant(variant_list, pick)
+    if selected.role in PROTECTED_PROMOTION_ROLES and not allow_anchor_promotion:
+        raise ValueError(
+            f"Refusing to replicate {selected.name!r} with role {selected.role!r}; "
+            "pass allow_anchor_promotion=True after confirming this is intentional"
+        )
+    replicate_list = replicate_variants(
+        selected,
+        seeds=seeds,
+        phases=phases,
+        seed_field=seed_field,
+        phase_field=phase_field,
+    )
+    cfg = config or dataclasses.replace(RenderConfig.hero_check(), tile=TileSpec.filmstrip(columns=min(6, len(replicate_list))))
+    root = root or Path.cwd()
+    out_dir.mkdir(parents=True, exist_ok=True)
+    if not render_image and not save_blend:
+        raise ValueError("render_image=False requires save_blend=True so the replicate pass writes an artifact")
+
+    replicate_started = time.perf_counter()
+    results: list[RenderResult] = []
+    for variant in replicate_list:
+        blend_path = out_dir / f"{_safe_output_name(variant.name)}.blend" if save_blend else None
+        results.append(
+            _render_variant(
+                variant=variant,
+                build_scene=build_scene,
+                out_dir=out_dir,
+                root=root,
+                config=cfg,
+                postprocess=postprocess,
+                file_suffix="replicate",
+                render_label="selected replicate",
+                save_blend_path=blend_path,
+                render_image=render_image,
+            )
+        )
+
+    if any(result.finished or result.raw for result in results):
+        write_contact_sheet(results, root, out_dir / "replicates.png", cfg.tile)
+    write_replicate_readme(out_dir, title, selected, results, notes=notes, source_sweep_dir=source_sweep_dir, root=root)
+    source_value = _relative_or_absolute(source_sweep_dir, root) if source_sweep_dir else None
+    payload = {
+        "pick": pick,
+        "source_sweep": source_value,
+        "selected": {
+            "name": selected.name,
+            "label": selected.label,
+            "note": selected.note,
+            "role": selected.role,
+            "tags": selected.tags,
+            "replicate_of": selected.replicate_of,
+            "replicate_index": selected.replicate_index,
+            "procedural_controls": _variant_procedural_controls(selected),
+            "settings": settings_to_jsonable(selected.settings),
+        },
+        "render_config": settings_to_jsonable(cfg),
+        "workflow": _replicate_workflow_metadata(selected, results, source_value),
+        "total_seconds": time.perf_counter() - replicate_started,
+        "replicates": [dataclasses.asdict(result) for result in results],
+    }
+    (out_dir / "replicates.json").write_text(json.dumps(payload, indent=2))
+    return results
+
+
+def render_selected_replicates_from_sweep(
+    *,
+    sweep_dir: Path,
+    pick: str | int,
+    build_scene: Callable[[Any], None],
+    out_dir: Path | None = None,
+    root: Path | None = None,
+    config: RenderConfig | None = None,
+    postprocess: Callable[[Path, Path], bool] | None = postprocess_glow_contrast,
+    title: str = "Selected Procedural Replicates",
+    notes: list[str] | None = None,
+    source_sweep_dir: Path | None = None,
+    seeds: Iterable[int] = (0, 1, 2),
+    phases: Iterable[float] | None = None,
+    seed_field: str = "variation_seed",
+    phase_field: str = "noise_phase",
+    save_blend: bool = False,
+    render_image: bool = True,
+    allow_anchor_promotion: bool = False,
+) -> list[RenderResult]:
+    """Render seed/phase replicates for one picked tile from prior metadata."""
+    sweep_dir = Path(sweep_dir)
+    variant_list = variants_from_sweep_metadata(sweep_dir)
+    selected = select_variant(variant_list, pick)
+    target_out_dir = out_dir or sweep_dir / "selected" / _safe_output_name(selected.name) / "replicates"
+    return render_selected_replicates(
+        variants=variant_list,
+        pick=pick,
+        build_scene=build_scene,
+        out_dir=target_out_dir,
+        root=root,
+        config=config,
+        postprocess=postprocess,
+        title=title,
+        notes=notes,
+        source_sweep_dir=source_sweep_dir or sweep_dir,
+        seeds=seeds,
+        phases=phases,
+        seed_field=seed_field,
+        phase_field=phase_field,
         save_blend=save_blend,
         render_image=render_image,
         allow_anchor_promotion=allow_anchor_promotion,

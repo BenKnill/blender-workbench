@@ -67,6 +67,7 @@ CASES = named_variants(
             "surface_bump_strength": 0.42,
         },
     },
+    base={"variation_seed": 0, "noise_phase": 0.0},
     note="named light jitter and texture magnitude scout",
 )
 
@@ -98,9 +99,13 @@ def textured_material(settings: dict):
     bsdf.inputs["Roughness"].default_value = 0.72
 
     noise = mat.node_tree.nodes.new(type="ShaderNodeTexNoise")
+    if hasattr(noise, "noise_dimensions"):
+        noise.noise_dimensions = "4D"
     noise.inputs["Scale"].default_value = settings["noise_scale"]
     noise.inputs["Detail"].default_value = 13.0
     noise.inputs["Roughness"].default_value = 0.64
+    if "W" in noise.inputs:
+        noise.inputs["W"].default_value = float(settings.get("noise_phase", 0.0))
 
     ramp = mat.node_tree.nodes.new(type="ShaderNodeValToRGB")
     low = max(0.02, 0.48 - strength * 0.34)
@@ -125,17 +130,19 @@ def add_jittered_lights(settings: dict) -> None:
 
     count = max(1, int(settings["light_jitter_count"]))
     radius = float(settings["light_jitter_radius"])
+    seed = int(settings.get("variation_seed", 0))
+    phase = float(settings.get("noise_phase", 0.0))
     for index in range(count):
-        angle = index * 2.399
-        offset = radius * (0.45 + 0.55 * ((index % 3) / 2))
+        angle = index * 2.399 + seed * 0.618 + phase * 0.17
+        offset = radius * (0.45 + 0.55 * ((index + seed) % 3) / 2)
         x = -3.2 + math.cos(angle) * offset
         y = -4.0 + math.sin(angle) * offset
-        z = 2.6 + math.sin(angle * 0.7) * offset * 0.5
+        z = 2.6 + math.sin(angle * 0.7 + seed * 0.31) * offset * 0.5
         bpy.ops.object.light_add(type="AREA", location=(x, y, z))
         light = bpy.context.object
         light.name = f"jitter light {index:02d}"
         light.data.size = 1.3 + radius * 1.8
-        light.data.energy = 260 / count * (1.0 + 0.12 * math.sin(index * 1.7))
+        light.data.energy = 260 / count * (1.0 + 0.12 * math.sin(index * 1.7 + seed))
 
 
 def build_scene(settings: dict) -> None:

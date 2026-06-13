@@ -80,6 +80,24 @@ def stride_axis(
     return SweepAxis(name=name, values=tuple(values), note=note)
 
 
+def seed_stride_axis(
+    name: str = "variation_seed",
+    parameter: str = "variation_seed",
+    *,
+    center: int = 0,
+    stride: int = 1,
+    steps: tuple[int, ...] = (0, 1, 2),
+    note: str = "seed replicates test whether a procedural look survives more than one lucky sample",
+) -> SweepAxis:
+    """Build a seed axis around a center integer with an editable stride."""
+    values: list[tuple[str, Mapping[str, Any]]] = []
+    for step in steps:
+        seed = center + step * stride
+        label = f"seed{seed}" if seed >= 0 else f"seed_m{abs(seed)}"
+        values.append((label, {parameter: seed}))
+    return SweepAxis(name=name, values=tuple(values), note=note)
+
+
 PLUME_ALPHA_STRENGTH = SweepAxis(
     name="plume_alpha_strength",
     note="thin transparent shells usually read more like vacuum plume than fire",
@@ -180,6 +198,8 @@ TEXTURE_MAGNITUDE_STRIDE = stride_axis(
     note="increase stride when clean/grain/rugged looks too timid",
 )
 
+VARIATION_SEED = seed_stride_axis()
+
 GLOW_BLOOM = SweepAxis(
     name="glow_bloom",
     note="bloom and halo sweeps are best kept small because too much glow erases structure",
@@ -256,6 +276,7 @@ SWEEP_AXES = {
         TEXTURE_MAGNITUDE,
         TEXTURE_SCALE,
         TEXTURE_MAGNITUDE_STRIDE,
+        VARIATION_SEED,
         GLOW_BLOOM,
         CAMERA_JITTER,
         CAMERA_PERSPECTIVE,

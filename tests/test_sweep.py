@@ -15,7 +15,7 @@ from blender_workbench.postprocess import (
     postprocess_look_variants,
     render_postprocess_sweep,
 )
-from blender_workbench.presets import RENDER_PRESETS, SWEEP_AXES, TILE_PRESETS, one_axis_variants, stride_axis, two_axis_variants
+from blender_workbench.presets import RENDER_PRESETS, SWEEP_AXES, TILE_PRESETS, one_axis_variants, seed_stride_axis, stride_axis, two_axis_variants
 from blender_workbench.primitives import soft_band_alpha_profile
 from blender_workbench.recipes.camera_perspective import (
     CameraPerspectiveSettings,
@@ -43,8 +43,11 @@ from blender_workbench.sweep import (
     SweepVariant,
     TileSpec,
     grid_variants,
+    infer_procedural_controls,
     named_variants,
     normalize_variant_role,
+    replicate_variants,
+    render_selected_replicates,
     select_variant,
     settings_to_jsonable,
     _sweep_workflow_metadata,
@@ -74,6 +77,7 @@ class SweepTests(unittest.TestCase):
         self.assertIn("light_source_jitter", SWEEP_AXES)
         self.assertIn("texture_magnitude", SWEEP_AXES)
         self.assertIn("texture_magnitude_stride", SWEEP_AXES)
+        self.assertIn("variation_seed", SWEEP_AXES)
         self.assertIn("camera_perspective", SWEEP_AXES)
         self.assertIn("camera_orbit", SWEEP_AXES)
         self.assertIn("transparency_alpha", SWEEP_AXES)
@@ -130,6 +134,33 @@ class SweepTests(unittest.TestCase):
         self.assertEqual(variants[0].role, "baseline")
         self.assertEqual(variants[1].tags, ("candidate_texture",))
 
+    def test_procedural_control_inference_and_replicates(self):
+        base = SweepVariant(
+            "marked",
+            {"texture_magnitude": 0.45, "variation_seed": 9},
+            label="marked",
+            tags=("texture",),
+            procedural_controls={"texture_offset": 0.2},
+        )
+
+        replicates = replicate_variants(base, seeds=(3, 4), phases=(0.1,))
+
+        self.assertEqual([variant.name for variant in replicates], ["marked_seed3_phase0p1", "marked_seed4_phase0p1"])
+        self.assertEqual(replicates[0].settings["variation_seed"], 3)
+        self.assertEqual(replicates[0].settings["noise_phase"], 0.1)
+        self.assertEqual(replicates[0].replicate_of, "marked")
+        self.assertEqual(replicates[0].replicate_index, 1)
+        self.assertEqual(replicates[0].tags, ("texture", "robustness_replicate"))
+        self.assertEqual(replicates[0].procedural_controls["texture_offset"], 0.2)
+        self.assertEqual(replicates[0].procedural_controls["variation_seed"], 3)
+        self.assertEqual(infer_procedural_controls(replicates[0].settings), {"variation_seed": 3, "noise_phase": 0.1})
+
+    def test_seed_stride_axis_makes_seed_boards(self):
+        axis = seed_stride_axis(center=10, stride=5, steps=(-1, 0, 1))
+
+        self.assertEqual([label for label, _ in axis.values], ["seed5", "seed10", "seed15"])
+        self.assertEqual([settings["variation_seed"] for _, settings in axis.values], [5, 10, 15])
+
     def test_variant_role_validation_rejects_unknown_roles(self):
         self.assertEqual(normalize_variant_role(None), "candidate")
         with self.assertRaisesRegex(ValueError, "Unknown variant role"):
@@ -165,6 +196,9 @@ class SweepTests(unittest.TestCase):
                                 "note": "promising thumbnail",
                                 "role": "aesthetic_extreme",
                                 "tags": ["glow_edge", "glow_edge", "hero_candidate"],
+                                "replicate_of": "source_tile",
+                                "replicate_index": 2,
+                                "procedural_controls": {"variation_seed": 3, "noise_phase": 0.2},
                                 "settings": {"width": 1.6, "alpha": 0.05},
                             }
                         ]
@@ -179,6 +213,9 @@ class SweepTests(unittest.TestCase):
         self.assertEqual(variants[0].note, "promising thumbnail")
         self.assertEqual(variants[0].role, "aesthetic_extreme")
         self.assertEqual(variants[0].tags, ("glow_edge", "hero_candidate"))
+        self.assertEqual(variants[0].replicate_of, "source_tile")
+        self.assertEqual(variants[0].replicate_index, 2)
+        self.assertEqual(variants[0].procedural_controls["variation_seed"], 3)
         self.assertEqual(variants[0].settings["width"], 1.6)
         self.assertEqual(select_variant(variants, "wide").name, "bright_wide")
 
@@ -190,6 +227,7 @@ class SweepTests(unittest.TestCase):
                 finished=None,
                 settings={},
                 role="baseline",
+                procedural_controls={"variation_seed": 0},
             ),
             RenderResult(
                 name="wide_shell",
@@ -221,11 +259,13 @@ class SweepTests(unittest.TestCase):
         workflow = _sweep_workflow_metadata(results, None)
 
         self.assertIn("role `baseline`", text)
+        self.assertIn("procedural `variation_seed=0`", text)
         self.assertIn("role `candidate`", text)
         self.assertIn("role `failure_anchor`, tags `too_solid`", text)
         self.assertIn("role `aesthetic_extreme`", text)
         self.assertEqual(workflow["pick_handles"][2]["role"], "failure_anchor")
         self.assertEqual(workflow["pick_handles"][2]["tags"], ("too_solid",))
+        self.assertEqual(workflow["pick_handles"][0]["procedural_controls"], {"variation_seed": 0})
 
     def test_write_readme_pushes_grid_to_selected_render(self):
         result = RenderResult(
@@ -383,6 +423,74 @@ class SweepTests(unittest.TestCase):
         self.assertIn("No image render was requested", readme)
         self.assertIn("Open for GUI review", readme)
         self.assertIn("open -a Blender examples/output/demo/selected/wide_shell/wide_shell.blend", readme)
+
+    def test_selected_replicates_write_metadata_without_blender(self):
+        calls = []
+        original_render_variant = sweep_module._render_variant
+
+        def fake_render_variant(**kwargs):
+            calls.append(kwargs)
+            variant = kwargs["variant"]
+            blend_path = kwargs["save_blend_path"]
+            return RenderResult(
+                name=variant.name,
+                raw=None,
+                finished=None,
+                settings=variant.settings,
+                label=variant.label,
+                note=variant.note,
+                role=variant.role,
+                tags=variant.tags,
+                replicate_of=variant.replicate_of,
+                replicate_index=variant.replicate_index,
+                procedural_controls=variant.procedural_controls,
+                blend=str(blend_path.relative_to(kwargs["root"])),
+                open_blend_command=f"open -a Blender {blend_path.relative_to(kwargs['root'])}",
+                render_skipped=True,
+                engine=kwargs["config"].engine,
+                camera_name=kwargs["config"].camera_name,
+                build_seconds=0.01,
+                render_seconds=0.0,
+                postprocess_seconds=0.0,
+            )
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            out_dir = root / "examples/output/demo/selected/marked/replicates"
+            source_sweep = root / "examples/output/demo"
+            source_sweep.mkdir(parents=True)
+            sweep_module._render_variant = fake_render_variant
+            try:
+                results = render_selected_replicates(
+                    variants=[SweepVariant("marked", {"texture_magnitude": 0.45, "variation_seed": 0}, label="marked")],
+                    pick="marked",
+                    build_scene=lambda _settings: None,
+                    out_dir=out_dir,
+                    root=root,
+                    config=RenderConfig(camera_name="DemoCamera"),
+                    postprocess=None,
+                    source_sweep_dir=source_sweep,
+                    seeds=(3, 4),
+                    phases=(0.1,),
+                    save_blend=True,
+                    render_image=False,
+                )
+            finally:
+                sweep_module._render_variant = original_render_variant
+
+            payload = json.loads((out_dir / "replicates.json").read_text())
+            readme = (out_dir / "README.md").read_text()
+
+        self.assertEqual(len(results), 2)
+        self.assertFalse(calls[0]["render_image"])
+        self.assertEqual(payload["workflow"]["stage"], "selected_replicate_check")
+        self.assertEqual(payload["workflow"]["status"], "needs_visual_review")
+        self.assertIsNone(payload["workflow"]["survived_replicates"])
+        self.assertEqual(payload["replicates"][0]["replicate_of"], "marked")
+        self.assertEqual(payload["replicates"][0]["procedural_controls"]["variation_seed"], 3)
+        self.assertEqual(payload["replicates"][0]["procedural_controls"]["noise_phase"], 0.1)
+        self.assertIn("Survived replicate checks: `unknown`", readme)
+        self.assertIn("Do not promote a texture/noise-heavy tile solely because one procedural sample looked good.", readme)
 
     def test_selected_export_requires_an_artifact(self):
         with tempfile.TemporaryDirectory() as tmp:

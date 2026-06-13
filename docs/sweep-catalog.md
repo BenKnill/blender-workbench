@@ -24,6 +24,8 @@ For numeric parameters, use `stride_axis(...)` when you expect to adjust the swe
 
 Use the generated `review.html` page for dense `micro_grid` and `tiny_grid` boards before promoting a winner; full-size raw/finished tiles reveal edge, alpha, label, and noise artifacts that thumbnails hide.
 
+For procedural parameters, use `seed_stride_axis(...)` or `replicate_variants(...)` around stable fields such as `variation_seed`, `noise_phase`, and `texture_offset`. A winner from a noisy texture, jittered light, plume billow, or randomized placement board should survive a selected replicate strip before it becomes a preset.
+
 For recipe-specific stride boards, prefer named stride kwargs such as `lens_stride`, `ior_stride`, or `thickness_stride`. A 5x5 sheet works well when each row isolates one variable and each column is the same `m2, m1, base, p1, p2` step pattern.
 
 ## Shape Sweeps
@@ -46,6 +48,7 @@ Shape sweeps should usually happen before material polish. If the thumbnail is n
 - metal: roughness crossed with edge light strength
 - texture magnitude: clean, marked, craggy, overdone
 - texture scale: fine, medium, broad
+- procedural seed/phase: seed0, seed1, seed2, shifted texture phase
 
 Keep one deliberate `failure_anchor` in material sheets. It calibrates the eye and makes the good tile more legible.
 
