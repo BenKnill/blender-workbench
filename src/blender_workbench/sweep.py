@@ -13,12 +13,43 @@ from pathlib import Path
 from typing import Any
 
 
+VARIANT_ROLES = (
+    "candidate",
+    "baseline",
+    "failure_anchor",
+    "negative_control",
+    "aesthetic_extreme",
+    "reference_attempt",
+)
+PROTECTED_PROMOTION_ROLES = ("failure_anchor", "negative_control")
+
+
+def normalize_variant_role(role: str | None) -> str:
+    value = role or "candidate"
+    if value not in VARIANT_ROLES:
+        allowed = ", ".join(VARIANT_ROLES)
+        raise ValueError(f"Unknown variant role {value!r}; expected one of: {allowed}")
+    return value
+
+
+def normalize_variant_tags(tags: Iterable[str] | None) -> tuple[str, ...]:
+    if tags is None:
+        return ()
+    return tuple(dict.fromkeys(str(tag) for tag in tags if str(tag)))
+
+
 @dataclass(frozen=True)
 class SweepVariant:
     name: str
     settings: Any
     label: str | None = None
     note: str | None = None
+    role: str = "candidate"
+    tags: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "role", normalize_variant_role(self.role))
+        object.__setattr__(self, "tags", normalize_variant_tags(self.tags))
 
 
 @dataclass(frozen=True)
@@ -29,6 +60,8 @@ class RenderResult:
     settings: Any
     label: str | None = None
     note: str | None = None
+    role: str = "candidate"
+    tags: tuple[str, ...] = ()
     blend: str | None = None
     open_blend_command: str | None = None
     render_skipped: bool = False
@@ -38,6 +71,10 @@ class RenderResult:
     render_seconds: float | None = None
     postprocess_seconds: float | None = None
     skipped_existing: bool = False
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "role", normalize_variant_role(self.role))
+        object.__setattr__(self, "tags", normalize_variant_tags(self.tags))
 
 
 @dataclass(frozen=True)
@@ -187,6 +224,8 @@ def grid_variants(
     *,
     base: Mapping[str, Any] | None = None,
     name_sep: str = "_",
+    role: str = "candidate",
+    tags: Iterable[str] | None = None,
 ) -> list[SweepVariant]:
     """Build row-major variants from row and column parameter overrides."""
     variants: list[SweepVariant] = []
@@ -197,7 +236,15 @@ def grid_variants(
             data.update(row_data)
             data.update(col_data)
             name = f"{row_label}{name_sep}{col_label}"
-            variants.append(SweepVariant(name=name, label=name, settings=data))
+            variants.append(
+                SweepVariant(
+                    name=name,
+                    label=name,
+                    settings=data,
+                    role=role,
+                    tags=normalize_variant_tags(tags),
+                )
+            )
     return variants
 
 
@@ -207,6 +254,10 @@ def named_variants(
     base: Mapping[str, Any] | None = None,
     prefix: str | None = None,
     note: str | None = None,
+    role: str = "candidate",
+    tags: Iterable[str] | None = None,
+    roles: Mapping[str, str] | None = None,
+    tags_by_name: Mapping[str, Iterable[str]] | None = None,
 ) -> list[SweepVariant]:
     """Build variants from already-named cases.
 
@@ -216,11 +267,24 @@ def named_variants(
     case_items = cases.items() if isinstance(cases, Mapping) else cases
     variants: list[SweepVariant] = []
     base_data = dict(base or {})
+    default_tags = normalize_variant_tags(tags)
+    roles = roles or {}
+    tags_by_name = tags_by_name or {}
     for label, settings in case_items:
         data = dict(base_data)
         data.update(settings)
         name = f"{prefix}_{label}" if prefix else label
-        variants.append(SweepVariant(name=name, label=label, settings=data, note=note))
+        variant_tags = (*default_tags, *normalize_variant_tags(tags_by_name.get(label)))
+        variants.append(
+            SweepVariant(
+                name=name,
+                label=label,
+                settings=data,
+                note=note,
+                role=roles.get(label, role),
+                tags=variant_tags,
+            )
+        )
     return variants
 
 
@@ -290,12 +354,15 @@ def variants_from_sweep_metadata(sweep_dir: Path) -> list[SweepVariant]:
             raise ValueError(f"{metadata_path} variant {name!r} is missing settings")
         label = item.get("label")
         note = item.get("note")
+        tags = item.get("tags")
         rebuilt.append(
             SweepVariant(
                 name=name,
                 settings=item["settings"],
                 label=label if isinstance(label, str) else None,
                 note=note if isinstance(note, str) else None,
+                role=normalize_variant_role(item.get("role")),
+                tags=normalize_variant_tags(tags if isinstance(tags, (list, tuple)) else None),
             )
         )
     return rebuilt
@@ -507,6 +574,14 @@ def _promotion_command_for_result(template: str, result: RenderResult, index: in
         raise ValueError(f"Unknown promotion command placeholder {{{missing}}}") from error
 
 
+def _role_text(role: str, tags: Iterable[str] = ()) -> str:
+    tag_values = normalize_variant_tags(tags)
+    text = f"role `{normalize_variant_role(role)}`"
+    if tag_values:
+        text = f"{text}, tags `{', '.join(tag_values)}`"
+    return text
+
+
 def _sweep_workflow_metadata(results: list[RenderResult], promotion_command: str | None) -> dict[str, Any]:
     pick_handles = []
     for index, result in enumerate(results, start=1):
@@ -515,6 +590,8 @@ def _sweep_workflow_metadata(results: list[RenderResult], promotion_command: str
             "name": result.name,
             "label": result.label,
             "note": result.note,
+            "role": result.role,
+            "tags": result.tags,
         }
         if promotion_command:
             handle["promotion_command"] = _promotion_command_for_result(promotion_command, result, index)
@@ -545,9 +622,10 @@ def write_readme(
     for index, result in enumerate(results, start=1):
         detail = f": {result.note}" if result.note else ""
         label = f", label `{result.label}`" if result.label and result.label != result.name else ""
+        role = f", {_role_text(result.role, result.tags)}"
         output = result.finished or result.raw
         output_name = Path(output).name if output else "(no image render)"
-        lines.append(f"{index}. pick `{result.name}` or `{index}`{label} -> `{output_name}`{detail}")
+        lines.append(f"{index}. pick `{result.name}` or `{index}`{label}{role} -> `{output_name}`{detail}")
     if notes:
         lines.extend(["", "Notes:", ""])
         lines.extend(f"- {note}" for note in notes)
@@ -605,6 +683,9 @@ def write_selected_readme(
     ]
     if variant.label and variant.label != variant.name:
         lines.append(f"Label: `{variant.label}`")
+    lines.append(f"Role: `{variant.role}`")
+    if variant.tags:
+        lines.append(f"Tags: `{', '.join(variant.tags)}`")
     if variant.note:
         lines.append(f"Note: {variant.note}")
     if source_sweep_dir:
@@ -678,6 +759,8 @@ def _render_variant(
             settings=settings_to_jsonable(variant.settings),
             label=variant.label,
             note=variant.note,
+            role=variant.role,
+            tags=variant.tags,
             postprocess_seconds=postprocess_seconds,
             skipped_existing=True,
         )
@@ -706,6 +789,8 @@ def _render_variant(
             settings=settings_to_jsonable(variant.settings),
             label=variant.label,
             note=variant.note,
+            role=variant.role,
+            tags=variant.tags,
             blend=blend_value,
             open_blend_command=open_blend_command,
             render_skipped=True,
@@ -731,6 +816,8 @@ def _render_variant(
         settings=settings_to_jsonable(variant.settings),
         label=variant.label,
         note=variant.note,
+        role=variant.role,
+        tags=variant.tags,
         blend=blend_value,
         open_blend_command=open_blend_command,
         engine=engine,
@@ -815,10 +902,16 @@ def render_selected_variant(
     source_sweep_dir: Path | None = None,
     save_blend: bool = False,
     render_image: bool = True,
+    allow_anchor_promotion: bool = False,
 ) -> RenderResult:
     """Render one picked variant at higher quality after inspecting a grid."""
     variant_list = list(variants)
     selected = select_variant(variant_list, pick)
+    if selected.role in PROTECTED_PROMOTION_ROLES and not allow_anchor_promotion:
+        raise ValueError(
+            f"Refusing to promote {selected.name!r} with role {selected.role!r}; "
+            "pass allow_anchor_promotion=True after confirming this is intentional"
+        )
     cfg = config or RenderConfig.hero_check()
     root = root or Path.cwd()
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -848,6 +941,8 @@ def render_selected_variant(
             "name": selected.name,
             "label": selected.label,
             "note": selected.note,
+            "role": selected.role,
+            "tags": selected.tags,
             "settings": settings_to_jsonable(selected.settings),
         },
         "render_config": settings_to_jsonable(cfg),
@@ -892,6 +987,7 @@ def render_selected_from_sweep(
     source_sweep_dir: Path | None = None,
     save_blend: bool = False,
     render_image: bool = True,
+    allow_anchor_promotion: bool = False,
 ) -> RenderResult:
     """Promote one tile from a prior sweep grid into a heavier selected render."""
     sweep_dir = Path(sweep_dir)
@@ -911,4 +1007,5 @@ def render_selected_from_sweep(
         source_sweep_dir=source_sweep_dir or sweep_dir,
         save_blend=save_blend,
         render_image=render_image,
+        allow_anchor_promotion=allow_anchor_promotion,
     )

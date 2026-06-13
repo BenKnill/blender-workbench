@@ -10,7 +10,16 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from blender_workbench.sweep import RenderResult, SweepVariant, TileSpec, _relative_or_absolute, named_variants, settings_to_jsonable, write_contact_sheet
+from blender_workbench.sweep import (
+    RenderResult,
+    SweepVariant,
+    TileSpec,
+    _relative_or_absolute,
+    _role_text,
+    named_variants,
+    settings_to_jsonable,
+    write_contact_sheet,
+)
 
 
 @dataclass(frozen=True)
@@ -114,7 +123,8 @@ def write_postprocess_readme(
     ]
     for index, result in enumerate(results, start=1):
         detail = f": {result.note}" if result.note else ""
-        lines.append(f"{index}. `{Path(result.finished or result.raw).name}`{detail}")
+        role = _role_text(result.role, result.tags)
+        lines.append(f"{index}. `{Path(result.finished or result.raw).name}`, {role}{detail}")
     if notes:
         lines.extend(["", "Notes:", ""])
         lines.extend(f"- {note}" for note in notes)
@@ -174,6 +184,8 @@ def render_postprocess_sweep(
                 settings=settings_to_jsonable(variant.settings),
                 label=variant.label,
                 note=variant.note,
+                role=variant.role,
+                tags=variant.tags,
                 postprocess_seconds=postprocess_seconds,
             )
         )

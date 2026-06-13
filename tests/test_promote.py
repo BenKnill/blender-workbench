@@ -19,7 +19,14 @@ class PromoteTests(unittest.TestCase):
             sweep_dir = Path(tmp)
             metadata = {
                 "variants": [
-                    {"name": "wide_shell", "label": "wide", "note": "winner", "settings": {"width": 1.4}},
+                    {
+                        "name": "wide_shell",
+                        "label": "wide",
+                        "note": "winner",
+                        "role": "aesthetic_extreme",
+                        "tags": ["glow_edge"],
+                        "settings": {"width": 1.4},
+                    },
                     {"name": "soft_fill", "label": "soft", "settings": {"fill": 0.8}},
                 ]
             }
@@ -33,6 +40,9 @@ class PromoteTests(unittest.TestCase):
         self.assertEqual(same_variants[0].settings, {"width": 1.4})
         self.assertEqual(variants[0].label, "wide")
         self.assertEqual(variants[0].note, "winner")
+        self.assertEqual(variants[0].role, "aesthetic_extreme")
+        self.assertEqual(variants[0].tags, ("glow_edge",))
+        self.assertEqual(variants[1].role, "candidate")
 
     def test_select_metadata_variant_accepts_index_name_or_label(self):
         with tempfile.TemporaryDirectory() as tmp:
