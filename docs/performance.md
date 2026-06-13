@@ -7,7 +7,7 @@ The workbench should make the first useful sheet cheap. Spend time on wide visua
 - `shape_scout`: Workbench engine, 520x340, one sample, micro tiles. Use for silhouette, scale, layout, density, and camera blocking.
 - `material_scout`: Eevee when available, 640x420, low samples, micro tiles. Use for color, alpha, transparency, roughness, and broad material direction.
 - `cycles_preview`: Cycles, 760x500, 32 samples, reduced bounces. Use when glow, lighting, glass, subsurface, or volumetrics matter.
-- `hero_check`: Cycles, 1280x840, 96 samples. Use only after a smaller sweep has shortlisted settings.
+- `hero_check`: Cycles, 1280x840, 96 samples. Use via `render_selected_variant(...)` only after a smaller sweep has shortlisted settings.
 
 Use `dataclasses.replace(...)` to make local tweaks without losing the preset name:
 
@@ -29,6 +29,7 @@ config = replace(
 - Prefer `micro_grid` for broad scouting and `balanced_grid` for readable 3x3 comparisons.
 - Turn postprocessing off when testing shape or framing: `render_sweep(..., postprocess=None)`.
 - Reuse tiles during layout churn with `replace(config, reuse_existing=True)`.
+- Treat every contact sheet as a shortlist step: pick one promising tile and run one selected render before editing the scene again.
 - Keep camera perspective scouts cheap: the variable is usually lens or scene depth cues, not samples.
 - Keep mesh-light scouts low-sample until shape, distance, and fill are chosen; emitter noise is acceptable in the first board.
 - Keep `build_scene(settings)` cheap: avoid simulations, huge mesh generation, high subdivision, and expensive boolean stacks in the first pass.
@@ -50,8 +51,8 @@ For stacked transparent materials, watch `transparent_max_bounces`. Too low can 
 
 ## Useful Ladders
 
-- Shape: `shape_scout` + `micro_grid`, then rerun winners with `cycles_preview`.
+- Shape: `shape_scout` + `micro_grid`, then promote one winner with `render_selected_variant(...)`.
 - Camera: `cycles_preview` with low samples if shadows/markers matter; otherwise `shape_scout` is enough for framing.
-- Transparency: `material_scout` first, then `cycles_preview` if alpha sorting or glow is misleading.
+- Transparency: `material_scout` first, then selected `cycles_preview` or `hero_check` if alpha sorting or glow is misleading.
 - Caustics: start with `cycles_preview`, keep the grid small, then use `hero_check` only for the final two or three variants.
 - Long exposure: scout streak length and framing with `shape_scout`, then test glow and haze with `cycles_preview`.

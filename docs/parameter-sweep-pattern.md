@@ -8,8 +8,9 @@ Use this repo when a Blender idea needs fast visual comparison instead of one-of
 2. Write one `build_scene(settings)` function that fully rebuilds the scene.
 3. Render a low-cost sweep with fixed camera, resolution, and samples.
 4. Read the contact sheet before changing the scene.
-5. Promote the best settings into a named preset.
-6. Render one heavier version only after the sweep explains the direction.
+5. Pick the best tile by exact variant name or 1-based index.
+6. Render that pick with `render_selected_variant(...)`.
+7. Promote the selected settings into a named preset only after the heavier render still works.
 
 ## Sweep Design
 
@@ -30,7 +31,27 @@ Avoid mixing too many axes in one grid. A 2x3 or 3x3 sheet is often more useful 
 - Include at least one failure anchor when the failure mode is informative.
 - Put generated images under ignored output folders such as `examples/output/` or `runs/`.
 - Keep `metadata.json` next to the tiles so visual picks can become reproducible presets.
-- Prefer small diagnostic renders, then spend samples on the winner.
+- Prefer small diagnostic renders, then spend samples on the winner with `RENDER_PRESETS["hero_check"]`.
+
+## Selection Render
+
+After a sheet renders, choose one tile and render it larger:
+
+```python
+from blender_workbench.presets import RENDER_PRESETS
+from blender_workbench.sweep import render_selected_variant
+
+render_selected_variant(
+    variants=variants,
+    pick="mesh_fill_p1",
+    build_scene=build_scene,
+    out_dir=OUT / "selected" / "mesh_fill_p1",
+    config=RENDER_PRESETS["hero_check"],
+    source_sweep_dir=OUT,
+)
+```
+
+The selected render writes `selected.json`, preserving the pick, settings, render config, source sweep, and final file paths.
 
 ## Transparency Lesson
 

@@ -17,7 +17,7 @@ from blender_workbench.recipes.rocket_plume import (
 )
 from blender_workbench.recipes.subsurface import SubsurfaceSettings, coerce_subsurface_settings, subsurface_variants
 from blender_workbench.recipes.transparency import TransparencySettings, coerce_transparency_settings, transparency_variants
-from blender_workbench.sweep import RenderConfig, SweepVariant, TileSpec, grid_variants, named_variants, settings_to_jsonable
+from blender_workbench.sweep import RenderConfig, SweepVariant, TileSpec, grid_variants, named_variants, select_variant, settings_to_jsonable
 
 
 class SweepTests(unittest.TestCase):
@@ -91,6 +91,23 @@ class SweepTests(unittest.TestCase):
         self.assertEqual([variant.name for variant in variants], ["mat_clean", "mat_rugged"])
         self.assertEqual(variants[1].label, "rugged")
         self.assertTrue(variants[1].settings["fixed_camera"])
+
+    def test_select_variant_accepts_index_name_or_label(self):
+        variants = [
+            SweepVariant("wide_shell", {"width": 1.4}, label="wide"),
+            SweepVariant("soft_fill", {"fill": 0.8}, label="soft"),
+        ]
+
+        self.assertEqual(select_variant(variants, 1).name, "wide_shell")
+        self.assertEqual(select_variant(variants, "2").name, "soft_fill")
+        self.assertEqual(select_variant(variants, "wide_shell").settings["width"], 1.4)
+        self.assertEqual(select_variant(variants, "soft").name, "soft_fill")
+
+    def test_select_variant_reports_unknown_picks(self):
+        variants = [SweepVariant("wide_shell", {"width": 1.4})]
+
+        with self.assertRaisesRegex(ValueError, "Unknown variant"):
+            select_variant(variants, "missing")
 
     def test_tile_spec_auto_columns_make_square_boards(self):
         tile = TileSpec.auto_micro_grid()

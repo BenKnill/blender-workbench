@@ -214,6 +214,38 @@ def named_variants(
     return variants
 
 
+def select_variant(variants: Iterable[SweepVariant], pick: str | int) -> SweepVariant:
+    """Select a variant by 1-based index, exact name, or exact label."""
+    variant_list = list(variants)
+    if not variant_list:
+        raise ValueError("Cannot select from an empty variant list")
+
+    if isinstance(pick, int) or (isinstance(pick, str) and pick.isdigit()):
+        index = int(pick)
+        if 1 <= index <= len(variant_list):
+            return variant_list[index - 1]
+        raise ValueError(f"Variant index {index} is outside 1..{len(variant_list)}")
+
+    matches = [variant for variant in variant_list if variant.name == pick]
+    if not matches:
+        matches = [variant for variant in variant_list if variant.label == pick]
+    if len(matches) == 1:
+        return matches[0]
+    if len(matches) > 1:
+        raise ValueError(f"Variant pick {pick!r} is ambiguous; use the full variant name")
+
+    preview = ", ".join(variant.name for variant in variant_list[:8])
+    suffix = "" if len(variant_list) <= 8 else f", ... ({len(variant_list)} total)"
+    raise ValueError(f"Unknown variant {pick!r}. Available names: {preview}{suffix}")
+
+
+def _relative_or_absolute(path: Path, root: Path) -> str:
+    try:
+        return str(path.relative_to(root))
+    except ValueError:
+        return str(path)
+
+
 def _engine_candidates(requested: str) -> tuple[str, ...]:
     aliases = {
         "EEVEE": ("BLENDER_EEVEE_NEXT", "BLENDER_EEVEE"),
@@ -410,8 +442,113 @@ def write_readme(out_dir: Path, title: str, results: list[RenderResult], notes: 
     if notes:
         lines.extend(["", "Notes:", ""])
         lines.extend(f"- {note}" for note in notes)
-    lines.extend(["", "`metadata.json` contains the full settings for each tile.", ""])
+    lines.extend(
+        [
+            "",
+            "Next:",
+            "",
+            "- Pick the most promising tile by `name` in `metadata.json`.",
+            "- Render that pick with `render_selected_variant(...)` and a heavier config such as `RENDER_PRESETS['hero_check']`.",
+            "",
+            "`metadata.json` contains the full settings for each tile.",
+            "",
+        ]
+    )
     (out_dir / "README.md").write_text("\n".join(lines))
+
+
+def write_selected_readme(
+    out_dir: Path,
+    title: str,
+    variant: SweepVariant,
+    result: RenderResult,
+    notes: list[str] | None = None,
+    source_sweep_dir: Path | None = None,
+    root: Path | None = None,
+) -> None:
+    lines = [
+        f"# {title}",
+        "",
+        f"Selected variant: `{variant.name}`",
+    ]
+    if variant.label and variant.label != variant.name:
+        lines.append(f"Label: `{variant.label}`")
+    if variant.note:
+        lines.append(f"Note: {variant.note}")
+    if source_sweep_dir:
+        root = root or Path.cwd()
+        lines.append(f"Source sweep: `{_relative_or_absolute(source_sweep_dir, root)}`")
+    lines.extend(["", "Rendered files:", "", f"- `{Path(result.raw).name}`"])
+    if result.finished:
+        lines.append(f"- `{Path(result.finished).name}`")
+    if notes:
+        lines.extend(["", "Notes:", ""])
+        lines.extend(f"- {note}" for note in notes)
+    lines.extend(["", "`selected.json` contains the chosen settings, render config, and provenance.", ""])
+    (out_dir / "README.md").write_text("\n".join(lines))
+
+
+def _render_variant(
+    *,
+    variant: SweepVariant,
+    build_scene: Callable[[Any], None],
+    out_dir: Path,
+    root: Path,
+    config: RenderConfig,
+    postprocess: Callable[[Path, Path], bool] | None,
+    file_suffix: str = "",
+    render_label: str = "sweep",
+) -> RenderResult:
+    import bpy
+
+    suffix = f".{file_suffix}" if file_suffix else ""
+    raw = out_dir / f"{variant.name}{suffix}.raw.png"
+    finished = out_dir / f"{variant.name}{suffix}.finished.png"
+    wrote_finished = finished.exists()
+    if config.reuse_existing and raw.exists():
+        postprocess_started = time.perf_counter()
+        ran_postprocess = False
+        if not wrote_finished and postprocess:
+            ran_postprocess = True
+            wrote_finished = postprocess(raw, finished)
+        postprocess_seconds = time.perf_counter() - postprocess_started if ran_postprocess else 0.0
+        print(f"Reusing {render_label} variant {variant.name}")
+        return RenderResult(
+            name=variant.name,
+            raw=_relative_or_absolute(raw, root),
+            finished=_relative_or_absolute(finished, root) if wrote_finished else None,
+            settings=settings_to_jsonable(variant.settings),
+            label=variant.label,
+            note=variant.note,
+            postprocess_seconds=postprocess_seconds,
+            skipped_existing=True,
+        )
+
+    build_started = time.perf_counter()
+    build_scene(variant.settings)
+    build_seconds = time.perf_counter() - build_started
+    engine = configure_render(config)
+    if config.camera_name:
+        bpy.context.scene.camera = bpy.data.objects[config.camera_name]
+    bpy.context.scene.render.filepath = str(raw)
+    print(f"Rendering {render_label} variant {variant.name} ({engine}, {config.samples} samples)")
+    render_started = time.perf_counter()
+    bpy.ops.render.render(write_still=True)
+    render_seconds = time.perf_counter() - render_started
+    postprocess_started = time.perf_counter()
+    wrote_finished = postprocess(raw, finished) if postprocess else False
+    postprocess_seconds = time.perf_counter() - postprocess_started
+    return RenderResult(
+        name=variant.name,
+        raw=_relative_or_absolute(raw, root),
+        finished=_relative_or_absolute(finished, root) if wrote_finished else None,
+        settings=settings_to_jsonable(variant.settings),
+        label=variant.label,
+        note=variant.note,
+        build_seconds=build_seconds,
+        render_seconds=render_seconds,
+        postprocess_seconds=postprocess_seconds,
+    )
 
 
 def render_sweep(
@@ -432,8 +569,6 @@ def render_sweep(
     This function renders each variant, writes raw/finished PNGs, metadata,
     README, and `contact_sheet.png`.
     """
-    import bpy
-
     variant_list = list(variants)
     cfg = config or RenderConfig()
     if square:
@@ -444,56 +579,14 @@ def render_sweep(
     results: list[RenderResult] = []
     sweep_started = time.perf_counter()
     for variant in variant_list:
-        raw = out_dir / f"{variant.name}.raw.png"
-        finished = out_dir / f"{variant.name}.finished.png"
-        wrote_finished = finished.exists()
-        if cfg.reuse_existing and raw.exists():
-            postprocess_started = time.perf_counter()
-            ran_postprocess = False
-            if not wrote_finished and postprocess:
-                ran_postprocess = True
-                wrote_finished = postprocess(raw, finished)
-            postprocess_seconds = time.perf_counter() - postprocess_started if ran_postprocess else 0.0
-            results.append(
-                RenderResult(
-                    name=variant.name,
-                    raw=str(raw.relative_to(root)),
-                    finished=str(finished.relative_to(root)) if wrote_finished else None,
-                    settings=settings_to_jsonable(variant.settings),
-                    label=variant.label,
-                    note=variant.note,
-                    postprocess_seconds=postprocess_seconds,
-                    skipped_existing=True,
-                )
-            )
-            print(f"Reusing sweep variant {variant.name}")
-            continue
-
-        build_started = time.perf_counter()
-        build_scene(variant.settings)
-        build_seconds = time.perf_counter() - build_started
-        engine = configure_render(cfg)
-        if cfg.camera_name:
-            bpy.context.scene.camera = bpy.data.objects[cfg.camera_name]
-        bpy.context.scene.render.filepath = str(raw)
-        print(f"Rendering sweep variant {variant.name} ({engine}, {cfg.samples} samples)")
-        render_started = time.perf_counter()
-        bpy.ops.render.render(write_still=True)
-        render_seconds = time.perf_counter() - render_started
-        postprocess_started = time.perf_counter()
-        wrote_finished = postprocess(raw, finished) if postprocess else False
-        postprocess_seconds = time.perf_counter() - postprocess_started
         results.append(
-            RenderResult(
-                name=variant.name,
-                raw=str(raw.relative_to(root)),
-                finished=str(finished.relative_to(root)) if wrote_finished else None,
-                settings=settings_to_jsonable(variant.settings),
-                label=variant.label,
-                note=variant.note,
-                build_seconds=build_seconds,
-                render_seconds=render_seconds,
-                postprocess_seconds=postprocess_seconds,
+            _render_variant(
+                variant=variant,
+                build_scene=build_scene,
+                out_dir=out_dir,
+                root=root,
+                config=cfg,
+                postprocess=postprocess,
             )
         )
 
@@ -514,3 +607,57 @@ def render_sweep(
         )
     )
     return results
+
+
+def render_selected_variant(
+    *,
+    variants: Iterable[SweepVariant],
+    pick: str | int,
+    build_scene: Callable[[Any], None],
+    out_dir: Path,
+    root: Path | None = None,
+    config: RenderConfig | None = None,
+    postprocess: Callable[[Path, Path], bool] | None = postprocess_glow_contrast,
+    title: str = "Selected Blender Render",
+    notes: list[str] | None = None,
+    source_sweep_dir: Path | None = None,
+) -> RenderResult:
+    """Render one picked variant at higher quality after inspecting a grid."""
+    variant_list = list(variants)
+    selected = select_variant(variant_list, pick)
+    cfg = config or RenderConfig.hero_check()
+    root = root or Path.cwd()
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    selected_started = time.perf_counter()
+    result = _render_variant(
+        variant=selected,
+        build_scene=build_scene,
+        out_dir=out_dir,
+        root=root,
+        config=cfg,
+        postprocess=postprocess,
+        file_suffix="hero",
+        render_label="selected",
+    )
+    write_selected_readme(out_dir, title, selected, result, notes=notes, source_sweep_dir=source_sweep_dir, root=root)
+    source_value = _relative_or_absolute(source_sweep_dir, root) if source_sweep_dir else None
+    (out_dir / "selected.json").write_text(
+        json.dumps(
+            {
+                "pick": pick,
+                "source_sweep": source_value,
+                "selected": {
+                    "name": selected.name,
+                    "label": selected.label,
+                    "note": selected.note,
+                    "settings": settings_to_jsonable(selected.settings),
+                },
+                "render_config": settings_to_jsonable(cfg),
+                "total_seconds": time.perf_counter() - selected_started,
+                "result": dataclasses.asdict(result),
+            },
+            indent=2,
+        )
+    )
+    return result

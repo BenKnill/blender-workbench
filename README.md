@@ -6,7 +6,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 
 ## What This Provides
 
-- `blender_workbench.sweep`: render a list/grid of variants, write raw/finished PNGs, metadata, README, and a contact sheet.
+- `blender_workbench.sweep`: render a list/grid of variants, write raw/finished PNGs, metadata, README, contact sheets, and selected hero renders.
 - `blender_workbench.camera`: orbit-camera helpers plus lens/distance matching for perspective studies.
 - `blender_workbench.materials`: small material helpers with explicit alpha, emission, and subsurface semantics.
 - `blender_workbench.presets`: starter axes, render profiles, and tile layouts for common visual experiments.
@@ -44,7 +44,7 @@ The example writes to `examples/output/mini_plume_sweep/`.
 3. Use `render_sweep(...)` with one fixed camera first.
 4. Inspect `contact_sheet.png`.
 5. Widen or narrow the sweep based on what the sheet shows.
-6. Promote a chosen setting into the main scene only after seeing the grid.
+6. Render the chosen tile with `render_selected_variant(...)` before folding it into the main scene.
 
 ## Design Bias
 
@@ -60,7 +60,7 @@ Useful imports for new experiments:
 from dataclasses import replace
 
 from blender_workbench.presets import RENDER_PRESETS, SWEEP_AXES, TILE_PRESETS, stride_axis, two_axis_variants
-from blender_workbench.sweep import named_variants, render_sweep
+from blender_workbench.sweep import named_variants, render_selected_variant, render_sweep
 
 variants = two_axis_variants(
     SWEEP_AXES["plume_alpha_strength"],
@@ -74,11 +74,20 @@ render_sweep(
     out_dir=OUT,
     config=replace(RENDER_PRESETS["cycles_preview"], tile=TILE_PRESETS["micro_grid"]),
 )
+
+render_selected_variant(
+    variants=variants,
+    pick="balanced_bell",
+    build_scene=build_scene,
+    out_dir=OUT / "selected" / "balanced_bell",
+    config=RENDER_PRESETS["hero_check"],
+    source_sweep_dir=OUT,
+)
 ```
 
 The default contact sheet is now a tiny square auto-grid. Use `tiny_grid`/`auto_tiny_grid` when you want lots of tiles, `micro_grid`/`auto_micro_grid` when labels need more room, `hero_pair` for larger before/after comparisons, `balanced_grid` for readable 3x3 studies, `square_moodboard` for palette and shape boards, and `filmstrip` only when sequence order matters more than square comparison.
 
-Use `shape_scout` for silhouette/form, `material_scout` for quick color and transparency reads, `cycles_preview` when lighting matters, and `hero_check` only after a smaller sheet has picked a direction.
+Use `shape_scout` for silhouette/form, `material_scout` for quick color and transparency reads, `cycles_preview` when lighting matters, and `hero_check` only through `render_selected_variant(...)` after a smaller sheet has picked a direction.
 
 For named moodboards, skip row/column ceremony:
 
@@ -152,6 +161,12 @@ Run the emissive geometry lighting scout:
 ```
 
 This uses `blender_workbench.recipes.mesh_light` to compare emissive mesh size, distance, height, fill, and gel/shape as a 5x5 same-view stride sheet. It is based on the BlenderArt mesh-light and studio pack-shot lessons.
+
+After inspecting the sheet, promote one tile:
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/mesh_light_scout.py -- --pick mesh_fill_p1
+```
 
 ![Mesh light scout contact sheet](docs/assets/mesh-light-scout.jpg)
 
