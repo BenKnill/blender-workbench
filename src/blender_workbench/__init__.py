@@ -5,6 +5,7 @@ from .camera import add_orbit_camera, camera_distance_for_matching_framing, look
 from .capabilities import collect_capability_report, expand_required_tools, format_capability_report
 from .example_manifest import ExamplePreflight, format_preflight_report, load_manifest, preflight_examples
 from .example_pick_smoke import PickSmokePlan, PickSmokeResult, pick_smoke_plans, run_pick_smoke, verify_selected_json
+from .learning_coverage import format_learning_coverage_report, uncovered_learning_prompts, validate_learning_coverage
 from .postprocess import (
     PostprocessLookSettings,
     coerce_postprocess_look_settings,
@@ -53,6 +54,7 @@ __all__ = [
     "ExamplePreflight",
     "format_preflight_report",
     "format_capability_report",
+    "format_learning_coverage_report",
     "RenderConfig",
     "RenderResult",
     "RENDER_PRESETS",
@@ -107,6 +109,8 @@ __all__ = [
     "soft_band_alpha_profile",
     "stride_axis",
     "two_axis_variants",
+    "uncovered_learning_prompts",
+    "validate_learning_coverage",
     "variants_from_sweep_metadata",
     "verify_selected_json",
     "review_summary",
