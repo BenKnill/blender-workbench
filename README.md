@@ -118,6 +118,13 @@ Before promoting a transparent, volumetric, SSS, caustic, denoised, or postproce
 
 The comparison writes `profile_comparison/<pick>/profile_comparison.json` and `profile_comparison.png` with source sweep provenance, the chosen pick, each render config, postprocess state, warnings, and output paths. Use it when a cheap Workbench, Eevee, or low-sample Cycles sheet might change under `hero_check` because of alpha sorting, denoising, transparent bounces, volumetrics, caustics, or glow.
 
+Use frame-sampled filmstrips when the visual question is temporal: animated texture masks, driver scale/direction, plume billow evolution, camera path checkpoints, path-following objects, or pose stepping. `render_frame_sweep(...)` builds one animated scene, samples specific frames, and records frame number, fps/time, driver values, render config, and output paths in `metadata.json`:
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/animated_texture_driver_scout.py
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/animated_texture_driver_scout.py -- --pick-frame 24
+```
+
 ## Agent Loop
 
 1. Define a small dataclass or dict of meaningful parameters.
@@ -129,7 +136,8 @@ The comparison writes `profile_comparison/<pick>/profile_comparison.json` and `p
 7. Render the chosen tile with `render_selected_from_sweep(...)` before folding it into the main scene.
 8. For noise, texture, jitter, or placement-heavy winners, run `render_selected_replicates_from_sweep(...)` across a few seeds/phases before promotion.
 9. For profile-sensitive winners, run `render_profile_comparison_from_sweep(...)` or an example's `--compare-profiles` path before promotion.
-10. When viewport inspection would help, add `save_blend=True` or use an example's `--save-blend` / `--export-blend-only` path and open the saved `.blend`.
+10. For animated drivers or frame-dependent setups, run `render_frame_sweep(...)` and promote a frame or subrange only after neighboring samples still make sense.
+11. When viewport inspection would help, add `save_blend=True` or use an example's `--save-blend` / `--export-blend-only` path and open the saved `.blend`.
 
 ## Design Bias
 

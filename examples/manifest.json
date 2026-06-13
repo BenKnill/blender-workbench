@@ -2,6 +2,25 @@
   "schema": 1,
   "examples": [
     {
+      "name": "animated_texture_driver_scout",
+      "script": "examples/animated_texture_driver_scout.py",
+      "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/animated_texture_driver_scout.py",
+      "required_capabilities": ["blender", "magick"],
+      "cost": {
+        "profile": "cycles_preview",
+        "engine": "CYCLES",
+        "runtime": "quick",
+        "mode": "frame_sweep",
+        "requires_blender": true,
+        "tile_count": 5,
+        "tile_preset": "filmstrip",
+        "reuse_outputs": true
+      },
+      "outputs": ["examples/output/animated_texture_driver_scout/metadata.json", "examples/output/animated_texture_driver_scout/contact_sheet.png"],
+      "prerequisites": [],
+      "docs_asset": "docs/assets/animated-texture-driver-scout.svg"
+    },
+    {
       "name": "camera_perspective_scout",
       "script": "examples/camera_perspective_scout.py",
       "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/camera_perspective_scout.py",
