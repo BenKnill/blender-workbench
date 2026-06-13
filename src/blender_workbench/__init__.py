@@ -15,7 +15,14 @@ from .example_pick_smoke import PickSmokePlan, PickSmokeResult, pick_smoke_plans
 from .fixtures import FixtureStatus, fixture_builder, fixture_statuses, load_fixture_registry, validate_fixture_registry
 from .handoff import build_handoff_prompt_card, format_handoff_markdown, prompt_card_from_reference_prompt, write_handoff_card
 from .image_diagnostics import analyze_sweep_images, format_diagnostics_readme
-from .learning_coverage import format_learning_coverage_report, uncovered_learning_prompts, validate_learning_coverage
+from .learning_coverage import (
+    audit_learning_coverage,
+    format_learning_coverage_audit,
+    format_learning_coverage_report,
+    linked_issue_numbers,
+    uncovered_learning_prompts,
+    validate_learning_coverage,
+)
 from .new_scout import ScoutPlan, build_scout_plan, format_scout_plan, write_scout_scaffold
 from .postprocess import (
     PostprocessLookSettings,
@@ -95,6 +102,7 @@ __all__ = [
     "add_soft_horizon_band",
     "analyze_sweep_images",
     "ArtifactDescriptor",
+    "audit_learning_coverage",
     "build_artifact_index",
     "build_handoff_prompt_card",
     "build_scout_plan",
@@ -112,6 +120,7 @@ __all__ = [
     "format_capability_report",
     "format_handoff_markdown",
     "format_learning_coverage_report",
+    "format_learning_coverage_audit",
     "format_pass_diagnostic_readme",
     "format_scout_plan",
     "PassDiagnosticReport",
@@ -144,6 +153,7 @@ __all__ = [
     "load_fixture_registry",
     "load_review_log",
     "load_sweep_variants",
+    "linked_issue_numbers",
     "look_at",
     "make_artifact_fingerprint",
     "named_variants",
