@@ -116,6 +116,25 @@
       "docs_asset": "docs/assets/light-texture-scout.jpg"
     },
     {
+      "name": "caustic_water_scout",
+      "script": "examples/caustic_water_scout.py",
+      "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/caustic_water_scout.py",
+      "required_capabilities": ["blender", "magick"],
+      "cost": {
+        "profile": "cycles_preview",
+        "engine": "CYCLES",
+        "runtime": "quick",
+        "mode": "grid_scout",
+        "requires_blender": true,
+        "tile_count": 11,
+        "tile_preset": "auto_square_moodboard",
+        "reuse_outputs": true
+      },
+      "outputs": ["examples/output/caustic_water_scout/metadata.json", "examples/output/caustic_water_scout/contact_sheet.png"],
+      "prerequisites": [],
+      "docs_asset": "docs/assets/caustic-water-scout.svg"
+    },
+    {
       "name": "layered_material_scout",
       "script": "examples/layered_material_scout.py",
       "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/layered_material_scout.py",

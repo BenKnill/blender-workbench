@@ -50,7 +50,7 @@ Shape sweeps should usually happen before material polish. If the thumbnail is n
 - transparent emission: alpha crossed with strength
 - transparent glass: alpha, transmission, roughness, IOR, tint, pane thickness
 - smoke billboards: alpha/density, edge feather, noise scale, fake forward scatter, layer count, spacing, and parallax
-- glass or water: roughness crossed with caustic scale
+- glass or water caustics: roughness, fake pattern scale, light size, contrast, tint, receiver readability
 - subsurface: radius crossed with color
 - layered skin/SSS components: diffuse, epidermal/deep scatter, backscatter, broad specular, wet specular, bump, balanced mix, and failure anchors
 - metal: roughness crossed with edge light strength
@@ -77,7 +77,7 @@ Keep one deliberate `failure_anchor` in material sheets. It calibrates the eye a
 - camera perspective: wide/close, normal/mid, portrait/far, tele/flat
 - depth of field: foreground/subject/background focus, f-stop, matched lens, foreground occluders, background markers, bokeh highlights
 - scene depth cues: foreground anchors, background anchors, grid spacing, subject depth
-- caustics: light size, water roughness, pattern scale
+- caustics: light size, water roughness, fake pattern scale, caustic contrast, floor/background readability
 - space plume: blue-white emission, soft gray shell, low fire color
 - subsurface candy: opal, amber, ruby, sea-glass
 
@@ -121,10 +121,10 @@ Postprocess sweeps should reuse one raw render when the scene is already selecte
 - `examples/transparency_scout.py` for a 5x5 alpha/roughness/IOR/thickness/tint stride sheet
 - `examples/light_texture_scout.py` for a concrete named light-jitter plus texture-magnitude board
 - `examples/procedural_texture_scout.py` for a BlenderArt issue 22 surface texture-node board before reusing a material preset
+- `examples/caustic_water_scout.py` for fake caustic ribbons over structured water/floor receivers before expensive physical caustics
 - `examples/rocket_plume_texture_scout.py` for a dense plume density-texture board from smooth through overdone to whiteout
 - `examples/silhouette_shape_scout.py` for an unlabeled blind silhouette board, then `--labels` or `--pick` after the visual choice
 - `light_source_jitter` x `texture_magnitude` with `balanced_grid`
 - `sunset_haze` as a one-axis `filmstrip`
 - `subsurface_candy` x shape scale with `square_moodboard`
-- caustic water scale x roughness with `balanced_grid`
 - silhouette shape as unlabeled micro thumbnails, then rerun winners with labels

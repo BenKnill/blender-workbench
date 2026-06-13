@@ -67,17 +67,19 @@
         "examples": [
           "examples/procedural_texture_scout.py",
           "examples/light_texture_scout.py",
-          "examples/terrain_environment_scout.py"
+          "examples/terrain_environment_scout.py",
+          "examples/caustic_water_scout.py"
         ],
         "docs": ["docs/source-translation.md", "docs/learning-notes.md"],
         "issues": [12, 22],
         "artifacts": [
           "docs/assets/procedural-texture-scout.svg",
           "docs/assets/light-texture-scout.jpg",
-          "docs/assets/terrain-environment-scout.jpg"
+          "docs/assets/terrain-environment-scout.jpg",
+          "docs/assets/caustic-water-scout.svg"
         ]
       },
-      "notes": "The broad environment, concrete light/texture, and reusable surface texture-node boards exist; caustic water remains open."
+      "notes": "The broad environment, concrete light/texture, reusable surface texture-node, and fake caustic-water guardrail boards exist."
     },
     {
       "id": "blenderart39-virtual-landscape-compositing",

@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-labelledby="title desc">
+  <title id="title">Caustic water scout diagram</title>
+  <desc id="desc">A structured pool receiver with blue caustic ribbons, water sheet, source marker, and background value steps.</desc>
+  <rect width="960" height="540" fill="#0d1118"/>
+  <rect x="96" y="92" width="768" height="308" rx="8" fill="#1a202b" stroke="#4d5968" stroke-width="2"/>
+  <path d="M144 402 L816 402 L754 476 L206 476 Z" fill="#222833"/>
+  <rect x="204" y="254" width="552" height="134" rx="8" fill="#1a6fb2" opacity="0.26"/>
+  <g stroke="#7fd5ff" stroke-linecap="round" fill="none">
+    <path d="M224 346 C312 314, 376 376, 464 342 S632 300, 736 340" stroke-width="10" opacity="0.48"/>
+    <path d="M222 300 C310 270, 380 326, 468 300 S632 258, 738 292" stroke-width="7" opacity="0.62"/>
+    <path d="M238 372 C314 348, 408 404, 506 366 S650 330, 726 364" stroke-width="6" opacity="0.58"/>
+    <path d="M240 324 C344 286, 446 348, 548 316 S662 286, 724 312" stroke-width="4" opacity="0.78"/>
+  </g>
+  <g stroke="#0a0d12" stroke-width="4" opacity="0.78">
+    <line x1="244" y1="258" x2="244" y2="386"/>
+    <line x1="336" y1="258" x2="336" y2="386"/>
+    <line x1="428" y1="258" x2="428" y2="386"/>
+    <line x1="520" y1="258" x2="520" y2="386"/>
+    <line x1="612" y1="258" x2="612" y2="386"/>
+    <line x1="704" y1="258" x2="704" y2="386"/>
+  </g>
+  <g fill="#283140">
+    <rect x="226" y="150" width="52" height="86"/>
+    <rect x="310" y="138" width="52" height="98"/>
+    <rect x="394" y="164" width="52" height="72"/>
+    <rect x="478" y="130" width="52" height="106"/>
+    <rect x="562" y="156" width="52" height="80"/>
+    <rect x="646" y="144" width="52" height="92"/>
+  </g>
+  <rect x="394" y="324" width="108" height="54" rx="4" fill="#886a4d"/>
+  <circle cx="594" cy="342" r="32" fill="#5689bd"/>
+  <circle cx="236" cy="146" r="18" fill="#a7e7ff"/>
+  <text x="126" y="468" fill="#e6edf8" font-family="Arial, sans-serif" font-size="28">fake caustic ribbons + water sheet + receiver grid</text>
+</svg>

@@ -7,6 +7,14 @@ from .camera_perspective import (
     camera_perspective_variants,
     coerce_camera_perspective_settings,
 )
+from .caustic_water import (
+    CAUSTIC_WATER_CAMERA,
+    CausticWaterSettings,
+    build_caustic_water_scene,
+    caustic_water_descriptor,
+    caustic_water_variants,
+    coerce_caustic_water_settings,
+)
 from .depth_of_field import (
     DEPTH_OF_FIELD_CAMERA,
     DepthOfFieldSettings,
@@ -113,6 +121,8 @@ from .transparency import (
 __all__ = [
     "CAMERA_PERSPECTIVE_CAMERA",
     "CameraPerspectiveSettings",
+    "CAUSTIC_WATER_CAMERA",
+    "CausticWaterSettings",
     "DEPTH_OF_FIELD_CAMERA",
     "DepthOfFieldSettings",
     "DIFFUSER_LIGHT_OBJECT_CAMERA",
@@ -146,6 +156,7 @@ __all__ = [
     "TRANSPARENCY_CAMERA",
     "TransparencySettings",
     "build_camera_perspective_scene",
+    "build_caustic_water_scene",
     "build_depth_of_field_scene",
     "build_diffuser_light_object_scene",
     "build_gobo_lighting_scene",
@@ -162,7 +173,10 @@ __all__ = [
     "build_sunset_haze_scene",
     "build_terrain_environment_scene",
     "build_transparency_scene",
+    "caustic_water_descriptor",
+    "caustic_water_variants",
     "camera_perspective_variants",
+    "coerce_caustic_water_settings",
     "coerce_camera_perspective_settings",
     "coerce_depth_of_field_settings",
     "coerce_diffuser_light_object_settings",

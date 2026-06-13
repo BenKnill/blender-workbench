@@ -35,6 +35,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `examples/postprocess_look_scout.py`: one raw render processed into a finishing-look contact sheet.
 - `examples/render_pass_diagnostic_scout.py`: fixed-scene pass board for combined, shadow, AO, diffuse, glossy, emission, depth, normal, and alpha reads.
 - `examples/light_texture_scout.py`: named light-jitter and texture-magnitude board.
+- `examples/caustic_water_scout.py`: fake/procedural caustic-water board for roughness, pattern scale, light size, contrast, tint, and receiver readability.
 - `examples/procedural_texture_scout.py`: reusable surface texture-node board for node family, scale, ramp, palette, bump, and roughness coupling.
 - `examples/rocket_plume_scout.py`: a stronger plume use case built on the general sweep API.
 - `examples/rocket_plume_texture_scout.py`: dense plume texture board from smooth through overdone to whiteout.
@@ -150,6 +151,13 @@ Use procedural texture-node boards when the material question is surface shader 
 ```bash
 /Applications/Blender.app/Contents/MacOS/Blender --background --python examples/procedural_texture_scout.py
 /Applications/Blender.app/Contents/MacOS/Blender --background --python examples/procedural_texture_scout.py -- --pick noise_medium_marked
+```
+
+Use caustic-water boards when the question is pattern readability and receiver structure rather than physically correct light transport. `examples/caustic_water_scout.py` records water roughness, fake caustic scale, light size/distance, contrast, tint, and depth-marker readability before you spend time on real caustics:
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/caustic_water_scout.py
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/caustic_water_scout.py -- --pick pool_balanced
 ```
 
 Use smoke/alpha-billboard boards when the question is cheap scene mist, card sorting, falloff, or depth readability rather than rocket plume structure or slow volumetrics. `examples/smoke_billboard_scout.py` keeps foreground markers, a midground subject, background value steps, and a back/rim light fixed while the card stack changes:
