@@ -16,6 +16,7 @@ When adding a new source PDF, run `python3 tools/pdf_triage.py <pdf>` first. It 
 
 - `examples/gobo_lighting_scout.py`: turns textured light and shadow-play notes into a 16-tile projected-shadow board.
 - `examples/mesh_light_scout.py`: turns mesh-light and studio softbox notes into a same-view emissive size, distance, height, fill, and gel/shape board.
+- `examples/silhouette_shape_scout.py`: turns the shape-before-material lesson into an unlabeled blind board with metadata pick handles.
 - `examples/soft_atmosphere_scout.py`: turns hard-card failure notes into a feathered haze/light-card board for falloff width, alpha, glow, procedural breakup, and warmth.
 - `examples/subsurface_scout.py`: turns SSS/translucency notes into wax, jelly, opal, thickness, backlight, and core-light comparisons.
 - `examples/terrain_environment_scout.py`: turns issue 39 landscape/Europa and virtual-environment prompts into same-view relief, strata, haze, backlight, and foreground-scale comparisons.
@@ -36,3 +37,4 @@ When adding a new source PDF, run `python3 tools/pdf_triage.py <pdf>` first. It 
 - Selected renders are better at exposing hard card edges than tiny contact sheets. Use reusable feathered primitives for horizon glow, haze sheets, and stylized light cards.
 - Compositing choices deserve their own sweep surface. Reusing one raw render for look variants is much cheaper than rerendering the scene for every glow or color-grade idea.
 - Soft card primitives need their own diagnostic board because hard edges, over-opaque alpha, and noisy breakup fail differently at selected-render scale.
+- Blind silhouette boards are useful before names, materials, or lighting bias the pick; metadata must still preserve the exact tile handles.

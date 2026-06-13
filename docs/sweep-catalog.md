@@ -7,6 +7,7 @@ Start with the cheapest render profile that can answer the visual question. Shap
 ## Tile Layouts
 
 - default `TileSpec`: tiny square tiles with near-square columns chosen from the variant count.
+- `TileSpec.without_labels()`: blind boards for silhouette-first judgment while preserving pick handles in README/metadata.
 - `hero_pair`: two larger square tiles for before/after, winner/failure, reference/attempt.
 - `balanced_grid`: readable small square sheets for causal sweeps.
 - `micro_grid`: many little square tiles for broad scouting, color palettes, noisy alpha tests, and silhouette thumbnails.
@@ -88,6 +89,7 @@ Postprocess sweeps should reuse one raw render when the scene is already selecte
 - `examples/transparency_scout.py` for a 5x5 alpha/roughness/IOR/thickness/tint stride sheet
 - `examples/light_texture_scout.py` for a concrete named light-jitter plus texture-magnitude board
 - `examples/rocket_plume_texture_scout.py` for a dense plume density-texture board from smooth through overdone to whiteout
+- `examples/silhouette_shape_scout.py` for an unlabeled blind silhouette board, then `--labels` or `--pick` after the visual choice
 - `light_source_jitter` x `texture_magnitude` with `balanced_grid`
 - `sunset_haze` as a one-axis `filmstrip`
 - `subsurface_candy` x shape scale with `square_moodboard`
