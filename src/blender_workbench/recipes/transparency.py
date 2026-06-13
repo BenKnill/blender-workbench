@@ -8,7 +8,7 @@ from typing import Any
 
 from blender_workbench.camera import add_orbit_camera
 from blender_workbench.materials import principled_material
-from blender_workbench.sweep import SweepVariant, named_variants
+from blender_workbench.sweep import SweepVariant
 
 
 TRANSPARENCY_CAMERA = "transparency_camera"
@@ -43,36 +43,137 @@ def coerce_transparency_settings(settings: TransparencySettings | Mapping[str, A
     return TransparencySettings(**data)
 
 
-def transparency_variants(*, prefix: str = "glass") -> list[SweepVariant]:
-    return named_variants(
-        {
-            "alpha_18": {"alpha": 0.18, "transmission_weight": 0.18, "roughness": 0.04},
-            "alpha_42": {"alpha": 0.42, "transmission_weight": 0.38, "roughness": 0.06},
-            "alpha_72": {"alpha": 0.72, "transmission_weight": 0.28, "roughness": 0.12},
-            "clear": {"color": (0.82, 0.94, 1.0, 1.0), "alpha": 1.0, "transmission_weight": 1.0, "roughness": 0.0, "ior": 1.45},
-            "frosted": {"alpha": 0.58, "transmission_weight": 0.28, "roughness": 0.5, "checker_contrast": 1.25},
-            "red_tint": {"color": (1.0, 0.26, 0.20, 1.0), "alpha": 0.48, "transmission_weight": 0.32},
-            "blue_tint": {"color": (0.20, 0.46, 1.0, 1.0), "alpha": 0.46, "transmission_weight": 0.42},
-            "green_tint": {"color": (0.18, 0.95, 0.50, 1.0), "alpha": 0.44, "transmission_weight": 0.36},
-            "low_ior": {"color": (0.82, 0.94, 1.0, 1.0), "ior": 1.02, "alpha": 1.0, "transmission_weight": 1.0, "roughness": 0.0},
-            "high_ior": {"color": (0.82, 0.94, 1.0, 1.0), "ior": 2.15, "alpha": 1.0, "transmission_weight": 1.0, "roughness": 0.0},
-            "thin_panes": {"pane_thickness": 0.018, "pane_gap": 0.38, "alpha": 0.32, "transmission_weight": 0.54},
-            "stacked": {"pane_count": 5, "pane_gap": 0.16, "alpha": 0.32, "transmission_weight": 0.38},
-            "fat_lens": {
-                "sphere_scale": (1.45, 1.45, 1.25),
-                "pane_count": 1,
+def _step_label(step: int) -> str:
+    return "base" if step == 0 else f"{'p' if step > 0 else 'm'}{abs(step)}"
+
+
+def _clamp(value: float, low: float, high: float) -> float:
+    return max(low, min(high, value))
+
+
+def _mix_color(a: tuple[float, float, float, float], b: tuple[float, float, float, float], amount: float) -> tuple[float, float, float, float]:
+    return (
+        a[0] * (1.0 - amount) + b[0] * amount,
+        a[1] * (1.0 - amount) + b[1] * amount,
+        a[2] * (1.0 - amount) + b[2] * amount,
+        1.0,
+    )
+
+
+def transparency_variants(
+    *,
+    prefix: str = "glass",
+    steps: tuple[int, ...] = (-2, -1, 0, 1, 2),
+    alpha_center: float = 0.48,
+    alpha_stride: float = 0.28,
+    roughness_center: float = 0.42,
+    roughness_stride: float = 0.32,
+    ior_center: float = 1.55,
+    ior_stride: float = 0.42,
+    thickness_center: float = 0.07,
+    thickness_stride: float = 0.075,
+    tint_stride: float = 0.24,
+) -> list[SweepVariant]:
+    """Build a stride board for transparency variables.
+
+    Wider strides are usually better here: subtle glass changes collapse in
+    thumbnails unless the background, thickness, or IOR moves far enough.
+    """
+    base = dataclasses.asdict(TransparencySettings())
+    variants: list[SweepVariant] = []
+
+    def add(label: str, settings: Mapping[str, Any]) -> None:
+        data = dict(base)
+        data.update(settings)
+        name = f"{prefix}_{label}" if prefix else label
+        variants.append(
+            SweepVariant(
+                name=name,
+                label=label,
+                settings=data,
+                note="stride scout: alpha, roughness, IOR, thickness, and tint",
+            )
+        )
+
+    for step in steps:
+        alpha = _clamp(alpha_center + step * alpha_stride, 0.03, 0.98)
+        add(
+            f"alpha_{_step_label(step)}",
+            {
+                "alpha": alpha,
+                "transmission_weight": _clamp(0.78 - abs(step) * 0.18, 0.18, 0.84),
+                "roughness": 0.04,
+                "checker_contrast": 1.35,
+            },
+        )
+
+    for step in steps:
+        roughness = _clamp(roughness_center + step * roughness_stride, 0.0, 0.98)
+        add(
+            f"rough_{_step_label(step)}",
+            {
+                "alpha": 0.62,
+                "transmission_weight": 0.36,
+                "roughness": roughness,
+                "checker_contrast": 1.45,
+            },
+        )
+
+    for step in steps:
+        ior = _clamp(ior_center + step * ior_stride, 1.01, 2.35)
+        scale = 1.05 + abs(step) * 0.23
+        add(
+            f"ior_{_step_label(step)}",
+            {
+                "color": (0.82, 0.94, 1.0, 1.0),
                 "alpha": 1.0,
                 "transmission_weight": 1.0,
-                "ior": 1.9,
                 "roughness": 0.0,
+                "ior": ior,
+                "sphere_scale": (scale, scale, 1.0 + abs(step) * 0.18),
+                "pane_count": 1 if abs(step) == 2 else 3,
+                "checker_contrast": 1.55,
             },
-            "edge_glow": {"edge_emission_strength": 0.45, "alpha": 0.36, "transmission_weight": 0.32},
-            "backlit": {"backlight_energy": 820.0, "alpha": 0.42, "transmission_weight": 0.48, "roughness": 0.05},
-            "solid_fail": {"alpha": 0.96, "transmission_weight": 0.0, "roughness": 0.82, "checker_contrast": 1.4},
-        },
-        prefix=prefix,
-        note="alpha, transmission, roughness, IOR, tint, thickness, and backlight scout",
+        )
+
+    for step in steps:
+        thickness = _clamp(thickness_center + step * thickness_stride, 0.008, 0.32)
+        add(
+            f"thick_{_step_label(step)}",
+            {
+                "color": (0.74, 0.92, 1.0, 1.0),
+                "alpha": 1.0 if step >= 0 else 0.54,
+                "transmission_weight": _clamp(0.7 + step * 0.08, 0.42, 1.0),
+                "roughness": _clamp(0.02 + abs(step) * 0.08, 0.0, 0.4),
+                "ior": 1.72,
+                "pane_thickness": thickness,
+                "pane_gap": _clamp(0.26 - step * 0.035, 0.12, 0.44),
+                "checker_contrast": 1.5,
+            },
+        )
+
+    tint_targets = (
+        (0.18, 0.52, 1.0, 1.0),
+        (0.96, 0.14, 0.12, 1.0),
+        (0.12, 0.95, 0.42, 1.0),
+        (1.0, 0.55, 0.10, 1.0),
+        (0.72, 0.20, 1.0, 1.0),
     )
+    neutral = (0.76, 0.90, 1.0, 1.0)
+    for index, step in enumerate(steps):
+        amount = _clamp(0.52 + (step + 2) * tint_stride, 0.12, 1.0)
+        add(
+            f"tint_{_step_label(step)}",
+            {
+                "color": _mix_color(neutral, tint_targets[index % len(tint_targets)], amount),
+                "alpha": _clamp(0.36 + (step + 2) * 0.12, 0.24, 0.88),
+                "transmission_weight": 0.34,
+                "roughness": 0.12,
+                "checker_contrast": 1.35,
+            },
+        )
+
+    return variants
 
 
 def clear_scene() -> None:

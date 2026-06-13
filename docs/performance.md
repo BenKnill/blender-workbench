@@ -25,7 +25,7 @@ config = replace(
 
 ## Fast Exploration Rules
 
-- Keep early sheets between 6 and 24 tiles.
+- Keep early sheets between 6 and 24 tiles; 25 is fine for a structured 5x5 stride board.
 - Prefer `micro_grid` for broad scouting and `balanced_grid` for readable 3x3 comparisons.
 - Turn postprocessing off when testing shape or framing: `render_sweep(..., postprocess=None)`.
 - Reuse tiles during layout churn with `replace(config, reuse_existing=True)`.
@@ -33,6 +33,7 @@ config = replace(
 - Keep `build_scene(settings)` cheap: avoid simulations, huge mesh generation, high subdivision, and expensive boolean stacks in the first pass.
 - Add detail in stages: silhouette, material, lighting, camera, then heavier bake.
 - When a numeric sweep looks timid, increase the `stride_axis(...)` stride and rerun. When every tile fails, reduce the stride or add failure anchors at the extremes.
+- When a whole recipe looks timid, prefer widening its stride kwargs over adding more hand-named cases.
 
 ## Reading Timing Metadata
 

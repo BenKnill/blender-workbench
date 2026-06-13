@@ -35,7 +35,8 @@ def main() -> None:
         postprocess=None,
         title="Transparency Scout",
         notes=[
-            "Dense material board for alpha, transmission, roughness, IOR, tint, thickness, and backlight.",
+            "5x5 stride sheet: alpha, roughness, IOR, pane thickness, and tint.",
+            "Increase alpha_stride, roughness_stride, ior_stride, thickness_stride, or tint_stride if the sheet looks timid.",
             "Inspired by BlenderArt glass, alpha, Fresnel, and glowing-bulb material notes.",
         ],
         square=True,

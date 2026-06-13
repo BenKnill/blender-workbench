@@ -126,7 +126,7 @@ Run the matched-framing camera scout:
 /Applications/Blender.app/Contents/MacOS/Blender --background --python examples/camera_perspective_scout.py
 ```
 
-This uses `blender_workbench.recipes.camera_perspective` to compare close wide-angle framing, normal framing, telephoto compression, pitch, yaw, and roll. Lens and distance are paired so the central subject stays similarly sized while the room perspective changes.
+This uses `blender_workbench.recipes.camera_perspective` to compare lens, yaw, pitch, roll, and room depth as a 5x5 stride sheet. Lens and distance are paired so the central subject stays similarly sized while the room perspective changes. If the sheet looks timid, increase `lens_stride`, `yaw_stride`, `pitch_stride`, `roll_stride`, or `depth_stride`.
 
 ![Camera perspective scout contact sheet](docs/assets/camera-perspective-scout.jpg)
 
@@ -162,7 +162,7 @@ Run the transparent material scout:
 /Applications/Blender.app/Contents/MacOS/Blender --background --python examples/transparency_scout.py
 ```
 
-This uses `blender_workbench.recipes.transparency` to compare alpha, transmission, roughness, IOR, tint, pane thickness, stacked layers, and backlight. The IOR/lens cases are intentionally aggressive so distortion is visible in tiny tiles.
+This uses `blender_workbench.recipes.transparency` to compare alpha, roughness, IOR, pane thickness, and tint as a 5x5 stride sheet. The defaults are intentionally aggressive so distortion, opacity, and tint shifts are visible in tiny tiles. If the sheet looks timid, increase `alpha_stride`, `roughness_stride`, `ior_stride`, `thickness_stride`, or `tint_stride`.
 
 ![Transparency scout contact sheet](docs/assets/transparency-scout.jpg)
 

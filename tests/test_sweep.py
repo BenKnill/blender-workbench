@@ -178,26 +178,44 @@ class SweepTests(unittest.TestCase):
         settings = coerce_camera_perspective_settings({"camera_lens": 24, "camera_yaw": 12, "unused": True})
         names = [variant.name for variant in variants]
 
-        self.assertEqual(len(variants), 16)
-        self.assertIn("test_wide_close", names)
-        self.assertIn("test_tele_flat", names)
+        self.assertEqual(len(variants), 25)
+        self.assertIn("test_lens_m2", names)
+        self.assertIn("test_roll_p2", names)
+        self.assertIn("test_depth_p2", names)
         self.assertIsInstance(settings, CameraPerspectiveSettings)
         self.assertEqual(settings.camera_lens, 24)
         self.assertEqual(settings.camera_yaw, 12)
         self.assertFalse(hasattr(settings, "unused"))
+
+    def test_camera_perspective_recipe_accepts_stride_adjustment(self):
+        timid = camera_perspective_variants(prefix="test", lens_stride=8)
+        loud = camera_perspective_variants(prefix="test", lens_stride=40)
+
+        self.assertLess(timid[0].settings["camera_lens"], timid[2].settings["camera_lens"])
+        self.assertLess(loud[0].settings["camera_lens"], timid[0].settings["camera_lens"])
+        self.assertGreater(loud[4].settings["camera_distance"], timid[4].settings["camera_distance"])
 
     def test_transparency_recipe_exposes_dense_material_board(self):
         variants = transparency_variants(prefix="test")
         settings = coerce_transparency_settings({"alpha": 0.25, "ior": 1.8, "unused": True})
         names = [variant.name for variant in variants]
 
-        self.assertEqual(len(variants), 16)
-        self.assertIn("test_clear", names)
-        self.assertIn("test_solid_fail", names)
+        self.assertEqual(len(variants), 25)
+        self.assertIn("test_alpha_m2", names)
+        self.assertIn("test_ior_p2", names)
+        self.assertIn("test_tint_p2", names)
         self.assertIsInstance(settings, TransparencySettings)
         self.assertEqual(settings.alpha, 0.25)
         self.assertEqual(settings.ior, 1.8)
         self.assertFalse(hasattr(settings, "unused"))
+
+    def test_transparency_recipe_accepts_stride_adjustment(self):
+        timid = transparency_variants(prefix="test", alpha_stride=0.08, ior_stride=0.12)
+        loud = transparency_variants(prefix="test", alpha_stride=0.4, ior_stride=0.55)
+
+        self.assertGreater(timid[0].settings["alpha"], loud[0].settings["alpha"])
+        self.assertGreater(timid[10].settings["ior"], loud[10].settings["ior"])
+        self.assertGreater(loud[14].settings["ior"], timid[14].settings["ior"])
 
 
 if __name__ == "__main__":

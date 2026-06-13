@@ -37,7 +37,8 @@ def main() -> None:
         postprocess=None,
         title="Camera Perspective Scout",
         notes=[
-            "Lens and distance are paired to keep central framing similar while perspective changes.",
+            "5x5 stride sheet: lens, yaw, pitch, roll, and room depth.",
+            "Increase lens_stride, yaw_stride, pitch_stride, roll_stride, or depth_stride if the sheet looks timid.",
             "Inspired by BlenderArt pack-shot and virtual-set camera setup lessons.",
         ],
         square=True,

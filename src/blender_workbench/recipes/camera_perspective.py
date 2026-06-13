@@ -8,7 +8,7 @@ from typing import Any
 
 from blender_workbench.camera import add_orbit_camera, camera_distance_for_matching_framing
 from blender_workbench.materials import principled_material
-from blender_workbench.sweep import SweepVariant, named_variants
+from blender_workbench.sweep import SweepVariant
 
 
 CAMERA_PERSPECTIVE_CAMERA = "perspective_scout_camera"
@@ -40,42 +40,79 @@ def coerce_camera_perspective_settings(
 
 
 def _matched(lens: float) -> float:
-    return camera_distance_for_matching_framing(lens, base_lens_mm=45.0, base_distance=4.0)
+    return camera_distance_for_matching_framing(lens, base_lens_mm=58.0, base_distance=4.6)
 
 
-def camera_perspective_variants(*, prefix: str = "cam") -> list[SweepVariant]:
-    return named_variants(
-        {
-            "wide_close": {"camera_lens": 22.0, "camera_distance": _matched(22.0)},
-            "normal_mid": {"camera_lens": 45.0, "camera_distance": _matched(45.0)},
-            "portrait_far": {"camera_lens": 70.0, "camera_distance": _matched(70.0)},
-            "tele_flat": {"camera_lens": 110.0, "camera_distance": _matched(110.0)},
-            "wide_low": {"camera_lens": 22.0, "camera_distance": _matched(22.0), "camera_pitch": 1.0},
-            "wide_high": {"camera_lens": 22.0, "camera_distance": _matched(22.0), "camera_pitch": 24.0},
-            "tele_low": {"camera_lens": 100.0, "camera_distance": _matched(100.0), "camera_pitch": 1.0},
-            "tele_high": {"camera_lens": 100.0, "camera_distance": _matched(100.0), "camera_pitch": 24.0},
-            "left_wide": {"camera_lens": 28.0, "camera_distance": _matched(28.0), "camera_yaw": -24.0},
-            "left_tele": {"camera_lens": 95.0, "camera_distance": _matched(95.0), "camera_yaw": -24.0},
-            "right_wide": {"camera_lens": 28.0, "camera_distance": _matched(28.0), "camera_yaw": 24.0},
-            "right_tele": {"camera_lens": 95.0, "camera_distance": _matched(95.0), "camera_yaw": 24.0},
-            "dutch_close": {"camera_lens": 26.0, "camera_distance": _matched(26.0), "camera_roll": -7.0},
-            "dutch_far": {"camera_lens": 90.0, "camera_distance": _matched(90.0), "camera_roll": 7.0},
-            "compress": {
-                "camera_lens": 130.0,
-                "camera_distance": _matched(130.0),
-                "room_depth": 6.0,
-                "foreground_marker_scale": 0.75,
+def _step_label(step: int) -> str:
+    return "base" if step == 0 else f"{'p' if step > 0 else 'm'}{abs(step)}"
+
+
+def _clamp(value: float, low: float, high: float) -> float:
+    return max(low, min(high, value))
+
+
+def camera_perspective_variants(
+    *,
+    prefix: str = "cam",
+    steps: tuple[int, ...] = (-2, -1, 0, 1, 2),
+    lens_center: float = 58.0,
+    lens_stride: float = 36.0,
+    yaw_stride: float = 34.0,
+    pitch_center: float = 18.0,
+    pitch_stride: float = 13.0,
+    roll_stride: float = 13.0,
+    depth_stride: float = 1.05,
+) -> list[SweepVariant]:
+    """Build a stride board for camera variables.
+
+    Increase the stride values when the perspective sheet looks timid. The
+    distance is recalculated for every lens tile so the central subject stays
+    roughly comparable while the room perspective changes.
+    """
+    base = dataclasses.asdict(CameraPerspectiveSettings(camera_lens=lens_center, camera_distance=_matched(lens_center)))
+    variants: list[SweepVariant] = []
+
+    def add(label: str, settings: Mapping[str, Any]) -> None:
+        data = dict(base)
+        data.update(settings)
+        name = f"{prefix}_{label}" if prefix else label
+        variants.append(
+            SweepVariant(
+                name=name,
+                label=label,
+                settings=data,
+                note="stride scout: lens, distance, orbit, roll, and depth",
+            )
+        )
+
+    for step in steps:
+        lens = _clamp(lens_center + step * lens_stride, 14.0, 150.0)
+        add(f"lens_{_step_label(step)}", {"camera_lens": lens, "camera_distance": _matched(lens)})
+
+    for step in steps:
+        add(f"yaw_{_step_label(step)}", {"camera_yaw": step * yaw_stride})
+
+    for step in steps:
+        pitch = _clamp(pitch_center + step * pitch_stride, -6.0, 52.0)
+        add(f"pitch_{_step_label(step)}", {"camera_pitch": pitch})
+
+    for step in steps:
+        add(f"roll_{_step_label(step)}", {"camera_roll": step * roll_stride})
+
+    for step in steps:
+        depth = _clamp(4.6 + step * depth_stride, 2.4, 8.0)
+        foreground = _clamp(1.0 - step * 0.28, 0.42, 1.75)
+        background = _clamp(1.0 + step * 0.18, 0.55, 1.55)
+        add(
+            f"depth_{_step_label(step)}",
+            {
+                "room_depth": depth,
+                "foreground_marker_scale": foreground,
+                "background_marker_scale": background,
             },
-            "warp_room": {
-                "camera_lens": 18.0,
-                "camera_distance": _matched(18.0),
-                "room_depth": 5.4,
-                "foreground_marker_scale": 1.35,
-            },
-        },
-        prefix=prefix,
-        note="lens, distance, angle, pitch, and roll scout with matched central framing",
-    )
+        )
+
+    return variants
 
 
 def clear_scene() -> None:

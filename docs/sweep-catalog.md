@@ -21,6 +21,8 @@ For named cases, prefer `named_variants(...)` plus `render_sweep(..., square=Tru
 
 For numeric parameters, use `stride_axis(...)` when you expect to adjust the sweep width repeatedly. If the resulting sheet looks timid, increase `stride`; if every tile fails, reduce it.
 
+For recipe-specific stride boards, prefer named stride kwargs such as `lens_stride`, `ior_stride`, or `thickness_stride`. A 5x5 sheet works well when each row isolates one variable and each column is the same `m2, m1, base, p1, p2` step pattern.
+
 ## Shape Sweeps
 
 - silhouette: spindly, blocky, swept, squat, tall
@@ -64,10 +66,10 @@ Color sweeps should avoid one-note palettes. Put at least one cool/warm contrast
 
 - `plume_alpha_strength` x `plume_shape` with `micro_grid`
 - named texture cases with `auto_square_moodboard` and `square=True`
-- `examples/camera_perspective_scout.py` for lens/distance/angle/pitch perspective reads
+- `examples/camera_perspective_scout.py` for a 5x5 lens/yaw/pitch/roll/depth stride sheet
 - `examples/gobo_lighting_scout.py` for projected shadow texture, gel color, and light softness
 - `examples/subsurface_scout.py` for translucent wax/jelly/opal material reads with thickness and backlight
-- `examples/transparency_scout.py` for alpha/transmission/IOR/tint reads against a structured background
+- `examples/transparency_scout.py` for a 5x5 alpha/roughness/IOR/thickness/tint stride sheet
 - `examples/light_texture_scout.py` for a concrete named light-jitter plus texture-magnitude board
 - `examples/rocket_plume_texture_scout.py` for a dense plume density-texture board from smooth through overdone to whiteout
 - `light_source_jitter` x `texture_magnitude` with `balanced_grid`

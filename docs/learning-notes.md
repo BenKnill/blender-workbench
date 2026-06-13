@@ -23,3 +23,4 @@ This is a compact map from the local BlenderArt/resource shelf to workbench exer
 - Tiny boards need short labels or adaptive label sizing. Long descriptive variant names belong in metadata, not necessarily on the tile.
 - Perspective is a first-class variable. Pair lens and distance when you want similar composition with different spatial feeling.
 - Transparent materials need structured backgrounds. Without stripes/checkers/depth markers, alpha and IOR sweeps look deceptively identical.
+- Same-y boards usually mean the stride is too small. Use 5x5 stride sheets with one variable per row before adding more hand-picked named cases.
