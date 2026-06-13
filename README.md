@@ -29,6 +29,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `docs/performance.md`: defaults for fast basics-first exploration.
 - `docs/learning-notes.md`: short map from local BlenderArt resources to implemented sweep ideas.
 - `docs/rocket-plume.md`: recipe notes for broad, smoky, in-space engine plumes.
+- `tools/pdf_triage.py`: capture local PDF extraction/rendering capability and create learning-note stubs under `runs/`.
 
 ## Quick Start
 
@@ -41,6 +42,14 @@ Run an example through Blender:
 The example writes to `examples/output/mini_plume_sweep/`.
 
 ![Mini plume sweep contact sheet](docs/assets/mini-plume-sweep.jpg)
+
+To triage a local learning PDF before turning it into a recipe or issue:
+
+```bash
+python3 tools/pdf_triage.py ../reference_materials/artistic_blender_pdfs/blenderart_issue_39_compositing_sep_2012.pdf
+```
+
+The helper writes backend status, any extracted text or thumbnails, and a `notes.md` stub under `runs/pdf_triage/`.
 
 ## Agent Loop
 

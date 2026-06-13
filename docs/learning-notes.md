@@ -2,6 +2,8 @@
 
 This is a compact map from the local BlenderArt/resource shelf to workbench exercises.
 
+When adding a new source PDF, run `python3 tools/pdf_triage.py <pdf>` first. It writes backend receipts and a `notes.md` observation stub under ignored `runs/pdf_triage/`, which keeps the skim -> exercise -> issue loop traceable even when text extraction is unavailable.
+
 ## Current Source Prompts
 
 - `blenderart_issue_27_cg_lighting_apr_2010.pdf`: textured light, shadow play, mesh/glowing lights, pack-shot camera controls, zoom/focal blur, studio tables.
