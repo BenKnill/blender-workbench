@@ -1,0 +1,113 @@
+{
+  "schema": 1,
+  "updated": "2026-06-13",
+  "status_values": [
+    "unskimmed",
+    "candidate",
+    "triaged",
+    "issue_open",
+    "implemented",
+    "skipped"
+  ],
+  "queue_status_values": [
+    "candidate",
+    "unskimmed"
+  ],
+  "sources": [
+    {
+      "source_id": "blender_basics_2017",
+      "resource_id": "blender_basics_2017",
+      "title": "Blender Basics Classroom Tutorial Book 2017",
+      "path": "../reference_materials/artistic_blender_pdfs/blender_basics_classroom_tutorial_book_2017.pdf",
+      "page_count": 266,
+      "status": "unskimmed",
+      "priority": 45,
+      "tags": [
+        "fundamentals",
+        "obsolete_ui"
+      ],
+      "source_url": "https://archive.org/details/2017BlenderBasics",
+      "sha256": "3f066f1999f7b2ea6885f0705f0adfc1dccb3a806c8de6bc0f01521ef1792b0c",
+      "ranges": []
+    },
+    {
+      "source_id": "blenderart_issue_16_lighting_rendering",
+      "resource_id": "blenderart_issue_16_lighting_rendering",
+      "title": "Blenderart Issue 16 Lighting Rendering May 2008",
+      "path": "../reference_materials/artistic_blender_pdfs/blenderart_issue_16_lighting_rendering_may_2008.pdf",
+      "page_count": 63,
+      "status": "unskimmed",
+      "priority": 90,
+      "tags": [
+        "lighting",
+        "rendering"
+      ],
+      "source_url": "https://archive.org/details/BlenderArt-Magazine-Issue-16",
+      "sha256": "9a878a87c590f0111c8978be81a8b79046254efee2d7f76ef4844affd9cf5659",
+      "ranges": []
+    },
+    {
+      "source_id": "blenderart_issue_22_texturing_environment_lighting",
+      "resource_id": "blenderart_issue_22_texturing_environment_lighting",
+      "title": "Blenderart Issue 22 Texturing Environment Lighting Jun 2009",
+      "path": "../reference_materials/artistic_blender_pdfs/blenderart_issue_22_texturing_environment_lighting_jun_2009.pdf",
+      "page_count": 48,
+      "status": "unskimmed",
+      "priority": 78,
+      "tags": [
+        "lighting",
+        "texture",
+        "environment"
+      ],
+      "source_url": "https://archive.org/details/BlenderArt-Magazine-Issue-22",
+      "sha256": "bcee3eb34f47bf203bbb38491c96fe5b436e87c64b5a5bc4e4efd67650610190",
+      "ranges": []
+    },
+    {
+      "source_id": "blenderart_issue_27_cg_lighting",
+      "resource_id": "blenderart_issue_27_cg_lighting",
+      "title": "Blenderart Issue 27 CG Lighting Apr 2010",
+      "path": "../reference_materials/artistic_blender_pdfs/blenderart_issue_27_cg_lighting_apr_2010.pdf",
+      "page_count": 41,
+      "status": "unskimmed",
+      "priority": 95,
+      "tags": [
+        "lighting"
+      ],
+      "source_url": "https://archive.org/details/BlenderArt-Magazine-Issue-27",
+      "sha256": "de681b8977c6f41755c236e70923160af1a5911d5065dc80880ccb009be14f46",
+      "ranges": []
+    },
+    {
+      "source_id": "blenderart_issue_39_compositing",
+      "resource_id": "blenderart_issue_39_compositing",
+      "title": "Blenderart Issue 39 Compositing Sep 2012",
+      "path": "../reference_materials/artistic_blender_pdfs/blenderart_issue_39_compositing_sep_2012.pdf",
+      "page_count": 30,
+      "status": "unskimmed",
+      "priority": 82,
+      "tags": [
+        "compositing",
+        "postprocess"
+      ],
+      "source_url": "https://archive.org/details/BlenderArt-Magazine-Issue-39",
+      "sha256": "519927fc2aa6ffcef7868358a16d23b2d544feaf411020d936d6b7bb8759610f",
+      "ranges": []
+    },
+    {
+      "source_id": "blenderart_issue_42_general_inspiration",
+      "resource_id": "blenderart_issue_42_general_inspiration",
+      "title": "Blenderart Issue 42 General Inspiration Sep 2013",
+      "path": "../reference_materials/artistic_blender_pdfs/blenderart_issue_42_general_inspiration_sep_2013.pdf",
+      "page_count": 14,
+      "status": "unskimmed",
+      "priority": 35,
+      "tags": [
+        "inspiration"
+      ],
+      "source_url": "https://archive.org/details/blender-art-magazine-issue-42",
+      "sha256": "4eaab18b4cdc291e73d99073c28219799e40ff83eb39af693fb9fa6271bf7dd0",
+      "ranges": []
+    }
+  ]
+}

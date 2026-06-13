@@ -36,6 +36,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `docs/learning-notes.md`: short map from local BlenderArt resources to implemented sweep ideas.
 - `docs/rocket-plume.md`: recipe notes for broad, smoky, in-space engine plumes.
 - `tools/pdf_triage.py`: capture local PDF extraction/rendering capability and create learning-note stubs under `runs/`.
+- `tools/pdf_lesson_index.py`: maintain a structured PDF lesson index and next-skim queue.
 - `tools/reference_manifest.py`: verify the adjacent `../reference_materials` shelf by checksum, size, and derived-resource fingerprints.
 - `tools/workbench_doctor.py`: machine-readable and human-readable local capability preflight.
 - `tools/example_pick_smoke.py`: opt-in low-sample Blender smoke checks for example `--pick` promotion paths.
@@ -57,10 +58,13 @@ To triage a local learning PDF before turning it into a recipe or issue:
 
 ```bash
 python3 tools/reference_manifest.py verify
+python3 tools/pdf_lesson_index.py build ../reference_materials/artistic_blender_pdfs
+python3 tools/pdf_lesson_index.py next
 python3 tools/pdf_triage.py ../reference_materials/artistic_blender_pdfs/blenderart_issue_39_compositing_sep_2012.pdf
+python3 tools/pdf_lesson_index.py mark --source blenderart_issue_39_compositing --pages 8-10 --status triaged --triage-output runs/pdf_triage/blenderart_issue_39_compositing_sep_2012
 ```
 
-The reference manifest verifies that local PDFs and SpaceX-derived visual references are present and unchanged before an agent downloads or regenerates media. The PDF helper writes backend status, any extracted text, native macOS page images/contact sheets when available, cover thumbnails, and a `notes.md` stub under `runs/pdf_triage/`.
+The reference manifest verifies that local PDFs and SpaceX-derived visual references are present and unchanged before an agent downloads or regenerates media. The lesson index records page counts, statuses, tags, and links from source ranges to triage outputs, coverage rows, issues, or examples. The PDF helper writes backend status, any extracted text, native macOS page images/contact sheets when available, cover thumbnails, and a `notes.md` stub under `runs/pdf_triage/`.
 
 Check example prerequisites before running a docs refresh or dependent example:
 
