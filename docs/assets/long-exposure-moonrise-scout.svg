@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-labelledby="title desc">
+  <title id="title">Long exposure moonrise trail scout diagram</title>
+  <desc id="desc">A dusk sky with horizon haze, foreground silhouettes, and a glowing moon trail streak with soft terminals.</desc>
+  <rect width="960" height="540" fill="#090d16"/>
+  <rect x="80" y="72" width="800" height="338" rx="8" fill="#151b2d"/>
+  <rect x="80" y="264" width="800" height="146" fill="#222039" opacity="0.58"/>
+  <ellipse cx="480" cy="300" rx="356" ry="78" fill="#db8d50" opacity="0.18"/>
+  <ellipse cx="480" cy="322" rx="400" ry="54" fill="#e4b174" opacity="0.12"/>
+  <g opacity="0.92">
+    <path d="M214 392 L278 392 L278 300 L344 392 L424 392 L424 340 L488 392 L746 392 L746 424 L214 424 Z" fill="#080a0f"/>
+    <rect x="126" y="360" width="34" height="70" fill="#080a0f"/>
+    <rect x="190" y="342" width="28" height="88" fill="#080a0f"/>
+    <rect x="798" y="350" width="32" height="80" fill="#080a0f"/>
+  </g>
+  <g opacity="0.62">
+    <path d="M266 244 C386 230, 528 220, 684 204" stroke="#f8d494" stroke-width="88" stroke-linecap="round" fill="none"/>
+    <path d="M266 244 C386 230, 528 220, 684 204" stroke="#f8e8b8" stroke-width="28" stroke-linecap="round" fill="none"/>
+    <path d="M266 244 C386 230, 528 220, 684 204" stroke="#fff4ca" stroke-width="8" stroke-linecap="round" fill="none"/>
+  </g>
+  <circle cx="266" cy="244" r="35" fill="#fff0bd" opacity="0.62"/>
+  <circle cx="684" cy="204" r="42" fill="#fff0bd" opacity="0.54"/>
+  <g stroke="#33415d" stroke-width="2" opacity="0.55">
+    <line x1="80" y1="338" x2="880" y2="338"/>
+    <line x1="80" y1="390" x2="880" y2="390"/>
+  </g>
+  <text x="124" y="472" fill="#e7edf8" font-family="Arial, sans-serif" font-size="28">streak geometry + halo + horizon diagnostics</text>
+</svg>

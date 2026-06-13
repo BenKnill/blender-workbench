@@ -410,6 +410,25 @@
       "docs_asset": "docs/assets/sunset-haze-scout.jpg"
     },
     {
+      "name": "long_exposure_moonrise_scout",
+      "script": "examples/long_exposure_moonrise_scout.py",
+      "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/long_exposure_moonrise_scout.py",
+      "required_capabilities": ["blender", "magick"],
+      "cost": {
+        "profile": "cycles_preview",
+        "engine": "CYCLES",
+        "runtime": "quick",
+        "mode": "grid_scout",
+        "requires_blender": true,
+        "tile_count": 11,
+        "tile_preset": "auto_square_moodboard",
+        "reuse_outputs": true
+      },
+      "outputs": ["examples/output/long_exposure_moonrise_scout/metadata.json", "examples/output/long_exposure_moonrise_scout/contact_sheet.png"],
+      "prerequisites": [],
+      "docs_asset": "docs/assets/long-exposure-moonrise-scout.svg"
+    },
+    {
       "name": "terrain_environment_scout",
       "script": "examples/terrain_environment_scout.py",
       "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/terrain_environment_scout.py",

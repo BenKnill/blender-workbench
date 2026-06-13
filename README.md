@@ -28,6 +28,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `examples/smoke_billboard_scout.py`: general transparent-card smoke board for alpha, edge feather, noise, fake scatter, layer count, spacing, and parallax.
 - `examples/subsurface_scout.py`: subsurface material board for wax, jelly, opal, roughness, and backlight.
 - `examples/sunset_haze_scout.py`: ordered filmstrip for static dusk, moonrise, and afterglow haze.
+- `examples/long_exposure_moonrise_scout.py`: cheap emissive-geometry moon-trail board for streak, halo, sky, haze, warmth, and foreground contrast.
 - `examples/terrain_environment_scout.py`: same-view landscape/environment mood board for relief, strata, haze, backlight, and foreground scale.
 - `examples/transparency_scout.py`: transparency, transmission, roughness, IOR, tint, and thickness board.
 - `examples/mini_plume_sweep.py`: a compact Blender script showing the intended workflow.
@@ -499,6 +500,19 @@ Run the ordered dusk/afterglow filmstrip:
 This uses the existing `SUNSET_HAZE` axis between flat, over-orange, and washout failure anchors. It is for static atmosphere setup before long-exposure moon trail work.
 
 ![Sunset haze scout contact sheet](docs/assets/sunset-haze-scout.jpg)
+
+## Learning Recipe: Long Exposure Moonrise
+
+Run the moon-trail scout:
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/long_exposure_moonrise_scout.py
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/long_exposure_moonrise_scout.py -- --pick balanced_rise
+```
+
+This uses `blender_workbench.recipes.long_exposure_moonrise` to compare streak length/angle, terminal softness, halo radius/strength, sky exposure, horizon haze, warmth, and foreground contrast with cheap emissive geometry. Use it before real motion blur or bespoke glowing capsules, then promote one tile to check whether the trail sits in the horizon.
+
+![Long exposure moonrise scout diagram](docs/assets/long-exposure-moonrise-scout.svg)
 
 ## Learning Recipe: Transparency
 
