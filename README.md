@@ -107,6 +107,14 @@ python3 tools/example_pick_smoke.py --name soft_atmosphere_scout --run --hero-sa
 
 The promotion-status command surfaces grids that still need a visual pick or have stale selected-render provenance. The smoke helper prints the planned Blender command from existing `metadata.json`; with `--run`, it verifies `selected.json`, source-sweep provenance, and rendered output files.
 
+Before promoting a transparent, volumetric, SSS, caustic, denoised, or postprocess-heavy winner, run a profile drift check for the chosen tile instead of rerendering the full grid:
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/mesh_light_scout.py -- --pick <tile> --compare-profiles
+```
+
+The comparison writes `profile_comparison/<pick>/profile_comparison.json` and `profile_comparison.png` with source sweep provenance, the chosen pick, each render config, postprocess state, warnings, and output paths. Use it when a cheap Workbench, Eevee, or low-sample Cycles sheet might change under `hero_check` because of alpha sorting, denoising, transparent bounces, volumetrics, caustics, or glow.
+
 ## Agent Loop
 
 1. Define a small dataclass or dict of meaningful parameters.
@@ -117,7 +125,8 @@ The promotion-status command surfaces grids that still need a visual pick or hav
 6. Widen or narrow the sweep based on what the sheet shows.
 7. Render the chosen tile with `render_selected_from_sweep(...)` before folding it into the main scene.
 8. For noise, texture, jitter, or placement-heavy winners, run `render_selected_replicates_from_sweep(...)` across a few seeds/phases before promotion.
-9. When viewport inspection would help, add `save_blend=True` or use an example's `--save-blend` / `--export-blend-only` path and open the saved `.blend`.
+9. For profile-sensitive winners, run `render_profile_comparison_from_sweep(...)` or an example's `--compare-profiles` path before promotion.
+10. When viewport inspection would help, add `save_blend=True` or use an example's `--save-blend` / `--export-blend-only` path and open the saved `.blend`.
 
 ## Design Bias
 

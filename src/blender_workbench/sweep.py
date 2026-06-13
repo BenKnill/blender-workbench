@@ -467,6 +467,79 @@ def _safe_output_name(value: str) -> str:
     return safe.strip("_") or "selected"
 
 
+def default_profile_comparison_profiles() -> tuple[tuple[str, RenderConfig], ...]:
+    return (
+        ("cycles_preview", RenderConfig.cycles_preview()),
+        ("hero_check", RenderConfig.hero_check()),
+    )
+
+
+def coerce_profile_comparison_profiles(
+    profiles: Iterable[tuple[str, RenderConfig]] | None = None,
+) -> tuple[tuple[str, RenderConfig], ...]:
+    values = tuple(profiles or default_profile_comparison_profiles())
+    if len(values) < 2:
+        raise ValueError("profile comparison requires at least two render profiles")
+    coerced: list[tuple[str, RenderConfig]] = []
+    seen: set[str] = set()
+    for index, item in enumerate(values, start=1):
+        try:
+            name, config = item
+        except (TypeError, ValueError) as error:
+            raise TypeError("profile comparison entries must be (name, RenderConfig) pairs") from error
+        if not isinstance(name, str) or not name:
+            raise ValueError(f"profile comparison entry {index} missing name")
+        if not isinstance(config, RenderConfig):
+            raise TypeError(f"profile comparison entry {name!r} must use a RenderConfig")
+        safe_name = _safe_output_name(name)
+        if safe_name in seen:
+            raise ValueError(f"profile comparison entry {name!r} duplicates safe name {safe_name!r}")
+        seen.add(safe_name)
+        coerced.append((name, config))
+    return tuple(coerced)
+
+
+def _profile_render_note(config: RenderConfig) -> str:
+    bounces = f", {config.max_bounces} bounces" if config.max_bounces is not None else ""
+    transparent = f", {config.transparent_max_bounces} transparent" if config.transparent_max_bounces is not None else ""
+    denoise = "denoise on" if config.use_denoising else "denoise off"
+    return f"{config.engine}, {config.resolution_x}x{config.resolution_y}, {config.samples} samples{bounces}{transparent}, {denoise}"
+
+
+def profile_drift_warnings(
+    selected: SweepVariant,
+    profiles: Iterable[tuple[str, RenderConfig]],
+    *,
+    postprocess_enabled: bool,
+) -> tuple[str, ...]:
+    profile_values = tuple(profiles)
+    warnings: list[str] = []
+    engines = {config.engine for _name, config in profile_values}
+    if len(engines) > 1:
+        warnings.append("Render engines change across profiles; Workbench/Eevee/Cycles can disagree on shadows, sorting, and material response.")
+    denoise_values = {config.use_denoising for _name, config in profile_values}
+    if len(denoise_values) > 1 or any(config.use_denoising for _name, config in profile_values):
+        warnings.append("Denoising is involved; fine texture, smoke, glints, and thin geometry can shift between preview and hero renders.")
+    bounce_values = {(config.max_bounces, config.transparent_max_bounces) for _name, config in profile_values}
+    if len(bounce_values) > 1:
+        warnings.append("Bounce depth changes across profiles; transparent, glossy, caustic, and indirect-light reads may drift.")
+    if postprocess_enabled:
+        warnings.append("Postprocess is enabled; glow, bloom, contrast, or denoise-like finishing can hide profile drift.")
+
+    settings_blob = json.dumps(settings_to_jsonable(selected.settings), sort_keys=True, default=str).lower()
+    risk_terms = (
+        (("alpha", "transparent", "transmission", "refraction"), "Transparency or alpha settings are present; check sorting, refraction depth, and transparent bounces."),
+        (("subsurface", "sss", "skin"), "Subsurface settings are present; preview lighting may not match the selected hero scatter."),
+        (("volume", "volumetric", "smoke", "haze", "density"), "Volumetric or haze settings are present; sample count and denoising can change apparent density."),
+        (("caustic", "water_roughness"), "Caustic or water settings are present; preview profiles can miss highlight structure."),
+        (("glow", "bloom", "halo"), "Glow or bloom settings are present; compare the raw profile behavior before trusting the finished look."),
+    )
+    for terms, message in risk_terms:
+        if any(term in settings_blob for term in terms):
+            warnings.append(message)
+    return tuple(dict.fromkeys(warnings))
+
+
 def _open_blend_command(blend_path: Path, root: Path) -> str:
     return f"open -a Blender {shlex.quote(_relative_or_absolute(blend_path, root))}"
 
@@ -826,7 +899,11 @@ def format_reference_targets_readme(targets: Iterable[ReferenceTarget | Mapping[
     return lines
 
 
-def _sweep_workflow_metadata(results: list[RenderResult], promotion_command: str | None) -> dict[str, Any]:
+def _sweep_workflow_metadata(
+    results: list[RenderResult],
+    promotion_command: str | None,
+    profile_comparison_command: str | None = None,
+) -> dict[str, Any]:
     pick_handles = []
     for index, result in enumerate(results, start=1):
         handle = {
@@ -842,6 +919,8 @@ def _sweep_workflow_metadata(results: list[RenderResult], promotion_command: str
         }
         if promotion_command:
             handle["promotion_command"] = _promotion_command_for_result(promotion_command, result, index)
+        if profile_comparison_command:
+            handle["profile_comparison_command"] = _promotion_command_for_result(profile_comparison_command, result, index)
         pick_handles.append(handle)
 
     workflow: dict[str, Any] = {
@@ -855,6 +934,8 @@ def _sweep_workflow_metadata(results: list[RenderResult], promotion_command: str
     }
     if promotion_command:
         workflow["promotion_command_template"] = promotion_command
+    if profile_comparison_command:
+        workflow["profile_comparison_command_template"] = profile_comparison_command
     return workflow
 
 
@@ -888,6 +969,7 @@ def write_readme(
     results: list[RenderResult],
     notes: list[str] | None = None,
     promotion_command: str | None = None,
+    profile_comparison_command: str | None = None,
     diagnostics: dict[str, Any] | None = None,
     reference_targets: Iterable[ReferenceTarget | Mapping[str, Any]] | None = None,
 ) -> None:
@@ -923,6 +1005,8 @@ def write_readme(
             "- Done when `selected/<pick>/selected.json` exists for one chosen tile.",
         ]
     )
+    if profile_comparison_command:
+        lines.append("- For transparent, volumetric, SSS, caustic, denoised, or glow-heavy winners, run the profile comparison before promotion.")
     if promotion_command and results:
         command = _promotion_command_for_result(promotion_command, results[0], 1)
         lines.extend(
@@ -935,6 +1019,20 @@ def write_readme(
                 "```",
                 "",
                 "Replace the example pick with your chosen `name` or index.",
+            ]
+        )
+    if profile_comparison_command and results:
+        command = _promotion_command_for_result(profile_comparison_command, results[0], 1)
+        lines.extend(
+            [
+                "",
+                "Profile comparison command template:",
+                "",
+                "```bash",
+                command,
+                "```",
+                "",
+                "Use the same picked `name` or index to compare preview and hero render profiles for drift.",
             ]
         )
     lines.extend(
@@ -1296,6 +1394,7 @@ def render_sweep(
     title: str = "Blender Sweep",
     notes: list[str] | None = None,
     promotion_command: str | None = None,
+    profile_comparison_command: str | None = None,
     reference_targets: Iterable[ReferenceTarget | Mapping[str, Any]] | None = None,
     square: bool = False,
 ) -> list[RenderResult]:
@@ -1335,6 +1434,7 @@ def render_sweep(
         results,
         notes,
         promotion_command=promotion_command,
+        profile_comparison_command=profile_comparison_command,
         diagnostics=diagnostics,
         reference_targets=target_list,
     )
@@ -1364,7 +1464,7 @@ def render_sweep(
                     "reference_panels": len(_local_reference_targets(target_list, root)),
                 },
                 "reference_targets": reference_targets_to_metadata(target_list),
-                "workflow": _sweep_workflow_metadata(results, promotion_command),
+                "workflow": _sweep_workflow_metadata(results, promotion_command, profile_comparison_command),
                 "diagnostics": diagnostics,
                 "total_seconds": time.perf_counter() - sweep_started,
                 "variants": [dataclasses.asdict(result) for result in results],
@@ -1557,6 +1657,221 @@ def render_selected_from_sweep(
         source_sweep_dir=source_sweep_dir or sweep_dir,
         save_blend=save_blend,
         render_image=render_image,
+        allow_anchor_promotion=allow_anchor_promotion,
+    )
+
+
+def write_profile_comparison_readme(
+    out_dir: Path,
+    title: str,
+    selected: SweepVariant,
+    profiles: Iterable[tuple[str, RenderConfig]],
+    warnings: Iterable[str],
+    notes: list[str] | None = None,
+    source_sweep_dir: Path | None = None,
+    root: Path | None = None,
+) -> None:
+    lines = [
+        f"# {title}",
+        "",
+        f"Profile drift check for selected variant: `{selected.name}`",
+        "",
+        "Rendered profiles:",
+        "",
+    ]
+    for name, config in profiles:
+        lines.append(f"- `{name}`: {_profile_render_note(config)}")
+    if source_sweep_dir:
+        root = root or Path.cwd()
+        lines.extend(["", f"Source sweep: `{_relative_or_absolute(source_sweep_dir, root)}`"])
+    if warnings:
+        lines.extend(["", "Warnings:", ""])
+        lines.extend(f"- {warning}" for warning in warnings)
+    if notes:
+        lines.extend(["", "Notes:", ""])
+        lines.extend(f"- {note}" for note in notes)
+    lines.extend(
+        [
+            "",
+            "Next:",
+            "",
+            "- Inspect `profile_comparison.png` before promoting this pick into docs or a scene.",
+            "- If the hero profile changes the silhouette, alpha, material read, or glow, rerun the grid with safer axes or a closer preview profile.",
+            "",
+            "`profile_comparison.json` records source sweep, pick, render configs, warnings, and output file paths.",
+            "",
+        ]
+    )
+    (out_dir / "README.md").write_text("\n".join(lines))
+
+
+def render_profile_comparison(
+    *,
+    variants: Iterable[SweepVariant],
+    pick: str | int,
+    build_scene: Callable[[Any], None],
+    out_dir: Path,
+    root: Path | None = None,
+    profiles: Iterable[tuple[str, RenderConfig]] | None = None,
+    postprocess: Callable[[Path, Path], bool] | None = postprocess_glow_contrast,
+    title: str = "Selected Profile Comparison",
+    notes: list[str] | None = None,
+    source_sweep_dir: Path | None = None,
+    tile: TileSpec | None = None,
+    allow_anchor_promotion: bool = False,
+) -> list[RenderResult]:
+    """Render one selected variant under multiple render profiles to catch drift."""
+    variant_list = list(variants)
+    selected = select_variant(variant_list, pick)
+    if selected.role in PROTECTED_PROMOTION_ROLES and not allow_anchor_promotion:
+        raise ValueError(
+            f"Refusing to compare {selected.name!r} with role {selected.role!r}; "
+            "pass allow_anchor_promotion=True after confirming this is intentional"
+        )
+    profile_values = coerce_profile_comparison_profiles(profiles)
+    root = root or Path.cwd()
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    results: list[RenderResult] = []
+    comparison_started = time.perf_counter()
+    for profile_name, config in profile_values:
+        profile_variant = dataclasses.replace(
+            selected,
+            name=f"{_safe_output_name(selected.name)}_{_safe_output_name(profile_name)}",
+            label=profile_name,
+            note=_profile_render_note(config),
+            tags=(*selected.tags, "profile_comparison"),
+        )
+        results.append(
+            _render_variant(
+                variant=profile_variant,
+                build_scene=build_scene,
+                out_dir=out_dir,
+                root=root,
+                config=config,
+                postprocess=postprocess,
+                file_suffix="profile",
+                render_label=f"profile comparison {profile_name}",
+            )
+        )
+
+    comparison_tile = tile or TileSpec.filmstrip(columns=min(6, len(results)))
+    contact_sheet = out_dir / "profile_comparison.png"
+    write_contact_sheet(results, root, contact_sheet, comparison_tile)
+    source_value = _relative_or_absolute(source_sweep_dir, root) if source_sweep_dir else None
+    source_fingerprint = _source_sweep_fingerprint(source_sweep_dir)
+    warnings = profile_drift_warnings(selected, profile_values, postprocess_enabled=postprocess is not None)
+    profile_payloads = [
+        {
+            "name": profile_name,
+            "render_config": settings_to_jsonable(config),
+            "postprocess": {
+                "enabled": postprocess is not None,
+                "callable": getattr(postprocess, "__name__", str(postprocess)) if postprocess else None,
+            },
+            "result": dataclasses.asdict(result),
+        }
+        for (profile_name, config), result in zip(profile_values, results, strict=True)
+    ]
+    comparison_fingerprint = make_artifact_fingerprint(
+        "profile_comparison",
+        {
+            "pick": pick,
+            "source_sweep": source_value,
+            "source_sweep_fingerprint": source_fingerprint.get("fingerprint") if source_fingerprint else None,
+            "profiles": [
+                {
+                    "name": item["name"],
+                    "render_config": item["render_config"],
+                    "result_fingerprint": item["result"].get("fingerprint", {}).get("fingerprint")
+                    if isinstance(item["result"].get("fingerprint"), dict)
+                    else None,
+                }
+                for item in profile_payloads
+            ],
+        },
+    )
+    payload = {
+        "fingerprint": comparison_fingerprint,
+        "pick": pick,
+        "source_sweep": source_value,
+        "source_sweep_fingerprint": source_fingerprint,
+        "selected": {
+            "name": selected.name,
+            "label": selected.label,
+            "note": selected.note,
+            "role": selected.role,
+            "tags": selected.tags,
+            "replicate_of": selected.replicate_of,
+            "replicate_index": selected.replicate_index,
+            "procedural_controls": _variant_procedural_controls(selected),
+            "settings": settings_to_jsonable(selected.settings),
+        },
+        "workflow": {
+            "stage": "profile_comparison",
+            "status": "needs_visual_review",
+            "source_sweep": source_value,
+            "selected_variant": selected.name,
+            "required_decision": "compare_preview_and_hero_profiles_before_scene_promotion",
+            "done_when": "profile comparison is visually reviewed and drift risk is accepted or rerun",
+        },
+        "contact_sheet": _relative_or_absolute(contact_sheet, root),
+        "warnings": list(warnings),
+        "profiles": profile_payloads,
+        "total_seconds": time.perf_counter() - comparison_started,
+    }
+    (out_dir / "profile_comparison.json").write_text(json.dumps(payload, indent=2))
+    write_profile_comparison_readme(
+        out_dir,
+        title,
+        selected,
+        profile_values,
+        warnings,
+        notes=notes,
+        source_sweep_dir=source_sweep_dir,
+        root=root,
+    )
+    return results
+
+
+def render_profile_comparison_from_sweep(
+    *,
+    sweep_dir: Path,
+    pick: str | int | None = None,
+    build_scene: Callable[[Any], None],
+    out_dir: Path | None = None,
+    root: Path | None = None,
+    profiles: Iterable[tuple[str, RenderConfig]] | None = None,
+    postprocess: Callable[[Path, Path], bool] | None = postprocess_glow_contrast,
+    title: str = "Selected Profile Comparison",
+    notes: list[str] | None = None,
+    source_sweep_dir: Path | None = None,
+    tile: TileSpec | None = None,
+    allow_anchor_promotion: bool = False,
+) -> list[RenderResult]:
+    """Compare render profiles for one pick reconstructed from sweep metadata."""
+    sweep_dir = Path(sweep_dir)
+    if pick is None:
+        from .review_log import selected_pick_from_review
+
+        pick = selected_pick_from_review(sweep_dir)
+        if pick is None:
+            raise ValueError(f"No pick provided and {sweep_dir / 'review.json'} has no promotable winner")
+    variant_list = variants_from_sweep_metadata(sweep_dir)
+    selected = select_variant(variant_list, pick)
+    target_out_dir = out_dir or sweep_dir / "profile_comparison" / _safe_output_name(selected.name)
+    return render_profile_comparison(
+        variants=variant_list,
+        pick=pick,
+        build_scene=build_scene,
+        out_dir=target_out_dir,
+        root=root,
+        profiles=profiles,
+        postprocess=postprocess,
+        title=title,
+        notes=notes,
+        source_sweep_dir=source_sweep_dir or sweep_dir,
+        tile=tile,
         allow_anchor_promotion=allow_anchor_promotion,
     )
 
