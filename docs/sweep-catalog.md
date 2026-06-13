@@ -31,6 +31,8 @@ The target is recorded in metadata and shown as a leading contact-sheet panel wh
 
 For procedural parameters, use `seed_stride_axis(...)` or `replicate_variants(...)` around stable fields such as `variation_seed`, `noise_phase`, and `texture_offset`. A winner from a noisy texture, jittered light, plume billow, or randomized placement board should survive a selected replicate strip before it becomes a preset.
 
+Use multi-camera boards after a set already has a promising scene/material/light candidate and needs shot coverage. `examples/virtual_set_camera_scout.py` keeps scene settings fixed while named camera presets probe establishing, low foreground, profile, high three-quarter, tele, and failure-anchor views.
+
 For recipe-specific stride boards, prefer named stride kwargs such as `lens_stride`, `ior_stride`, or `thickness_stride`. A 5x5 sheet works well when each row isolates one variable and each column is the same `m2, m1, base, p1, p2` step pattern.
 
 ## Shape Sweeps

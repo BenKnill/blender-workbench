@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 360" role="img" aria-label="Virtual set multi-camera scout">
+  <rect width="960" height="360" fill="#151820"/>
+  <rect x="250" y="76" width="460" height="210" fill="#252a35" stroke="#687184" stroke-width="4"/>
+  <path d="M250 286 L710 286 L650 122 L310 122 Z" fill="#1f232c" stroke="#566070" stroke-width="3"/>
+  <circle cx="480" cy="210" r="46" fill="#d4b273"/>
+  <rect x="458" y="140" width="44" height="130" fill="#a5824e" opacity="0.45"/>
+  <g fill="#5aa4ff" opacity="0.78">
+    <rect x="304" y="230" width="26" height="52"/>
+    <rect x="630" y="196" width="34" height="84"/>
+    <rect x="365" y="150" width="22" height="78"/>
+  </g>
+  <g fill="#ffb05e" opacity="0.9">
+    <rect x="405" y="116" width="28" height="94"/>
+    <rect x="560" y="120" width="24" height="86"/>
+  </g>
+  <g fill="none" stroke-width="5">
+    <path d="M104 282 C178 170 270 112 410 110" stroke="#86d27a"/>
+    <path d="M162 92 C292 174 344 210 424 220" stroke="#86d27a"/>
+    <path d="M804 92 C660 166 594 204 520 214" stroke="#86d27a"/>
+    <path d="M848 280 C720 198 636 174 522 174" stroke="#86d27a"/>
+    <path d="M480 40 C490 112 490 142 486 170" stroke="#86d27a"/>
+    <path d="M480 328 C488 276 490 248 486 220" stroke="#ff6f6f"/>
+  </g>
+  <g fill="#f0efe8" font-family="Helvetica, Arial, sans-serif" font-size="20">
+    <text x="74" y="306">wide</text>
+    <text x="134" y="84">low fg</text>
+    <text x="790" y="84">profile</text>
+    <text x="820" y="306">tele</text>
+    <text x="430" y="34">high 3q</text>
+    <text x="408" y="348">fail back</text>
+  </g>
+</svg>

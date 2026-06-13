@@ -40,6 +40,25 @@
       "docs_asset": "docs/assets/camera-perspective-scout.jpg"
     },
     {
+      "name": "virtual_set_camera_scout",
+      "script": "examples/virtual_set_camera_scout.py",
+      "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/virtual_set_camera_scout.py",
+      "required_capabilities": ["blender", "magick"],
+      "cost": {
+        "profile": "cycles_preview",
+        "engine": "CYCLES",
+        "runtime": "quick",
+        "mode": "multi_camera_scout",
+        "requires_blender": true,
+        "tile_count": 6,
+        "tile_preset": "filmstrip",
+        "reuse_outputs": true
+      },
+      "outputs": ["examples/output/virtual_set_camera_scout/metadata.json", "examples/output/virtual_set_camera_scout/contact_sheet.png"],
+      "prerequisites": [],
+      "docs_asset": "docs/assets/virtual-set-camera-scout.svg"
+    },
+    {
       "name": "gobo_lighting_scout",
       "script": "examples/gobo_lighting_scout.py",
       "command": "/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/gobo_lighting_scout.py",
