@@ -53,6 +53,17 @@ render_selected_variant(
 
 The selected render writes `selected.json`, preserving the pick, settings, render config, source sweep, and final file paths.
 
+## Metadata-Driven Promotion
+
+If the visual decision happens later from `contact_sheet.png` and `metadata.json`, promote the existing tile without reconstructing the original variant list:
+
+```bash
+PYTHONPATH=src /Applications/Blender.app/Contents/MacOS/Blender --background --python-expr \
+'import blender_workbench.promote as p; p.main(["--sweep", "examples/output/mesh_light_scout", "--pick", "mesh_fill_p1", "--recipe", "blender_workbench.recipes.mesh_light:build_mesh_light_scene", "--camera-name", "mesh_light_camera"])'
+```
+
+The `--pick` value accepts the same 1-based index, exact variant name, or exact label as `render_selected_variant(...)`. The command writes `selected/<pick>/selected.json` with source sweep provenance and the recovered settings from metadata.
+
 ## Transparency Lesson
 
 For transparent emission materials, `alpha=0` must mean fully transparent and `alpha=1` must mean fully emissive. This was easy to invert during the vacuum plume work, and an inverted mix makes sweeps misleading because "more alpha" visually does less.
