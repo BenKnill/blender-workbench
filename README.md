@@ -13,6 +13,7 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 - `examples/mini_plume_sweep.py`: a compact Blender script showing the intended workflow.
 - `examples/light_texture_scout.py`: named light-jitter and texture-magnitude board.
 - `examples/rocket_plume_scout.py`: a stronger plume use case built on the general sweep API.
+- `examples/rocket_plume_texture_scout.py`: plume texture stride scout from smooth to overdone.
 - `docs/parameter-sweep-pattern.md`: the short operating pattern for future agents.
 - `docs/performance.md`: defaults for fast basics-first exploration.
 - `docs/rocket-plume.md`: recipe notes for broad, smoky, in-space engine plumes.
@@ -51,7 +52,7 @@ Useful imports for new experiments:
 ```python
 from dataclasses import replace
 
-from blender_workbench.presets import RENDER_PRESETS, SWEEP_AXES, TILE_PRESETS, two_axis_variants
+from blender_workbench.presets import RENDER_PRESETS, SWEEP_AXES, TILE_PRESETS, stride_axis, two_axis_variants
 from blender_workbench.sweep import named_variants, render_sweep
 
 variants = two_axis_variants(
@@ -78,8 +79,9 @@ For named moodboards, skip row/column ceremony:
 variants = named_variants(
     {
         "clean": {"texture_magnitude": 0.0},
-        "grain": {"texture_magnitude": 0.22, "noise_scale": 42.0},
-        "rugged": {"texture_magnitude": 0.58, "noise_scale": 8.0},
+        "marked": {"texture_magnitude": 0.45, "noise_scale": 80.0},
+        "craggy": {"texture_magnitude": 1.1, "noise_scale": 16.0},
+        "overdone_fail": {"texture_magnitude": 1.9, "noise_scale": 28.0},
     }
 )
 
@@ -94,6 +96,20 @@ render_sweep(
 
 Good current axes include `light_source_jitter`, `light_source_size`, `texture_magnitude`, `texture_scale`, `glow_bloom`, and `camera_jitter`.
 
+For fast stride adjustment, build an axis around a center value:
+
+```python
+texture_stride = stride_axis(
+    "texture_stride",
+    "texture_magnitude",
+    center=0.55,
+    stride=0.35,
+    clamp_min=0.0,
+)
+```
+
+If the sheet is too subtle, double `stride`; if every tile is chaos, halve it.
+
 ![Light texture scout contact sheet](docs/assets/light-texture-scout.jpg)
 
 ## Featured Recipe: Rocket Plume
@@ -107,3 +123,11 @@ Run the stronger plume scout:
 This uses `blender_workbench.recipes.rocket_plume` to cross plume alpha/strength with broad vacuum expansion shape. It is a demanding recipe, but the workbench should remain a general sweep tool rather than a rocket-only optimizer.
 
 ![Rocket plume scout contact sheet](docs/assets/rocket-plume-scout.jpg)
+
+Run the plume texture scout:
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/rocket_plume_texture_scout.py
+```
+
+![Rocket plume texture scout contact sheet](docs/assets/rocket-plume-texture-scout.jpg)

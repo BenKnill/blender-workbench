@@ -6,9 +6,9 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
 
-from blender_workbench.materials import principled_material, transparent_emission_material
+from blender_workbench.materials import principled_material, textured_transparent_emission_material, transparent_emission_material
 from blender_workbench.presets import PLUME_ALPHA_STRENGTH, PLUME_SHAPE, two_axis_variants
-from blender_workbench.sweep import SweepVariant
+from blender_workbench.sweep import SweepVariant, named_variants
 
 
 ROCKET_PLUME_CAMERA = "rocket_plume_camera"
@@ -33,6 +33,14 @@ class RocketPlumeSettings:
     smoke_strength: float = 0.08
     billow_count: int = 8
     billow_jitter: float = 0.22
+    plume_texture_magnitude: float = 0.32
+    plume_texture_scale: float = 10.0
+    billow_texture_magnitude: float = 0.42
+    billow_texture_scale: float = 5.5
+    filament_wiggle: float = 0.13
+    shell_rib_count: int = 8
+    shell_rib_alpha: float = 0.055
+    shell_rib_strength: float = 0.34
     core_alpha: float = 0.08
     core_strength: float = 0.62
     core_length: float = 0.42
@@ -63,6 +71,66 @@ def rocket_plume_scout_variants(*, prefix: str = "vacuum") -> list[SweepVariant]
         )
         for variant in variants
     ]
+
+
+def rocket_plume_texture_variants(*, prefix: str = "texture") -> list[SweepVariant]:
+    return named_variants(
+        {
+            "smooth": {
+                "plume_texture_magnitude": 0.0,
+                "billow_texture_magnitude": 0.0,
+                "filament_wiggle": 0.03,
+                "shell_rib_count": 0,
+                "billow_count": 6,
+                "filament_count": 24,
+            },
+            "grain": {
+                "plume_texture_magnitude": 0.32,
+                "plume_texture_scale": 14.0,
+                "billow_texture_magnitude": 0.42,
+                "billow_texture_scale": 8.0,
+                "filament_wiggle": 0.12,
+                "shell_rib_count": 8,
+                "billow_count": 8,
+                "filament_count": 30,
+            },
+            "billowy": {
+                "plume_texture_magnitude": 0.58,
+                "plume_texture_scale": 6.5,
+                "billow_texture_magnitude": 0.72,
+                "billow_texture_scale": 3.2,
+                "filament_wiggle": 0.24,
+                "shell_rib_count": 14,
+                "billow_count": 13,
+                "billow_jitter": 0.38,
+                "filament_count": 38,
+            },
+            "shredded": {
+                "plume_texture_magnitude": 0.95,
+                "plume_texture_scale": 18.0,
+                "billow_texture_magnitude": 1.05,
+                "billow_texture_scale": 2.4,
+                "filament_wiggle": 0.42,
+                "shell_rib_count": 22,
+                "billow_count": 18,
+                "billow_jitter": 0.52,
+                "filament_count": 54,
+            },
+            "overdone_fail": {
+                "plume_texture_magnitude": 1.35,
+                "plume_texture_scale": 34.0,
+                "billow_texture_magnitude": 1.45,
+                "billow_texture_scale": 18.0,
+                "filament_wiggle": 0.68,
+                "shell_rib_count": 34,
+                "billow_count": 22,
+                "billow_jitter": 0.75,
+                "filament_count": 72,
+            },
+        },
+        prefix=prefix,
+        note="rocket plume texture stride scout",
+    )
 
 
 def clear_scene() -> None:
@@ -155,9 +223,24 @@ def _add_plume(settings: RocketPlumeSettings) -> None:
         max(0.0, settings.shell_color[2] - settings.warmth * 0.25),
         1.0,
     )
-    shell = transparent_emission_material("translucent plume shell", warm_shell, settings.shell_strength, settings.shell_alpha)
+    shell = textured_transparent_emission_material(
+        "translucent plume shell",
+        warm_shell,
+        settings.shell_strength,
+        settings.shell_alpha,
+        texture_magnitude=settings.plume_texture_magnitude,
+        texture_scale=settings.plume_texture_scale,
+    )
     filament = transparent_emission_material("blue plume filaments", settings.filament_color, settings.filament_strength, settings.filament_alpha)
-    smoke = transparent_emission_material("gray blue billow shell", settings.smoke_color, settings.smoke_strength, settings.smoke_alpha)
+    rib = transparent_emission_material("plume shell ribs", settings.filament_color, settings.shell_rib_strength, settings.shell_rib_alpha)
+    smoke = textured_transparent_emission_material(
+        "gray blue billow shell",
+        settings.smoke_color,
+        settings.smoke_strength,
+        settings.smoke_alpha,
+        texture_magnitude=settings.billow_texture_magnitude,
+        texture_scale=settings.billow_texture_scale,
+    )
     core = transparent_emission_material("short bright engine core", (0.72, 0.88, 1.0, 1), settings.core_strength, settings.core_alpha)
 
     throat = (0.26, 0.0, 0.0)
@@ -180,17 +263,34 @@ def _add_plume(settings: RocketPlumeSettings) -> None:
             vertices=96,
         )
 
+    for index in range(max(0, int(settings.shell_rib_count))):
+        frac = (index + 0.5) / max(1, settings.shell_rib_count)
+        angle = index * 2.399
+        end_radius = settings.width * (0.75 + 0.85 * frac)
+        end = (
+            plume_end_x * (0.82 + 0.13 * math.sin(index * 0.47) ** 2),
+            math.sin(angle) * end_radius,
+            math.cos(angle * 0.91) * end_radius * 0.48,
+        )
+        mid = (
+            0.55 + end[0] * 0.48,
+            end[1] * (0.18 + 0.2 * math.sin(index * 1.11)),
+            end[2] * (0.14 + 0.18 * math.cos(index * 0.83)),
+        )
+        filament_curve(f"shell rib {index:02d}", [throat, mid, end], 0.0035 + 0.003 * frac, rib)
+
     for index in range(settings.billow_count):
         t = (index + 0.8) / (settings.billow_count + 1.0)
         phase = index * 2.399
         x = 0.55 + plume_end_x * t
-        radius = (0.20 + 1.35 * t) * settings.width
+        radius = (0.20 + 1.35 * t) * settings.width * (1.0 + 0.22 * settings.billow_texture_magnitude * math.sin(index * 1.71))
         y = math.sin(phase) * radius * settings.billow_jitter
         z = math.cos(phase * 0.73) * radius * settings.billow_jitter * 0.62
         bpy.ops.mesh.primitive_uv_sphere_add(segments=24, ring_count=12, radius=1.0, location=(x, y, z))
         obj = bpy.context.object
         obj.name = f"soft billow {index:02d}"
-        obj.scale = (0.18 + 0.35 * t, radius * 0.52, radius * 0.38)
+        lump = 1.0 + settings.billow_texture_magnitude * 0.24 * math.sin(index * 2.17)
+        obj.scale = ((0.18 + 0.35 * t) * lump, radius * 0.52, radius * 0.38 * (2.0 - lump))
         obj.data.materials.append(smoke)
         _shade_smooth()
 
@@ -203,8 +303,9 @@ def _add_plume(settings: RocketPlumeSettings) -> None:
         end_y = math.sin(angle) * end_radius
         end_z = math.cos(angle * 0.83) * end_radius * 0.55
         mid_x = 0.55 + end_x * 0.45
-        mid_y = end_y * (0.18 + 0.18 * math.sin(index * 0.37))
-        mid_z = end_z * (0.12 + 0.16 * math.cos(index * 0.53))
+        wiggle = settings.filament_wiggle
+        mid_y = end_y * (0.18 + 0.18 * math.sin(index * 0.37)) + math.sin(index * 3.1) * wiggle
+        mid_z = end_z * (0.12 + 0.16 * math.cos(index * 0.53)) + math.cos(index * 2.7) * wiggle * 0.7
         radius = 0.0045 + 0.006 * (1.0 - frac)
         filament_curve(f"plume filament {index:02d}", [throat, (mid_x, mid_y, mid_z), (end_x, end_y, end_z)], radius, filament)
 

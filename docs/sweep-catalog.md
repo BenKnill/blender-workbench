@@ -16,6 +16,8 @@ Start with the cheapest render profile that can answer the visual question. Shap
 
 For named cases, prefer `named_variants(...)` plus `render_sweep(..., square=True)`. Use row/column axes only when the comparison really is a crossed parameter grid.
 
+For numeric parameters, use `stride_axis(...)` when you expect to adjust the sweep width repeatedly. If the resulting sheet looks timid, increase `stride`; if every tile fails, reduce it.
+
 ## Shape Sweeps
 
 - silhouette: spindly, blocky, swept, squat, tall
@@ -33,7 +35,7 @@ Shape sweeps should usually happen before material polish. If the thumbnail is n
 - glass or water: roughness crossed with caustic scale
 - subsurface: radius crossed with color
 - metal: roughness crossed with edge light strength
-- texture magnitude: clean, grain, rugged
+- texture magnitude: clean, marked, craggy, overdone
 - texture scale: fine, medium, broad
 
 Keep one deliberate failure anchor in material sheets. It calibrates the eye and makes the good tile more legible.
@@ -57,6 +59,7 @@ Color sweeps should avoid one-note palettes. Put at least one cool/warm contrast
 - `plume_alpha_strength` x `plume_shape` with `micro_grid`
 - named texture cases with `auto_square_moodboard` and `square=True`
 - `examples/light_texture_scout.py` for a concrete named light-jitter plus texture-magnitude board
+- `examples/rocket_plume_texture_scout.py` for a plume texture stride board from smooth to overdone
 - `light_source_jitter` x `texture_magnitude` with `balanced_grid`
 - `sunset_haze` as a one-axis `filmstrip`
 - `subsurface_candy` x shape scale with `square_moodboard`

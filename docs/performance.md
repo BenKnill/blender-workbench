@@ -31,6 +31,7 @@ config = replace(
 - Reuse tiles during layout churn with `replace(config, reuse_existing=True)`.
 - Keep `build_scene(settings)` cheap: avoid simulations, huge mesh generation, high subdivision, and expensive boolean stacks in the first pass.
 - Add detail in stages: silhouette, material, lighting, camera, then heavier bake.
+- When a numeric sweep looks timid, increase the `stride_axis(...)` stride and rerun. When every tile fails, reduce the stride or add failure anchors at the extremes.
 
 ## Reading Timing Metadata
 

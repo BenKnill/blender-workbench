@@ -6,6 +6,7 @@ from .rocket_plume import (
     build_rocket_plume_scene,
     coerce_rocket_plume_settings,
     rocket_plume_scout_variants,
+    rocket_plume_texture_variants,
 )
 
 __all__ = [
@@ -14,4 +15,5 @@ __all__ = [
     "build_rocket_plume_scene",
     "coerce_rocket_plume_settings",
     "rocket_plume_scout_variants",
+    "rocket_plume_texture_variants",
 ]

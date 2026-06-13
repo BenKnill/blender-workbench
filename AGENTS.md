@@ -7,6 +7,7 @@ When making or modifying a Blender experiment:
 - Prefer `blender_workbench.sweep.render_sweep` over bespoke loops.
 - Check `blender_workbench.presets.SWEEP_AXES` and `TILE_PRESETS` before inventing new parameters or contact-sheet layouts.
 - For already-named cases, use `named_variants(...)` and `render_sweep(..., square=True)` instead of forcing a fake row/column grid.
+- For numeric knobs that may be too timid or too wild, use `stride_axis(...)` so stride can be doubled or halved quickly.
 - Start with `RENDER_PRESETS["shape_scout"]`, `["material_scout"]`, or `["cycles_preview"]`; do not default to expensive hero renders.
 - For rocket plume work, start with `blender_workbench.recipes.rocket_plume`; keep reusable improvements in generic sweep/material/preset helpers when they are not plume-specific.
 - Always keep numeric settings in metadata next to rendered tiles.

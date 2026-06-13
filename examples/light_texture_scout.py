@@ -27,37 +27,44 @@ CASES = named_variants(
         "locked_grain": {
             "light_jitter_radius": 0.0,
             "light_jitter_count": 1,
-            "texture_magnitude": 0.22,
-            "noise_scale": 42.0,
-            "surface_bump_strength": 0.035,
+            "texture_magnitude": 0.45,
+            "noise_scale": 80.0,
+            "surface_bump_strength": 0.08,
         },
         "hand_grain": {
             "light_jitter_radius": 0.18,
             "light_jitter_count": 3,
-            "texture_magnitude": 0.22,
-            "noise_scale": 42.0,
-            "surface_bump_strength": 0.035,
+            "texture_magnitude": 0.45,
+            "noise_scale": 80.0,
+            "surface_bump_strength": 0.08,
         },
         "hand_rugged": {
             "light_jitter_radius": 0.18,
             "light_jitter_count": 3,
-            "texture_magnitude": 0.58,
-            "noise_scale": 14.0,
-            "surface_bump_strength": 0.11,
+            "texture_magnitude": 1.1,
+            "noise_scale": 16.0,
+            "surface_bump_strength": 0.24,
         },
         "restless_rugged": {
             "light_jitter_radius": 0.42,
             "light_jitter_count": 5,
-            "texture_magnitude": 0.58,
-            "noise_scale": 8.0,
-            "surface_bump_strength": 0.11,
+            "texture_magnitude": 1.1,
+            "noise_scale": 16.0,
+            "surface_bump_strength": 0.24,
         },
-        "broad_soft": {
+        "broad_lumpy": {
             "light_jitter_radius": 0.3,
             "light_jitter_count": 4,
-            "texture_magnitude": 0.36,
-            "noise_scale": 4.2,
-            "surface_bump_strength": 0.07,
+            "texture_magnitude": 1.35,
+            "noise_scale": 3.2,
+            "surface_bump_strength": 0.30,
+        },
+        "overdone_fail": {
+            "light_jitter_radius": 0.5,
+            "light_jitter_count": 6,
+            "texture_magnitude": 1.9,
+            "noise_scale": 28.0,
+            "surface_bump_strength": 0.42,
         },
     },
     note="named light jitter and texture magnitude scout",
@@ -88,18 +95,26 @@ def textured_material(settings: dict):
         return mat
 
     strength = settings["texture_magnitude"]
-    color = (0.46 + strength * 0.2, 0.53 + strength * 0.08, 0.56 - strength * 0.08, 1.0)
-    bsdf.inputs["Base Color"].default_value = color
     bsdf.inputs["Roughness"].default_value = 0.72
 
     noise = mat.node_tree.nodes.new(type="ShaderNodeTexNoise")
     noise.inputs["Scale"].default_value = settings["noise_scale"]
-    noise.inputs["Detail"].default_value = 9.0
-    noise.inputs["Roughness"].default_value = 0.58
+    noise.inputs["Detail"].default_value = 13.0
+    noise.inputs["Roughness"].default_value = 0.64
+
+    ramp = mat.node_tree.nodes.new(type="ShaderNodeValToRGB")
+    low = max(0.02, 0.48 - strength * 0.34)
+    high = min(1.0, 0.56 + strength * 0.32)
+    ramp.color_ramp.elements[0].position = max(0.0, 0.42 - strength * 0.08)
+    ramp.color_ramp.elements[0].color = (low * 0.82, low * 0.94, low, 1.0)
+    ramp.color_ramp.elements[1].position = min(1.0, 0.58 + strength * 0.08)
+    ramp.color_ramp.elements[1].color = (high, high * 0.94, high * 0.84, 1.0)
 
     bump = mat.node_tree.nodes.new(type="ShaderNodeBump")
     bump.inputs["Strength"].default_value = settings["surface_bump_strength"]
-    bump.inputs["Distance"].default_value = 0.18
+    bump.inputs["Distance"].default_value = 0.26
+    mat.node_tree.links.new(noise.outputs["Fac"], ramp.inputs["Fac"])
+    mat.node_tree.links.new(ramp.outputs["Color"], bsdf.inputs["Base Color"])
     mat.node_tree.links.new(noise.outputs["Fac"], bump.inputs["Height"])
     mat.node_tree.links.new(bump.outputs["Normal"], bsdf.inputs["Normal"])
     return mat

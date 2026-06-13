@@ -51,6 +51,34 @@ def two_axis_variants(
     ]
 
 
+def stride_axis(
+    name: str,
+    parameter: str,
+    *,
+    center: float,
+    stride: float,
+    steps: tuple[int, ...] = (-2, -1, 0, 1, 2),
+    clamp_min: float | None = None,
+    clamp_max: float | None = None,
+    note: str = "",
+) -> SweepAxis:
+    """Build an axis around a center value with an editable stride.
+
+    This is useful when an early sheet looks timid: double `stride` and rerun
+    without rewriting a pile of named cases.
+    """
+    values: list[tuple[str, Mapping[str, Any]]] = []
+    for step in steps:
+        value = center + step * stride
+        if clamp_min is not None:
+            value = max(clamp_min, value)
+        if clamp_max is not None:
+            value = min(clamp_max, value)
+        label = "base" if step == 0 else f"{'p' if step > 0 else 'm'}{abs(step)}"
+        values.append((label, {parameter: value}))
+    return SweepAxis(name=name, values=tuple(values), note=note)
+
+
 PLUME_ALPHA_STRENGTH = SweepAxis(
     name="plume_alpha_strength",
     note="thin transparent shells usually read more like vacuum plume than fire",
@@ -126,8 +154,8 @@ TEXTURE_MAGNITUDE = SweepAxis(
     note="texture magnitude should be swept separately from color so form does not get buried",
     values=(
         ("clean", {"texture_magnitude": 0.0, "noise_strength": 0.0, "surface_bump_strength": 0.0}),
-        ("grain", {"texture_magnitude": 0.22, "noise_strength": 0.18, "surface_bump_strength": 0.035}),
-        ("rugged", {"texture_magnitude": 0.58, "noise_strength": 0.44, "surface_bump_strength": 0.11}),
+        ("marked", {"texture_magnitude": 0.45, "noise_strength": 0.42, "surface_bump_strength": 0.08}),
+        ("craggy", {"texture_magnitude": 1.1, "noise_strength": 0.95, "surface_bump_strength": 0.24}),
     ),
 )
 
@@ -135,10 +163,20 @@ TEXTURE_SCALE = SweepAxis(
     name="texture_scale",
     note="cross texture scale with magnitude to avoid mistaking frequency for strength",
     values=(
-        ("fine", {"noise_scale": 42.0, "texture_scale": 0.35}),
-        ("medium", {"noise_scale": 14.0, "texture_scale": 1.0}),
-        ("broad", {"noise_scale": 4.2, "texture_scale": 2.8}),
+        ("fine", {"noise_scale": 80.0, "texture_scale": 0.22}),
+        ("medium", {"noise_scale": 16.0, "texture_scale": 1.0}),
+        ("broad", {"noise_scale": 3.2, "texture_scale": 3.4}),
     ),
+)
+
+TEXTURE_MAGNITUDE_STRIDE = stride_axis(
+    "texture_magnitude_stride",
+    "texture_magnitude",
+    center=0.55,
+    stride=0.35,
+    steps=(-2, -1, 0, 1, 2),
+    clamp_min=0.0,
+    note="increase stride when clean/grain/rugged looks too timid",
 )
 
 GLOW_BLOOM = SweepAxis(
@@ -183,6 +221,7 @@ SWEEP_AXES = {
         LIGHT_SOURCE_SIZE,
         TEXTURE_MAGNITUDE,
         TEXTURE_SCALE,
+        TEXTURE_MAGNITUDE_STRIDE,
         GLOW_BLOOM,
         CAMERA_JITTER,
         SILHOUETTE_SHAPE,

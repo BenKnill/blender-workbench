@@ -1,7 +1,12 @@
 import unittest
 
-from blender_workbench.presets import RENDER_PRESETS, SWEEP_AXES, TILE_PRESETS, one_axis_variants, two_axis_variants
-from blender_workbench.recipes.rocket_plume import RocketPlumeSettings, coerce_rocket_plume_settings, rocket_plume_scout_variants
+from blender_workbench.presets import RENDER_PRESETS, SWEEP_AXES, TILE_PRESETS, one_axis_variants, stride_axis, two_axis_variants
+from blender_workbench.recipes.rocket_plume import (
+    RocketPlumeSettings,
+    coerce_rocket_plume_settings,
+    rocket_plume_scout_variants,
+    rocket_plume_texture_variants,
+)
 from blender_workbench.sweep import RenderConfig, SweepVariant, TileSpec, grid_variants, named_variants, settings_to_jsonable
 
 
@@ -24,6 +29,7 @@ class SweepTests(unittest.TestCase):
         self.assertIn("plume_alpha_strength", SWEEP_AXES)
         self.assertIn("light_source_jitter", SWEEP_AXES)
         self.assertIn("texture_magnitude", SWEEP_AXES)
+        self.assertIn("texture_magnitude_stride", SWEEP_AXES)
         self.assertIn("micro_grid", TILE_PRESETS)
         self.assertIn("auto_micro_grid", TILE_PRESETS)
         self.assertIn("shape_scout", RENDER_PRESETS)
@@ -72,6 +78,12 @@ class SweepTests(unittest.TestCase):
         self.assertEqual(tile.columns_for_count(9), 3)
         self.assertEqual(tile.columns_for_count(10), 4)
 
+    def test_stride_axis_makes_stride_adjustment_obvious(self):
+        axis = stride_axis("demo_stride", "texture_magnitude", center=0.5, stride=0.25, steps=(-2, 0, 2), clamp_min=0.0)
+
+        self.assertEqual([label for label, _ in axis.values], ["m2", "base", "p2"])
+        self.assertEqual([settings["texture_magnitude"] for _, settings in axis.values], [0.0, 0.5, 1.0])
+
     def test_render_config_profiles_are_ordered_by_cost(self):
         self.assertEqual(RenderConfig.shape_scout().engine, "BLENDER_WORKBENCH")
         self.assertEqual(RenderConfig.material_scout().engine, "EEVEE")
@@ -101,6 +113,14 @@ class SweepTests(unittest.TestCase):
         self.assertEqual(variants[0].name, "test_ghost_needle")
         self.assertIn("shell_alpha", variants[0].settings)
         self.assertIn("width", variants[0].settings)
+
+    def test_rocket_plume_texture_scout_has_failure_anchor(self):
+        variants = rocket_plume_texture_variants(prefix="test")
+
+        self.assertEqual(len(variants), 5)
+        self.assertEqual(variants[-1].name, "test_overdone_fail")
+        self.assertGreater(variants[-1].settings["plume_texture_magnitude"], variants[0].settings["plume_texture_magnitude"])
+        self.assertIn("filament_wiggle", variants[-1].settings)
 
 
 if __name__ == "__main__":
