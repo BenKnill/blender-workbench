@@ -127,6 +127,7 @@ def principled_material(
     *,
     roughness: float = 0.8,
     metallic: float = 0.0,
+    ior: float = 1.45,
     alpha: float = 1.0,
     subsurface_weight: float = 0.0,
     subsurface_radius=None,
@@ -139,12 +140,15 @@ def principled_material(
     mat = bpy.data.materials.new(name)
     mat.use_nodes = True
     mat.blend_method = "BLEND" if alpha < 1.0 else "OPAQUE"
+    if alpha < 1.0 or transmission_weight > 0:
+        mat.use_screen_refraction = True
 
     bsdf = mat.node_tree.nodes.get("Principled BSDF")
     if bsdf:
         set_node_input(bsdf, ["Base Color"], color)
         set_node_input(bsdf, ["Roughness"], roughness)
         set_node_input(bsdf, ["Metallic"], metallic)
+        set_node_input(bsdf, ["IOR"], ior)
         set_node_input(bsdf, ["Alpha"], alpha)
         set_node_input(bsdf, ["Subsurface Weight"], subsurface_weight)
         if subsurface_radius is not None:

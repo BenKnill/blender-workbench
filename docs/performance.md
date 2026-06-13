@@ -29,6 +29,7 @@ config = replace(
 - Prefer `micro_grid` for broad scouting and `balanced_grid` for readable 3x3 comparisons.
 - Turn postprocessing off when testing shape or framing: `render_sweep(..., postprocess=None)`.
 - Reuse tiles during layout churn with `replace(config, reuse_existing=True)`.
+- Keep camera perspective scouts cheap: the variable is usually lens/distance/framing, not samples.
 - Keep `build_scene(settings)` cheap: avoid simulations, huge mesh generation, high subdivision, and expensive boolean stacks in the first pass.
 - Add detail in stages: silhouette, material, lighting, camera, then heavier bake.
 - When a numeric sweep looks timid, increase the `stride_axis(...)` stride and rerun. When every tile fails, reduce the stride or add failure anchors at the extremes.
@@ -48,6 +49,7 @@ For stacked transparent materials, watch `transparent_max_bounces`. Too low can 
 ## Useful Ladders
 
 - Shape: `shape_scout` + `micro_grid`, then rerun winners with `cycles_preview`.
+- Camera: `cycles_preview` with low samples if shadows/markers matter; otherwise `shape_scout` is enough for framing.
 - Transparency: `material_scout` first, then `cycles_preview` if alpha sorting or glow is misleading.
 - Caustics: start with `cycles_preview`, keep the grid small, then use `hero_check` only for the final two or three variants.
 - Long exposure: scout streak length and framing with `shape_scout`, then test glow and haze with `cycles_preview`.

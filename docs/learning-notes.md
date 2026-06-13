@@ -1,0 +1,25 @@
+# Learning Notes
+
+This is a compact map from the local BlenderArt/resource shelf to workbench exercises.
+
+## Current Source Prompts
+
+- `blenderart_issue_27_cg_lighting_apr_2010.pdf`: textured light, shadow play, mesh/glowing lights, pack-shot camera controls, zoom/focal blur, studio tables.
+- `blenderart_issue_16_lighting_rendering_may_2008.pdf`: multilayer skin/SSS thinking, translucent-vs-transparent materials, smoke and alpha billboards.
+- `blenderart_issue_22_texturing_environment_lighting_jun_2009.pdf`: texture-node thinking, candle/face SSS, trial-and-error material lighting.
+- `blenderart_issue_39_compositing_sep_2012.pdf`: virtual sets that survive multiple camera setups, displacement landscapes, SSS ice, render passes/compositing.
+- `blenderart_issue_42_general_inspiration_sep_2013.pdf`: translucent printed china-ball lighting objects and mixed hard-surface/organic material workflows.
+
+## Recipes Added From These Prompts
+
+- `examples/gobo_lighting_scout.py`: turns textured light and shadow-play notes into a 16-tile projected-shadow board.
+- `examples/subsurface_scout.py`: turns SSS/translucency notes into wax, jelly, opal, thickness, backlight, and core-light comparisons.
+- `examples/camera_perspective_scout.py`: turns pack-shot and virtual-set camera lessons into matched lens/distance sweeps.
+- `examples/transparency_scout.py`: turns alpha/glass/refraction notes into alpha, transmission, roughness, IOR, tint, and pane-thickness comparisons.
+
+## Workbench Lessons
+
+- Do not use the default glow postprocess for every recipe. It helps plumes, but it can obscure material, shadow, and camera diagnostics.
+- Tiny boards need short labels or adaptive label sizing. Long descriptive variant names belong in metadata, not necessarily on the tile.
+- Perspective is a first-class variable. Pair lens and distance when you want similar composition with different spatial feeling.
+- Transparent materials need structured backgrounds. Without stripes/checkers/depth markers, alpha and IOR sweeps look deceptively identical.

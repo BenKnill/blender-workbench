@@ -7,17 +7,21 @@ This repo grew out of the lighting/plume studies in the neighboring Blender scen
 ## What This Provides
 
 - `blender_workbench.sweep`: render a list/grid of variants, write raw/finished PNGs, metadata, README, and a contact sheet.
+- `blender_workbench.camera`: orbit-camera helpers plus lens/distance matching for perspective studies.
 - `blender_workbench.materials`: small material helpers with explicit alpha and subsurface semantics.
 - `blender_workbench.presets`: starter axes, render profiles, and tile layouts for common visual experiments.
 - `blender_workbench.recipes`: optional domain recipes, including a fast rocket vacuum plume scout.
+- `examples/camera_perspective_scout.py`: matched-framing lens/distance/angle/pitch board.
 - `examples/gobo_lighting_scout.py`: projected-shadow/gobo lighting board from the BlenderArt lighting resources.
 - `examples/subsurface_scout.py`: subsurface material board for wax, jelly, opal, roughness, and backlight.
+- `examples/transparency_scout.py`: transparency, transmission, roughness, IOR, tint, and thickness board.
 - `examples/mini_plume_sweep.py`: a compact Blender script showing the intended workflow.
 - `examples/light_texture_scout.py`: named light-jitter and texture-magnitude board.
 - `examples/rocket_plume_scout.py`: a stronger plume use case built on the general sweep API.
 - `examples/rocket_plume_texture_scout.py`: dense plume texture board from smooth through overdone to whiteout.
 - `docs/parameter-sweep-pattern.md`: the short operating pattern for future agents.
 - `docs/performance.md`: defaults for fast basics-first exploration.
+- `docs/learning-notes.md`: short map from local BlenderArt resources to implemented sweep ideas.
 - `docs/rocket-plume.md`: recipe notes for broad, smoky, in-space engine plumes.
 
 ## Quick Start
@@ -96,7 +100,7 @@ render_sweep(
 )
 ```
 
-Good current axes include `light_source_jitter`, `light_source_size`, `texture_magnitude`, `texture_scale`, `glow_bloom`, and `camera_jitter`.
+Good current axes include `light_source_jitter`, `light_source_size`, `texture_magnitude`, `texture_scale`, `glow_bloom`, `camera_jitter`, `camera_perspective`, `camera_orbit`, and `transparency_alpha`.
 
 For fast stride adjustment, build an axis around a center value:
 
@@ -113,6 +117,18 @@ texture_stride = stride_axis(
 If the sheet is too subtle, double `stride`; if every tile is chaos, halve it.
 
 ![Light texture scout contact sheet](docs/assets/light-texture-scout.jpg)
+
+## Learning Recipe: Camera Perspective
+
+Run the matched-framing camera scout:
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/camera_perspective_scout.py
+```
+
+This uses `blender_workbench.recipes.camera_perspective` to compare close wide-angle framing, normal framing, telephoto compression, pitch, yaw, and roll. Lens and distance are paired so the central subject stays similarly sized while the room perspective changes.
+
+![Camera perspective scout contact sheet](docs/assets/camera-perspective-scout.jpg)
 
 ## Learning Recipe: Gobo Lighting
 
@@ -137,6 +153,18 @@ Run the translucent material scout:
 This uses `blender_workbench.recipes.subsurface` to compare subsurface color, scattering radius, material thickness, roughness, backlight, and core light. It deliberately keeps the postprocess off so the sheet reads as a material/lighting test rather than a bloom test.
 
 ![Subsurface scout contact sheet](docs/assets/subsurface-scout.jpg)
+
+## Learning Recipe: Transparency
+
+Run the transparent material scout:
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/transparency_scout.py
+```
+
+This uses `blender_workbench.recipes.transparency` to compare alpha, transmission, roughness, IOR, tint, pane thickness, stacked layers, and backlight. The IOR/lens cases are intentionally aggressive so distortion is visible in tiny tiles.
+
+![Transparency scout contact sheet](docs/assets/transparency-scout.jpg)
 
 ## Featured Recipe: Rocket Plume
 

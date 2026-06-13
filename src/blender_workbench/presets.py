@@ -4,6 +4,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
 
+from .camera import camera_distance_for_matching_framing
 from .sweep import RenderConfig, SweepVariant, TileSpec, grid_variants
 
 
@@ -199,6 +200,39 @@ CAMERA_JITTER = SweepAxis(
     ),
 )
 
+CAMERA_PERSPECTIVE = SweepAxis(
+    name="camera_perspective",
+    note="match distance to lens so composition stays similar while perspective changes",
+    values=(
+        ("wide_close", {"camera_lens": 22.0, "camera_distance": camera_distance_for_matching_framing(22.0)}),
+        ("normal_mid", {"camera_lens": 45.0, "camera_distance": camera_distance_for_matching_framing(45.0)}),
+        ("portrait_far", {"camera_lens": 70.0, "camera_distance": camera_distance_for_matching_framing(70.0)}),
+        ("tele_flat", {"camera_lens": 110.0, "camera_distance": camera_distance_for_matching_framing(110.0)}),
+    ),
+)
+
+CAMERA_ORBIT = SweepAxis(
+    name="camera_orbit",
+    note="orbit angle and pitch reveal whether a setup is only working from one view",
+    values=(
+        ("front_low", {"camera_yaw": 0.0, "camera_pitch": 5.0}),
+        ("left_mid", {"camera_yaw": -18.0, "camera_pitch": 11.0}),
+        ("right_mid", {"camera_yaw": 18.0, "camera_pitch": 11.0}),
+        ("high_threeq", {"camera_yaw": -28.0, "camera_pitch": 24.0}),
+    ),
+)
+
+TRANSPARENCY_ALPHA = SweepAxis(
+    name="transparency_alpha",
+    note="alpha, transmission, and roughness need separate anchors or transparent materials become guesswork",
+    values=(
+        ("ghost", {"alpha": 0.18, "transmission_weight": 0.0, "roughness": 0.1}),
+        ("clear", {"alpha": 0.42, "transmission_weight": 0.45, "roughness": 0.02}),
+        ("frosted", {"alpha": 0.58, "transmission_weight": 0.24, "roughness": 0.42}),
+        ("solid_fail", {"alpha": 0.92, "transmission_weight": 0.0, "roughness": 0.74}),
+    ),
+)
+
 SILHOUETTE_SHAPE = SweepAxis(
     name="silhouette_shape",
     note="shape sweeps should test readable outline before material polish",
@@ -224,6 +258,9 @@ SWEEP_AXES = {
         TEXTURE_MAGNITUDE_STRIDE,
         GLOW_BLOOM,
         CAMERA_JITTER,
+        CAMERA_PERSPECTIVE,
+        CAMERA_ORBIT,
+        TRANSPARENCY_ALPHA,
         SILHOUETTE_SHAPE,
     ]
 }

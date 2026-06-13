@@ -1,6 +1,12 @@
 import unittest
 
+from blender_workbench.camera import camera_distance_for_matching_framing, orbit_location
 from blender_workbench.presets import RENDER_PRESETS, SWEEP_AXES, TILE_PRESETS, one_axis_variants, stride_axis, two_axis_variants
+from blender_workbench.recipes.camera_perspective import (
+    CameraPerspectiveSettings,
+    camera_perspective_variants,
+    coerce_camera_perspective_settings,
+)
 from blender_workbench.recipes.gobo_lighting import GoboLightingSettings, coerce_gobo_settings, gobo_lighting_variants
 from blender_workbench.recipes.rocket_plume import (
     RocketPlumeSettings,
@@ -9,6 +15,7 @@ from blender_workbench.recipes.rocket_plume import (
     rocket_plume_texture_variants,
 )
 from blender_workbench.recipes.subsurface import SubsurfaceSettings, coerce_subsurface_settings, subsurface_variants
+from blender_workbench.recipes.transparency import TransparencySettings, coerce_transparency_settings, transparency_variants
 from blender_workbench.sweep import RenderConfig, SweepVariant, TileSpec, grid_variants, named_variants, settings_to_jsonable
 
 
@@ -32,6 +39,9 @@ class SweepTests(unittest.TestCase):
         self.assertIn("light_source_jitter", SWEEP_AXES)
         self.assertIn("texture_magnitude", SWEEP_AXES)
         self.assertIn("texture_magnitude_stride", SWEEP_AXES)
+        self.assertIn("camera_perspective", SWEEP_AXES)
+        self.assertIn("camera_orbit", SWEEP_AXES)
+        self.assertIn("transparency_alpha", SWEEP_AXES)
         self.assertIn("micro_grid", TILE_PRESETS)
         self.assertIn("auto_micro_grid", TILE_PRESETS)
         self.assertIn("auto_tiny_grid", TILE_PRESETS)
@@ -39,6 +49,14 @@ class SweepTests(unittest.TestCase):
         self.assertGreaterEqual(TILE_PRESETS["micro_grid"].columns, 6)
         self.assertIsNone(TILE_PRESETS["auto_micro_grid"].columns)
         self.assertLessEqual(RENDER_PRESETS["shape_scout"].samples, 1)
+
+    def test_camera_helpers_match_framing_and_orbit(self):
+        self.assertEqual(camera_distance_for_matching_framing(90, base_lens_mm=45, base_distance=4), 8)
+        location = orbit_location(target=(0, 0, 0), distance=2, yaw_degrees=0, pitch_degrees=0)
+
+        self.assertAlmostEqual(location[0], 0)
+        self.assertAlmostEqual(location[1], -2)
+        self.assertAlmostEqual(location[2], 0)
 
     def test_axis_helpers_merge_base_settings(self):
         variants = one_axis_variants(SWEEP_AXES["plume_shape"], base={"fixed_camera": True}, prefix="demo")
@@ -153,6 +171,32 @@ class SweepTests(unittest.TestCase):
         self.assertIsInstance(settings, SubsurfaceSettings)
         self.assertEqual(settings.subsurface_weight, 0.5)
         self.assertEqual(settings.core_light_energy, 99)
+        self.assertFalse(hasattr(settings, "unused"))
+
+    def test_camera_perspective_recipe_exposes_lens_distance_board(self):
+        variants = camera_perspective_variants(prefix="test")
+        settings = coerce_camera_perspective_settings({"camera_lens": 24, "camera_yaw": 12, "unused": True})
+        names = [variant.name for variant in variants]
+
+        self.assertEqual(len(variants), 16)
+        self.assertIn("test_wide_close", names)
+        self.assertIn("test_tele_flat", names)
+        self.assertIsInstance(settings, CameraPerspectiveSettings)
+        self.assertEqual(settings.camera_lens, 24)
+        self.assertEqual(settings.camera_yaw, 12)
+        self.assertFalse(hasattr(settings, "unused"))
+
+    def test_transparency_recipe_exposes_dense_material_board(self):
+        variants = transparency_variants(prefix="test")
+        settings = coerce_transparency_settings({"alpha": 0.25, "ior": 1.8, "unused": True})
+        names = [variant.name for variant in variants]
+
+        self.assertEqual(len(variants), 16)
+        self.assertIn("test_clear", names)
+        self.assertIn("test_solid_fail", names)
+        self.assertIsInstance(settings, TransparencySettings)
+        self.assertEqual(settings.alpha, 0.25)
+        self.assertEqual(settings.ior, 1.8)
         self.assertFalse(hasattr(settings, "unused"))
 
 

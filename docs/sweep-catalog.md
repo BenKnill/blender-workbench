@@ -34,6 +34,7 @@ Shape sweeps should usually happen before material polish. If the thumbnail is n
 ## Material Sweeps
 
 - transparent emission: alpha crossed with strength
+- transparent glass: alpha, transmission, roughness, IOR, tint, pane thickness
 - smoke: density crossed with anisotropy
 - glass or water: roughness crossed with caustic scale
 - subsurface: radius crossed with color
@@ -51,6 +52,8 @@ Keep one deliberate failure anchor in material sheets. It calibrates the eye and
 - moonrise trail: streak warmth, halo radius, sky exposure
 - glow bloom: dry, rim, washed
 - camera jitter: tripod, breathing, loose
+- camera perspective: wide/close, normal/mid, portrait/far, tele/flat
+- camera orbit: front low, left/right mid, high three-quarter
 - caustics: light size, water roughness, pattern scale
 - space plume: blue-white emission, soft gray shell, low fire color
 - subsurface candy: opal, amber, ruby, sea-glass
@@ -61,8 +64,10 @@ Color sweeps should avoid one-note palettes. Put at least one cool/warm contrast
 
 - `plume_alpha_strength` x `plume_shape` with `micro_grid`
 - named texture cases with `auto_square_moodboard` and `square=True`
+- `examples/camera_perspective_scout.py` for lens/distance/angle/pitch perspective reads
 - `examples/gobo_lighting_scout.py` for projected shadow texture, gel color, and light softness
 - `examples/subsurface_scout.py` for translucent wax/jelly/opal material reads with thickness and backlight
+- `examples/transparency_scout.py` for alpha/transmission/IOR/tint reads against a structured background
 - `examples/light_texture_scout.py` for a concrete named light-jitter plus texture-magnitude board
 - `examples/rocket_plume_texture_scout.py` for a dense plume density-texture board from smooth through overdone to whiteout
 - `light_source_jitter` x `texture_magnitude` with `balanced_grid`
