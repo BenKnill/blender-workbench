@@ -9,10 +9,11 @@ import sys
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
+from textwrap import dedent
 from typing import Callable
 
 
-COMMAND_BACKENDS = ("pdftotext", "pdfinfo", "pdftoppm", "gs", "magick", "qlmanage", "sips", "mdls")
+COMMAND_BACKENDS = ("pdftotext", "pdfinfo", "pdftoppm", "gs", "magick", "qlmanage", "sips", "mdls", "swift")
 PYTHON_BACKENDS = ("pypdf", "PyPDF2", "pdfplumber", "fitz")
 
 
@@ -83,12 +84,151 @@ def try_text_extract(pdf: Path, out_dir: Path, report: dict[str, dict[str, str |
 def try_quicklook_thumbnail(pdf: Path, out_dir: Path, report: dict[str, dict[str, str | bool | None]]) -> Attempt:
     backend = report["commands"].get("qlmanage", {})
     if not backend.get("available"):
-        return Attempt("thumbnail", "skipped", "qlmanage is not available")
+        return Attempt("cover_thumbnail", "skipped", "qlmanage is not available")
     ok, detail = _run(["qlmanage", "-t", "-s", "900", "-o", str(out_dir), str(pdf)])
     if not ok:
-        return Attempt("thumbnail", "failed", detail)
+        return Attempt("cover_thumbnail", "failed", detail)
     outputs = tuple(str(path) for path in sorted(out_dir.glob(f"{pdf.name}*.png")))
-    return Attempt("thumbnail", "ok", "created Quick Look thumbnail", outputs)
+    return Attempt("cover_thumbnail", "ok", "created Quick Look cover thumbnail", outputs)
+
+
+def swift_pdf_renderer_source() -> str:
+    return dedent(
+        r"""
+        import AppKit
+        import Foundation
+        import PDFKit
+
+        let args = CommandLine.arguments
+        guard args.count == 6 else {
+            fputs("usage: render_pdf_pages.swift PDF OUT_DIR FIRST_PAGE LAST_PAGE DPI\n", stderr)
+            exit(64)
+        }
+
+        let pdfURL = URL(fileURLWithPath: args[1])
+        let outURL = URL(fileURLWithPath: args[2], isDirectory: true)
+        let firstPage = max(1, Int(args[3]) ?? 1)
+        let requestedLastPage = max(firstPage, Int(args[4]) ?? firstPage)
+        let dpi = max(36.0, Double(args[5]) ?? 144.0)
+
+        guard let document = PDFDocument(url: pdfURL) else {
+            fputs("could not open PDF: \(pdfURL.path)\n", stderr)
+            exit(65)
+        }
+        let pageCount = document.pageCount
+        guard pageCount > 0 else {
+            fputs("PDF has no pages: \(pdfURL.path)\n", stderr)
+            exit(66)
+        }
+        guard firstPage <= pageCount else {
+            fputs("first page \(firstPage) is past page count \(pageCount)\n", stderr)
+            exit(67)
+        }
+
+        try FileManager.default.createDirectory(at: outURL, withIntermediateDirectories: true)
+        let lastPage = min(requestedLastPage, pageCount)
+        let scale = dpi / 72.0
+
+        for pageNumber in firstPage...lastPage {
+            guard let page = document.page(at: pageNumber - 1) else { continue }
+            let bounds = page.bounds(for: .mediaBox)
+            let width = max(1, Int(bounds.width * scale))
+            let height = max(1, Int(bounds.height * scale))
+            let image = NSImage(size: NSSize(width: width, height: height))
+
+            image.lockFocus()
+            NSColor.white.setFill()
+            NSRect(x: 0, y: 0, width: width, height: height).fill()
+            if let context = NSGraphicsContext.current?.cgContext {
+                context.saveGState()
+                context.scaleBy(x: scale, y: scale)
+                page.draw(with: .mediaBox, to: context)
+                context.restoreGState()
+            }
+            image.unlockFocus()
+
+            guard
+                let tiff = image.tiffRepresentation,
+                let rep = NSBitmapImageRep(data: tiff),
+                let data = rep.representation(using: .png, properties: [:])
+            else {
+                fputs("could not encode page \(pageNumber)\n", stderr)
+                exit(68)
+            }
+
+            let output = outURL.appendingPathComponent(String(format: "page-%04d.png", pageNumber))
+            try data.write(to: output)
+            print(output.path)
+        }
+        """
+    ).strip()
+
+
+def try_native_macos_page_render(
+    pdf: Path,
+    out_dir: Path,
+    report: dict[str, dict[str, str | bool | None]],
+    first_page: int,
+    last_page: int,
+    *,
+    dpi: int = 144,
+    run: Callable[[list[str]], tuple[bool, str]] = _run,
+    platform: str | None = None,
+) -> Attempt:
+    backend = report["commands"].get("swift", {})
+    current_platform = platform or sys.platform
+    if current_platform != "darwin":
+        return Attempt("page_render", "skipped", "native Swift/PDFKit page rendering is only available on macOS")
+    if not backend.get("available"):
+        return Attempt("page_render", "skipped", "swift is not available")
+    pages_dir = out_dir / "pages"
+    script_path = out_dir / "_render_pdf_pages.swift"
+    script_path.write_text(swift_pdf_renderer_source())
+    ok, detail = run(["swift", str(script_path), str(pdf), str(pages_dir), str(first_page), str(last_page), str(dpi)])
+    outputs = tuple(str(path) for path in sorted(pages_dir.glob("page-*.png")))
+    if ok and outputs:
+        return Attempt("page_render", "ok", f"rendered {len(outputs)} page image(s) with native Swift/PDFKit", outputs)
+    if ok:
+        return Attempt("page_render", "failed", "Swift/PDFKit completed but produced no page images")
+    return Attempt("page_render", "failed", detail)
+
+
+def try_page_contact_sheet(
+    page_render: Attempt,
+    out_dir: Path,
+    report: dict[str, dict[str, str | bool | None]],
+    *,
+    run: Callable[[list[str]], tuple[bool, str]] = _run,
+) -> Attempt:
+    if page_render.status != "ok" or not page_render.outputs:
+        return Attempt("page_contact_sheet", "skipped", "page images are not available")
+    backend = report["commands"].get("magick", {})
+    if not backend.get("available"):
+        return Attempt("page_contact_sheet", "skipped", "magick is not available")
+    contact_sheet = out_dir / "contact_sheet.png"
+    ok, detail = run(
+        [
+            "magick",
+            *page_render.outputs,
+            "-thumbnail",
+            "240x320",
+            "-background",
+            "white",
+            "-gravity",
+            "center",
+            "-extent",
+            "240x320",
+            "+append",
+            str(contact_sheet),
+        ]
+    )
+    if ok and contact_sheet.exists():
+        return Attempt("page_contact_sheet", "ok", "created page contact sheet from rendered page images", (str(contact_sheet),))
+    if contact_sheet.exists():
+        return Attempt("page_contact_sheet", "ok", f"created page contact sheet with warning: {detail}", (str(contact_sheet),))
+    if ok:
+        return Attempt("page_contact_sheet", "failed", "magick completed but did not write contact_sheet.png")
+    return Attempt("page_contact_sheet", "failed", detail)
 
 
 def write_notes_template(pdf: Path, out_dir: Path, report: dict[str, dict[str, str | bool | None]], attempts: list[Attempt]) -> Path:
@@ -112,6 +252,14 @@ def write_notes_template(pdf: Path, out_dir: Path, report: dict[str, dict[str, s
     for attempt in attempts:
         outputs = ", ".join(f"`{Path(path).name}`" for path in attempt.outputs) if attempt.outputs else "none"
         lines.append(f"- {attempt.name}: {attempt.status}; {attempt.detail}; outputs: {outputs}")
+    page_render = next((attempt for attempt in attempts if attempt.name == "page_render" and attempt.status == "ok"), None)
+    contact_sheet = next((attempt for attempt in attempts if attempt.name == "page_contact_sheet" and attempt.status == "ok"), None)
+    if page_render or contact_sheet:
+        lines.extend(["", "## Visual Evidence", ""])
+        if page_render:
+            lines.append("- Page images: `pages/`")
+        if contact_sheet and contact_sheet.outputs:
+            lines.append(f"- Page contact sheet: `{Path(contact_sheet.outputs[0]).name}`")
     lines.extend(
         [
             "",
@@ -145,8 +293,19 @@ def triage_pdf(pdf: Path, out_dir: Path | None = None, *, first_page: int = 1, l
     attempts = [
         try_pdfinfo(pdf, out_dir, report),
         try_text_extract(pdf, out_dir, report, first_page, last_page),
-        try_quicklook_thumbnail(pdf, out_dir, report),
     ]
+    page_render = try_native_macos_page_render(pdf, out_dir, report, first_page, last_page)
+    attempts.extend(
+        [
+            page_render,
+            try_page_contact_sheet(page_render, out_dir, report),
+        ]
+    )
+    attempts.extend(
+        [
+            try_quicklook_thumbnail(pdf, out_dir, report),
+        ]
+    )
     notes_path = write_notes_template(pdf, out_dir, report, attempts)
     payload = {
         "source_pdf": str(pdf),
