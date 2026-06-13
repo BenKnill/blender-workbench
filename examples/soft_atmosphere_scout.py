@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import sys
 from dataclasses import replace
 from pathlib import Path
@@ -9,13 +10,53 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from blender_workbench.presets import RENDER_PRESETS, TILE_PRESETS
 from blender_workbench.recipes.soft_atmosphere import SOFT_ATMOSPHERE_CAMERA, build_soft_atmosphere_scene, soft_atmosphere_variants
-from blender_workbench.sweep import render_sweep
+from blender_workbench.sweep import render_selected_from_sweep, render_sweep
 
 
 OUT = ROOT / "examples" / "output" / "soft_atmosphere_scout"
 
 
-def main() -> None:
+def _script_args(argv: list[str] | None = None) -> list[str]:
+    values = list(sys.argv[1:] if argv is None else argv)
+    if "--" in values:
+        return values[values.index("--") + 1 :]
+    return values
+
+
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Render a soft-atmosphere card grid, or promote one picked tile.")
+    parser.add_argument("--pick", help="variant name, label, or 1-based index to render with the hero profile")
+    parser.add_argument("--hero-samples", type=int, default=96, help="Cycles samples for --pick")
+    args, _unknown = parser.parse_known_args(_script_args(argv))
+    return args
+
+
+def main(argv: list[str] | None = None) -> None:
+    args = parse_args(argv)
+    if args.pick:
+        config = replace(
+            RENDER_PRESETS["hero_check"],
+            resolution_x=1280,
+            resolution_y=820,
+            samples=args.hero_samples,
+            max_bounces=6,
+            camera_name=SOFT_ATMOSPHERE_CAMERA,
+        )
+        render_selected_from_sweep(
+            sweep_dir=OUT,
+            pick=args.pick,
+            build_scene=build_soft_atmosphere_scene,
+            root=ROOT,
+            config=config,
+            postprocess=None,
+            title="Soft Atmosphere Card Selected Render",
+            notes=[
+                "Promoted after inspecting the soft-atmosphere card contact sheet.",
+                "Use this heavier render to judge hard edges, noisy breakup, opacity, and color spill.",
+            ],
+        )
+        return
+
     config = replace(
         RENDER_PRESETS["cycles_preview"],
         resolution_x=500,
@@ -37,6 +78,7 @@ def main() -> None:
             "Diagnostic board for soft-gradient card hardness, falloff width, alpha, glow strength, noise, and warmth.",
             "Use before placing horizon glow, haze sheets, or stylized light cards into selected renders.",
         ],
+        promotion_command="/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/soft_atmosphere_scout.py -- --pick {pick}",
         square=True,
     )
 

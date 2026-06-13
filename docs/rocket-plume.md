@@ -22,6 +22,12 @@ The default recipe aims for:
 
 The example writes a 3x3 contact sheet to `examples/output/rocket_plume_scout/`.
 
+After inspecting the sheet, promote the most promising plume to a heavier render:
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/rocket_plume_scout.py -- --pick vacuum_balanced_fan
+```
+
 ![Rocket plume scout contact sheet](assets/rocket-plume-scout.jpg)
 
 Run a density-texture-focused scout:
@@ -31,6 +37,12 @@ Run a density-texture-focused scout:
 ```
 
 This dense sheet uses smooth, overdone, and whiteout anchors so texture stride is easy to widen or narrow. In this recipe, plume texture means spatial density structure: translucent ribbons, wispy strands, clumps, and turbulence distributed through the plume volume. Shader noise is secondary. The overdone region is often the most aesthetically interesting; whiteout is the actual failure anchor.
+
+Promote the texture treatment that looks most billowy and legible:
+
+```bash
+/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/rocket_plume_texture_scout.py -- --pick texture_overdone
+```
 
 ![Rocket plume texture scout contact sheet](assets/rocket-plume-texture-scout.jpg)
 
@@ -45,7 +57,7 @@ from blender_workbench.recipes.rocket_plume import (
     build_rocket_plume_scene,
     rocket_plume_scout_variants,
 )
-from blender_workbench.sweep import render_sweep
+from blender_workbench.sweep import render_selected_from_sweep, render_sweep
 
 config = replace(
     RENDER_PRESETS["cycles_preview"],
@@ -61,7 +73,15 @@ render_sweep(
     build_scene=build_rocket_plume_scene,
     out_dir=OUT,
     config=config,
+    promotion_command="/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/rocket_plume_scout.py -- --pick {pick}",
     square=True,
+)
+
+render_selected_from_sweep(
+    sweep_dir=OUT,
+    pick="vacuum_balanced_fan",
+    build_scene=build_rocket_plume_scene,
+    config=RENDER_PRESETS["hero_check"],
 )
 ```
 

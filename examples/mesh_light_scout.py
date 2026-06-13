@@ -10,7 +10,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from blender_workbench.presets import RENDER_PRESETS, TILE_PRESETS
 from blender_workbench.recipes.mesh_light import MESH_LIGHT_CAMERA, build_mesh_light_scene, mesh_light_variants
-from blender_workbench.sweep import render_selected_variant, render_sweep
+from blender_workbench.sweep import render_selected_from_sweep, render_sweep
 
 
 OUT = ROOT / "examples" / "output" / "mesh_light_scout"
@@ -21,10 +21,6 @@ def _script_args(argv: list[str] | None = None) -> list[str]:
     if "--" in values:
         return values[values.index("--") + 1 :]
     return values
-
-
-def _safe_name(value: str) -> str:
-    return "".join(char if char.isalnum() or char in ("-", "_") else "_" for char in value)
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -44,11 +40,10 @@ def main(argv: list[str] | None = None) -> None:
             samples=args.hero_samples,
             camera_name=MESH_LIGHT_CAMERA,
         )
-        render_selected_variant(
-            variants=variants,
+        render_selected_from_sweep(
+            sweep_dir=OUT,
             pick=args.pick,
             build_scene=build_mesh_light_scene,
-            out_dir=OUT / "selected" / _safe_name(args.pick),
             root=ROOT,
             config=config,
             postprocess=None,
@@ -82,6 +77,7 @@ def main(argv: list[str] | None = None) -> None:
             "5x5 same-view stride sheet: emissive mesh size, distance, height, fill, and gel/shape.",
             "Inspired by BlenderArt mesh-light and studio pack-shot lessons.",
         ],
+        promotion_command="/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/mesh_light_scout.py -- --pick {pick}",
         square=True,
     )
 

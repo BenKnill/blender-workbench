@@ -9,7 +9,7 @@ Use this repo when a Blender idea needs fast visual comparison instead of one-of
 3. Render a low-cost sweep with fixed camera, resolution, and samples.
 4. Read the contact sheet before changing the scene.
 5. Pick the best tile by exact variant name or 1-based index.
-6. Render that pick with `render_selected_variant(...)`.
+6. Render that pick with `render_selected_from_sweep(...)`.
 7. Promote the selected settings into a named preset only after the heavier render still works.
 
 ## Sweep Design
@@ -39,19 +39,19 @@ After a sheet renders, choose one tile and render it larger:
 
 ```python
 from blender_workbench.presets import RENDER_PRESETS
-from blender_workbench.sweep import render_selected_variant
+from blender_workbench.sweep import render_selected_from_sweep
 
-render_selected_variant(
-    variants=variants,
+render_selected_from_sweep(
+    sweep_dir=OUT,
     pick="mesh_fill_p1",
     build_scene=build_scene,
-    out_dir=OUT / "selected" / "mesh_fill_p1",
     config=RENDER_PRESETS["hero_check"],
-    source_sweep_dir=OUT,
 )
 ```
 
 The selected render writes `selected.json`, preserving the pick, settings, render config, source sweep, and final file paths.
+
+This metadata-based path is preferred because the selected render is rebuilt from the sweep artifact the agent actually inspected. If the script already has the same variant list in memory, `render_selected_variant(...)` is still available.
 
 ## Transparency Lesson
 

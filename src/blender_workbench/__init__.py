@@ -11,9 +11,11 @@ from .sweep import (
     configure_render,
     grid_variants,
     named_variants,
+    render_selected_from_sweep,
     render_selected_variant,
     render_sweep,
     select_variant,
+    variants_from_sweep_metadata,
 )
 
 __all__ = [
@@ -34,10 +36,12 @@ __all__ = [
     "named_variants",
     "one_axis_variants",
     "orbit_location",
+    "render_selected_from_sweep",
     "render_selected_variant",
     "render_sweep",
     "select_variant",
     "soft_band_alpha_profile",
     "stride_axis",
     "two_axis_variants",
+    "variants_from_sweep_metadata",
 ]

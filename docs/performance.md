@@ -7,7 +7,7 @@ The workbench should make the first useful sheet cheap. Spend time on wide visua
 - `shape_scout`: Workbench engine, 520x340, one sample, micro tiles. Use for silhouette, scale, layout, density, and camera blocking.
 - `material_scout`: Eevee when available, 640x420, low samples, micro tiles. Use for color, alpha, transparency, roughness, and broad material direction.
 - `cycles_preview`: Cycles, 760x500, 32 samples, reduced bounces. Use when glow, lighting, glass, subsurface, or volumetrics matter.
-- `hero_check`: Cycles, 1280x840, 96 samples. Use via `render_selected_variant(...)` only after a smaller sweep has shortlisted settings.
+- `hero_check`: Cycles, 1280x840, 96 samples. Use via `render_selected_from_sweep(...)` only after a smaller sweep has shortlisted settings.
 
 Use `dataclasses.replace(...)` to make local tweaks without losing the preset name:
 
@@ -53,7 +53,7 @@ For stacked transparent materials, watch `transparent_max_bounces`. Too low can 
 
 ## Useful Ladders
 
-- Shape: `shape_scout` + `micro_grid`, then promote one winner with `render_selected_variant(...)`.
+- Shape: `shape_scout` + `micro_grid`, then promote one winner with `render_selected_from_sweep(...)`.
 - Camera: `cycles_preview` with low samples if shadows/markers matter; otherwise `shape_scout` is enough for framing.
 - Transparency: `material_scout` first, then selected `cycles_preview` or `hero_check` if alpha sorting or glow is misleading.
 - Environment: `cycles_preview` with tiny tiles for atmosphere, then promote one horizon/foreground combination.

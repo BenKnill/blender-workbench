@@ -14,7 +14,7 @@ from blender_workbench.recipes.terrain_environment import (
     build_terrain_environment_scene,
     terrain_environment_variants,
 )
-from blender_workbench.sweep import render_selected_variant, render_sweep
+from blender_workbench.sweep import render_selected_from_sweep, render_sweep
 
 
 OUT = ROOT / "examples" / "output" / "terrain_environment_scout"
@@ -25,10 +25,6 @@ def _script_args(argv: list[str] | None = None) -> list[str]:
     if "--" in values:
         return values[values.index("--") + 1 :]
     return values
-
-
-def _safe_name(value: str) -> str:
-    return "".join(char if char.isalnum() or char in ("-", "_") else "_" for char in value)
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -50,11 +46,10 @@ def main(argv: list[str] | None = None) -> None:
             samples=args.hero_samples,
             camera_name=TERRAIN_ENVIRONMENT_CAMERA,
         )
-        render_selected_variant(
-            variants=variants,
+        render_selected_from_sweep(
+            sweep_dir=OUT,
             pick=args.pick,
             build_scene=build_terrain_environment_scene,
-            out_dir=OUT / "selected" / _safe_name(args.pick),
             root=ROOT,
             config=config,
             postprocess=None,
@@ -88,6 +83,7 @@ def main(argv: list[str] | None = None) -> None:
             "5x5 same-view stride sheet: relief, strata, haze, backlight, and foreground scale.",
             "Inspired by BlenderArt issue 39 landscape/Europa and virtual-environment prompts.",
         ],
+        promotion_command="/Applications/Blender.app/Contents/MacOS/Blender --background --python examples/terrain_environment_scout.py -- --pick {pick}",
         square=True,
     )
 
