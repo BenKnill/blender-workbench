@@ -33,10 +33,22 @@ class RocketPlumeSettings:
     smoke_strength: float = 0.08
     billow_count: int = 8
     billow_jitter: float = 0.22
-    plume_texture_magnitude: float = 0.32
+    plume_texture_magnitude: float = 0.08
     plume_texture_scale: float = 10.0
-    billow_texture_magnitude: float = 0.42
+    billow_texture_magnitude: float = 0.12
     billow_texture_scale: float = 5.5
+    density_ribbon_count: int = 8
+    density_ribbon_alpha: float = 0.045
+    density_ribbon_strength: float = 0.22
+    density_ribbon_width: float = 0.22
+    density_wisp_count: int = 18
+    density_wisp_alpha: float = 0.075
+    density_wisp_strength: float = 0.34
+    density_wisp_radius: float = 0.012
+    density_clump_count: int = 12
+    density_clump_alpha: float = 0.045
+    density_clump_strength: float = 0.09
+    density_clump_scale: float = 0.36
     filament_wiggle: float = 0.13
     shell_rib_count: int = 8
     shell_rib_alpha: float = 0.055
@@ -79,26 +91,50 @@ def rocket_plume_texture_variants(*, prefix: str = "texture") -> list[SweepVaria
             "smooth": {
                 "plume_texture_magnitude": 0.0,
                 "billow_texture_magnitude": 0.0,
+                "density_ribbon_count": 0,
+                "density_wisp_count": 0,
+                "density_clump_count": 0,
                 "filament_wiggle": 0.03,
                 "shell_rib_count": 0,
                 "billow_count": 6,
                 "filament_count": 24,
             },
             "grain": {
-                "plume_texture_magnitude": 0.32,
+                "plume_texture_magnitude": 0.05,
                 "plume_texture_scale": 14.0,
-                "billow_texture_magnitude": 0.42,
+                "billow_texture_magnitude": 0.08,
                 "billow_texture_scale": 8.0,
+                "density_ribbon_count": 7,
+                "density_ribbon_alpha": 0.045,
+                "density_ribbon_strength": 0.22,
+                "density_wisp_count": 16,
+                "density_wisp_alpha": 0.075,
+                "density_wisp_strength": 0.34,
+                "density_clump_count": 8,
+                "density_clump_alpha": 0.045,
+                "density_clump_strength": 0.09,
                 "filament_wiggle": 0.12,
                 "shell_rib_count": 8,
                 "billow_count": 8,
                 "filament_count": 30,
             },
             "billowy": {
-                "plume_texture_magnitude": 0.58,
+                "plume_texture_magnitude": 0.10,
                 "plume_texture_scale": 6.5,
-                "billow_texture_magnitude": 0.72,
+                "billow_texture_magnitude": 0.16,
                 "billow_texture_scale": 3.2,
+                "density_ribbon_count": 12,
+                "density_ribbon_alpha": 0.065,
+                "density_ribbon_strength": 0.34,
+                "density_ribbon_width": 0.34,
+                "density_wisp_count": 30,
+                "density_wisp_alpha": 0.095,
+                "density_wisp_strength": 0.44,
+                "density_wisp_radius": 0.016,
+                "density_clump_count": 18,
+                "density_clump_alpha": 0.062,
+                "density_clump_strength": 0.13,
+                "density_clump_scale": 0.48,
                 "filament_wiggle": 0.24,
                 "shell_rib_count": 14,
                 "billow_count": 13,
@@ -106,10 +142,22 @@ def rocket_plume_texture_variants(*, prefix: str = "texture") -> list[SweepVaria
                 "filament_count": 38,
             },
             "shredded": {
-                "plume_texture_magnitude": 0.95,
+                "plume_texture_magnitude": 0.18,
                 "plume_texture_scale": 18.0,
-                "billow_texture_magnitude": 1.05,
+                "billow_texture_magnitude": 0.24,
                 "billow_texture_scale": 2.4,
+                "density_ribbon_count": 18,
+                "density_ribbon_alpha": 0.085,
+                "density_ribbon_strength": 0.48,
+                "density_ribbon_width": 0.48,
+                "density_wisp_count": 48,
+                "density_wisp_alpha": 0.13,
+                "density_wisp_strength": 0.62,
+                "density_wisp_radius": 0.019,
+                "density_clump_count": 24,
+                "density_clump_alpha": 0.08,
+                "density_clump_strength": 0.18,
+                "density_clump_scale": 0.54,
                 "filament_wiggle": 0.42,
                 "shell_rib_count": 22,
                 "billow_count": 18,
@@ -117,10 +165,22 @@ def rocket_plume_texture_variants(*, prefix: str = "texture") -> list[SweepVaria
                 "filament_count": 54,
             },
             "overdone_fail": {
-                "plume_texture_magnitude": 1.35,
+                "plume_texture_magnitude": 0.32,
                 "plume_texture_scale": 34.0,
-                "billow_texture_magnitude": 1.45,
+                "billow_texture_magnitude": 0.34,
                 "billow_texture_scale": 18.0,
+                "density_ribbon_count": 30,
+                "density_ribbon_alpha": 0.12,
+                "density_ribbon_strength": 0.72,
+                "density_ribbon_width": 0.72,
+                "density_wisp_count": 84,
+                "density_wisp_alpha": 0.18,
+                "density_wisp_strength": 0.92,
+                "density_wisp_radius": 0.024,
+                "density_clump_count": 36,
+                "density_clump_alpha": 0.11,
+                "density_clump_strength": 0.28,
+                "density_clump_scale": 0.72,
                 "filament_wiggle": 0.68,
                 "shell_rib_count": 34,
                 "billow_count": 22,
@@ -197,6 +257,34 @@ def filament_curve(name: str, points: list[tuple[float, float, float]], radius: 
     return obj
 
 
+def density_ribbon(name: str, throat: tuple[float, float, float], end_x: float, radius: float, angle: float, width: float, mat: Any) -> Any:
+    import bpy
+
+    def rim(theta: float, scale: float = 1.0) -> tuple[float, float, float]:
+        return (
+            end_x,
+            math.sin(theta) * radius * scale,
+            math.cos(theta * 0.86) * radius * 0.56 * scale,
+        )
+
+    mid_x = throat[0] + (end_x - throat[0]) * 0.48
+    mid_radius = radius * 0.36
+    verts = [
+        throat,
+        (mid_x, math.sin(angle - width * 0.35) * mid_radius, math.cos(angle) * mid_radius * 0.44),
+        rim(angle - width),
+        rim(angle + width),
+        (mid_x, math.sin(angle + width * 0.35) * mid_radius, math.cos(angle * 0.92) * mid_radius * 0.44),
+    ]
+    mesh = bpy.data.meshes.new(name)
+    mesh.from_pydata(verts, [], [(0, 1, 2), (0, 2, 3), (0, 3, 4)])
+    mesh.update()
+    obj = bpy.data.objects.new(name, mesh)
+    bpy.context.collection.objects.link(obj)
+    obj.data.materials.append(mat)
+    return obj
+
+
 def _add_rocket_body(settings: RocketPlumeSettings) -> None:
     import bpy
 
@@ -233,6 +321,9 @@ def _add_plume(settings: RocketPlumeSettings) -> None:
     )
     filament = transparent_emission_material("blue plume filaments", settings.filament_color, settings.filament_strength, settings.filament_alpha)
     rib = transparent_emission_material("plume shell ribs", settings.filament_color, settings.shell_rib_strength, settings.shell_rib_alpha)
+    density = transparent_emission_material("spatial plume density", settings.smoke_color, settings.density_ribbon_strength, settings.density_ribbon_alpha)
+    wisp = transparent_emission_material("thin density wisps", settings.filament_color, settings.density_wisp_strength, settings.density_wisp_alpha)
+    clump = transparent_emission_material("soft density clumps", settings.smoke_color, settings.density_clump_strength, settings.density_clump_alpha)
     smoke = textured_transparent_emission_material(
         "gray blue billow shell",
         settings.smoke_color,
@@ -263,6 +354,19 @@ def _add_plume(settings: RocketPlumeSettings) -> None:
             vertices=96,
         )
 
+    for index in range(max(0, int(settings.density_ribbon_count))):
+        frac = (index + 0.5) / max(1, settings.density_ribbon_count)
+        angle = index * 2.618 + math.sin(index * 0.71) * 0.3
+        density_ribbon(
+            f"density ribbon {index:02d}",
+            throat,
+            plume_end_x * (0.62 + 0.32 * math.sin(index * 0.37) ** 2),
+            settings.width * (0.42 + 1.2 * frac),
+            angle,
+            settings.density_ribbon_width * (0.72 + frac),
+            density,
+        )
+
     for index in range(max(0, int(settings.shell_rib_count))):
         frac = (index + 0.5) / max(1, settings.shell_rib_count)
         angle = index * 2.399
@@ -279,6 +383,22 @@ def _add_plume(settings: RocketPlumeSettings) -> None:
         )
         filament_curve(f"shell rib {index:02d}", [throat, mid, end], 0.0035 + 0.003 * frac, rib)
 
+    for index in range(max(0, int(settings.density_wisp_count))):
+        frac = (index + 0.5) / max(1, settings.density_wisp_count)
+        angle = index * 2.177
+        end_radius = settings.width * (0.22 + 1.05 * frac)
+        end = (
+            plume_end_x * (0.35 + 0.58 * frac),
+            math.sin(angle) * end_radius,
+            math.cos(angle * 0.87) * end_radius * 0.58,
+        )
+        mid = (
+            0.45 + end[0] * (0.34 + 0.18 * math.sin(index * 0.43)),
+            end[1] * (0.22 + 0.28 * math.sin(index * 0.91)),
+            end[2] * (0.20 + 0.22 * math.cos(index * 0.77)),
+        )
+        filament_curve(f"density wisp {index:02d}", [throat, mid, end], settings.density_wisp_radius * (0.6 + 0.7 * frac), wisp)
+
     for index in range(settings.billow_count):
         t = (index + 0.8) / (settings.billow_count + 1.0)
         phase = index * 2.399
@@ -292,6 +412,21 @@ def _add_plume(settings: RocketPlumeSettings) -> None:
         lump = 1.0 + settings.billow_texture_magnitude * 0.24 * math.sin(index * 2.17)
         obj.scale = ((0.18 + 0.35 * t) * lump, radius * 0.52, radius * 0.38 * (2.0 - lump))
         obj.data.materials.append(smoke)
+        _shade_smooth()
+
+    for index in range(max(0, int(settings.density_clump_count))):
+        frac = (index + 0.5) / max(1, settings.density_clump_count)
+        phase = index * 2.071
+        x = 0.72 + plume_end_x * (0.18 + 0.68 * frac)
+        radius = settings.width * (0.16 + 1.18 * frac)
+        y = math.sin(phase) * radius * (0.18 + 0.32 * math.sin(index * 0.59) ** 2)
+        z = math.cos(phase * 0.81) * radius * 0.42
+        bpy.ops.mesh.primitive_uv_sphere_add(segments=16, ring_count=8, radius=1.0, location=(x, y, z))
+        obj = bpy.context.object
+        obj.name = f"density clump {index:02d}"
+        scale = settings.density_clump_scale * (0.45 + 0.85 * frac)
+        obj.scale = (scale * 0.55, scale * (0.8 + 0.4 * math.sin(index)), scale * 0.55)
+        obj.data.materials.append(clump)
         _shade_smooth()
 
     count = max(0, int(settings.filament_count))

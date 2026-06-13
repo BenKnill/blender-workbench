@@ -69,7 +69,7 @@ render_sweep(
 )
 ```
 
-Use `micro_grid` when you need lots of little tiles, `auto_micro_grid` or `square=True` when the sheet should choose near-square columns, `hero_pair` for before/after comparisons, `balanced_grid` for readable 3x3 studies, `square_moodboard` for palette and shape boards, and `filmstrip` for temporal or ordered sweeps.
+The default contact sheet is now a small square auto-grid. Use `micro_grid` or `auto_micro_grid` when you need lots of little square tiles, `hero_pair` for larger before/after comparisons, `balanced_grid` for readable 3x3 studies, `square_moodboard` for palette and shape boards, and `filmstrip` only when sequence order matters more than square comparison.
 
 Use `shape_scout` for silhouette/form, `material_scout` for quick color and transparency reads, `cycles_preview` when lighting matters, and `hero_check` only after a smaller sheet has picked a direction.
 
@@ -124,10 +124,12 @@ This uses `blender_workbench.recipes.rocket_plume` to cross plume alpha/strength
 
 ![Rocket plume scout contact sheet](docs/assets/rocket-plume-scout.jpg)
 
-Run the plume texture scout:
+Run the plume density-texture scout:
 
 ```bash
 /Applications/Blender.app/Contents/MacOS/Blender --background --python examples/rocket_plume_texture_scout.py
 ```
+
+This scout treats plume texture as spatial density: wisps, clumps, ribbons, and turbulence through the plume volume, not just shader noise on a cone.
 
 ![Rocket plume texture scout contact sheet](docs/assets/rocket-plume-texture-scout.jpg)

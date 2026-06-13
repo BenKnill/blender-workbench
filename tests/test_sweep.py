@@ -73,6 +73,9 @@ class SweepTests(unittest.TestCase):
     def test_tile_spec_auto_columns_make_square_boards(self):
         tile = TileSpec.auto_micro_grid()
 
+        self.assertEqual(TileSpec().width, TileSpec().height)
+        self.assertIsNone(TileSpec().columns)
+        self.assertEqual(tile.width, tile.height)
         self.assertEqual(tile.columns_for_count(1), 1)
         self.assertEqual(tile.columns_for_count(4), 2)
         self.assertEqual(tile.columns_for_count(9), 3)
@@ -120,6 +123,8 @@ class SweepTests(unittest.TestCase):
         self.assertEqual(len(variants), 5)
         self.assertEqual(variants[-1].name, "test_overdone_fail")
         self.assertGreater(variants[-1].settings["plume_texture_magnitude"], variants[0].settings["plume_texture_magnitude"])
+        self.assertGreater(variants[-1].settings["density_wisp_count"], variants[0].settings["density_wisp_count"])
+        self.assertGreater(variants[-1].settings["density_clump_count"], variants[0].settings["density_clump_count"])
         self.assertIn("filament_wiggle", variants[-1].settings)
 
 

@@ -10,6 +10,7 @@ When making or modifying a Blender experiment:
 - For numeric knobs that may be too timid or too wild, use `stride_axis(...)` so stride can be doubled or halved quickly.
 - Start with `RENDER_PRESETS["shape_scout"]`, `["material_scout"]`, or `["cycles_preview"]`; do not default to expensive hero renders.
 - For rocket plume work, start with `blender_workbench.recipes.rocket_plume`; keep reusable improvements in generic sweep/material/preset helpers when they are not plume-specific.
+- For rocket plume "texture", prefer spatial density structure such as ribbons, wisps, clumps, and turbulence before shader noise.
 - Always keep numeric settings in metadata next to rendered tiles.
 - Watch `metadata.json` timing fields. If build/render time is high, reduce tiles, resolution, samples, geometry, or postprocess before widening the search.
 - Render small diagnostic sweeps before hero renders.

@@ -32,7 +32,7 @@ def main() -> None:
         config=config,
         title="Rocket Vacuum Plume Texture Scout",
         notes=[
-            "Named stride scout for plume shell texture, billow texture, shell ribs, and filament wiggle.",
+            "Named stride scout for spatial density texture: ribbons, wisps, clumps, and filament wiggle.",
             "Smooth and overdone_fail are anchors; useful settings should land between them.",
         ],
         square=True,

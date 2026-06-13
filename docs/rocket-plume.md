@@ -24,13 +24,13 @@ The example writes a 3x3 contact sheet to `examples/output/rocket_plume_scout/`.
 
 ![Rocket plume scout contact sheet](assets/rocket-plume-scout.jpg)
 
-Run a texture-focused scout:
+Run a density-texture-focused scout:
 
 ```bash
 /Applications/Blender.app/Contents/MacOS/Blender --background --python examples/rocket_plume_texture_scout.py
 ```
 
-This sheet uses smooth and overdone anchors so texture stride is easy to widen or narrow.
+This sheet uses smooth and overdone anchors so texture stride is easy to widen or narrow. In this recipe, plume texture means spatial density structure: translucent ribbons, wispy strands, clumps, and turbulence distributed through the plume volume. Shader noise is secondary.
 
 ![Rocket plume texture scout contact sheet](assets/rocket-plume-texture-scout.jpg)
 
@@ -69,14 +69,16 @@ render_sweep(
 - `width` and `length`: vacuum expansion shape.
 - `filament_count`, `filament_alpha`, and `filament_strength`: edge structure.
 - `smoke_alpha`, `smoke_strength`, and `billow_count`: broad cloudy read.
-- `plume_texture_magnitude`, `billow_texture_magnitude`, and `filament_wiggle`: texture and turbulence stride.
-- `plume_texture_scale` and `billow_texture_scale`: fine versus broad structure.
+- `density_ribbon_count`, `density_wisp_count`, and `density_clump_count`: spatial density texture.
+- `density_ribbon_width`, `density_wisp_radius`, and `density_clump_scale`: size of texture structures.
+- `filament_wiggle`: turbulence in strand paths.
+- `plume_texture_magnitude` and `billow_texture_magnitude`: secondary shader-noise texture, not the main density structure.
 - `warmth`: tiny color contamination. Keep this low unless deliberately testing failure.
 
 ## Performance Notes
 
 Start with `cycles_preview` at 24 to 32 samples. The recipe uses cheap geometry: open cones, curve filaments, and low-poly ellipsoid billows. If a sheet becomes slow, reduce `filament_count`, `billow_count`, tile count, or postprocessing before reducing the clarity of the sweep.
 
-On the current Mac/Blender 5.1 run, the 5-tile texture scout rendered in about 22 seconds at 640x420 and 24 Cycles samples. The richer 9-tile alpha/shape scout rendered in about 32 seconds after texture was added to the default plume.
+On the current Mac/Blender 5.1 run, the 5-tile density-texture scout rendered in about 15 seconds at 640x420 and 24 Cycles samples. The 9-tile alpha/shape scout with default density texture rendered in about 21 seconds.
 
 Use the 5-tile texture scout to set stride before paying for the full 3x3 alpha/shape sheet. Use `hero_check` only after the smaller sheets have chosen a shape, alpha regime, and texture range.

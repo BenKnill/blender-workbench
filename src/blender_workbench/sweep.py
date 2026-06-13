@@ -36,37 +36,37 @@ class RenderResult:
 
 @dataclass(frozen=True)
 class TileSpec:
-    width: int = 320
-    height: int = 210
-    columns: int | None = 4
-    label_height: int = 28
+    width: int = 144
+    height: int = 144
+    columns: int | None = None
+    label_height: int = 18
     background: str = "black"
     show_notes: bool = False
-    label_max_chars: int | None = None
+    label_max_chars: int | None = 16
 
     @classmethod
     def hero_pair(cls) -> "TileSpec":
-        return cls(width=440, height=286, columns=2, label_height=30, show_notes=True, label_max_chars=58)
+        return cls(width=360, height=360, columns=2, label_height=28, show_notes=True, label_max_chars=42)
 
     @classmethod
     def balanced_grid(cls) -> "TileSpec":
-        return cls(width=320, height=220, columns=3, label_height=28, label_max_chars=36)
+        return cls(width=180, height=180, columns=None, label_height=22, label_max_chars=22)
 
     @classmethod
     def micro_grid(cls, columns: int = 8) -> "TileSpec":
-        return cls(width=168, height=126, columns=columns, label_height=18, label_max_chars=18)
+        return cls(width=128, height=128, columns=columns, label_height=16, label_max_chars=16)
 
     @classmethod
     def auto_micro_grid(cls) -> "TileSpec":
-        return cls(width=168, height=126, columns=None, label_height=18, label_max_chars=18)
+        return cls(width=128, height=128, columns=None, label_height=16, label_max_chars=16)
 
     @classmethod
     def square_moodboard(cls, columns: int = 5) -> "TileSpec":
-        return cls(width=220, height=220, columns=columns, label_height=24, label_max_chars=24)
+        return cls(width=176, height=176, columns=columns, label_height=20, label_max_chars=20)
 
     @classmethod
     def auto_square_moodboard(cls) -> "TileSpec":
-        return cls(width=220, height=220, columns=None, label_height=24, label_max_chars=24)
+        return cls(width=176, height=176, columns=None, label_height=20, label_max_chars=20)
 
     @classmethod
     def filmstrip(cls, columns: int = 6) -> "TileSpec":
