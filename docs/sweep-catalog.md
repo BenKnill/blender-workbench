@@ -1,12 +1,12 @@
 # Sweep Catalog
 
-This is a starter menu for fast Blender exploration. Use it to choose a sweep shape before writing a scene.
+This is a starter menu for honest Blender exploration. Use it to choose a sweep shape before writing a scene.
 
-Start with the cheapest render profile that can answer the visual question. Shape questions usually belong in `shape_scout`; material questions in `material_scout`; lighting questions in `cycles_preview`.
+Start with the lightest render profile that can answer the visual question without lying about the final. Shape questions usually belong in `shape_scout`; material questions in `material_scout`; lighting questions in `cycles_preview`.
 
 ## Tile Layouts
 
-- default `TileSpec`: tiny square tiles with near-square columns chosen from the variant count.
+- default `TileSpec`: readable square tiles with near-square columns chosen from the variant count.
 - `TileSpec.without_labels()`: blind boards for silhouette-first judgment while preserving pick handles in README/metadata.
 - `hero_pair`: two larger square tiles for before/after, winner/failure, reference/attempt.
 - `balanced_grid`: readable small square sheets for causal sweeps.
