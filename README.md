@@ -131,7 +131,7 @@ Before promoting a transparent, volumetric, SSS, caustic, denoised, or postproce
 /Applications/Blender.app/Contents/MacOS/Blender --background --python examples/mesh_light_scout.py -- --pick <tile> --compare-profiles
 ```
 
-The comparison writes `profile_comparison/<pick>/profile_comparison.json` and `profile_comparison.png` with source sweep provenance, the chosen pick, each render config, postprocess state, warnings, and output paths. Use it when a cheap Workbench, Eevee, or low-sample Cycles sheet might change under `hero_check` because of alpha sorting, denoising, transparent bounces, volumetrics, caustics, or glow.
+The comparison writes `profile_comparison/<pick>/profile_comparison.json` and `profile_comparison.png` with source sweep provenance, the chosen pick, each render config, postprocess state, warnings, and output paths. Use it when a Workbench shape pass or lower-sample Cycles sheet might change under `hero_check` because of alpha sorting, denoising, transparent bounces, volumetrics, caustics, or glow.
 
 Scene sanity checks are separate from dependency manifests and selected-render smoke tests. Dependency preflight answers "can this example run from this checkout?"; pick smoke answers "does the promotion command produce selected artifacts?"; scene sanity answers "did `build_scene(settings)` create the expected camera, world, objects, materials, and render settings before this grid is rendered?"
 
@@ -314,9 +314,9 @@ The selected README links the Markdown card for the next artist or agent.
 Use `reference_targets=[...]` when a sweep is trying to match a source frame, PDF crop, or local study.
 Local reference images are added as leading contact-sheet panels, recorded in `metadata.json`, and carried into selected reference-vs-attempt comparisons when possible.
 
-The default contact sheet is now a tiny square auto-grid. Use `tiny_grid`/`auto_tiny_grid` when you want lots of tiles, `micro_grid`/`auto_micro_grid` when labels need more room, `hero_pair` for larger before/after comparisons, `balanced_grid` for readable 3x3 studies, `square_moodboard` for palette and shape boards, and `filmstrip` only when sequence order matters more than square comparison.
+The default contact sheet is now a readable square auto-grid. Use `tiny_grid`/`auto_tiny_grid` when you want lots of tiles, `micro_grid`/`auto_micro_grid` when labels need more room, `hero_pair` for larger before/after comparisons, `balanced_grid` for readable 3x3 studies, `square_moodboard` for palette and shape boards, and `filmstrip` only when sequence order matters more than square comparison.
 
-Use `shape_scout` for silhouette/form, `material_scout` for quick color and transparency reads, `cycles_preview` when lighting matters, and `hero_check` only through `render_selected_from_sweep(...)` after a smaller sheet has picked a direction.
+Use `shape_scout` for silhouette/form, `material_scout` for Cycles material and transparency reads, `cycles_preview` when lighting matters, and `hero_check` only through `render_selected_from_sweep(...)` after a smaller sheet has picked a direction.
 
 For named moodboards, skip row/column ceremony:
 
@@ -438,7 +438,7 @@ Run the landscape/environment mood scout:
 
 This uses `blender_workbench.recipes.terrain_environment` to compare terrain relief, strata contrast, horizon haze, backlight, and foreground scale as a 5x5 same-view stride sheet. It is based on the BlenderArt issue 39 landscape/Europa and virtual-environment prompts.
 
-The recipe uses `blender_workbench.primitives.add_soft_horizon_band` for the low glow card, because hard rectangular haze/light cards can pass in tiny tiles and then fail in the selected hero render.
+The recipe uses `blender_workbench.primitives.add_soft_horizon_band` for the low glow card, because hard rectangular haze/light cards can pass in small tiles and then fail in the selected hero render.
 
 After inspecting the sheet, promote one tile:
 
@@ -535,7 +535,7 @@ Run the transparent material scout:
 /Applications/Blender.app/Contents/MacOS/Blender --background --python examples/transparency_scout.py
 ```
 
-This uses `blender_workbench.recipes.transparency` to compare alpha, roughness, IOR, pane thickness, and tint as a 5x5 stride sheet. The defaults are intentionally aggressive so distortion, opacity, and tint shifts are visible in tiny tiles. If the sheet looks timid, increase `alpha_stride`, `roughness_stride`, `ior_stride`, `thickness_stride`, or `tint_stride`.
+This uses `blender_workbench.recipes.transparency` to compare alpha, roughness, IOR, pane thickness, and tint as a 5x5 stride sheet. The defaults are intentionally aggressive so distortion, opacity, and tint shifts are visible in small tiles. If the sheet looks timid, increase `alpha_stride`, `roughness_stride`, `ior_stride`, `thickness_stride`, or `tint_stride`.
 
 ![Transparency scout contact sheet](docs/assets/transparency-scout.jpg)
 

@@ -148,10 +148,10 @@ class FrameSample:
 
 @dataclass(frozen=True)
 class TileSpec:
-    width: int = 112
-    height: int = 112
+    width: int = 144
+    height: int = 144
     columns: int | None = None
-    label_height: int = 14
+    label_height: int = 18
     background: str = "black"
     show_notes: bool = False
     show_labels: bool = True
@@ -160,39 +160,39 @@ class TileSpec:
 
     @classmethod
     def hero_pair(cls) -> "TileSpec":
-        return cls(width=360, height=360, columns=2, label_height=28, show_notes=True, label_max_chars=42)
+        return cls(width=480, height=480, columns=2, label_height=34, show_notes=True, label_max_chars=48)
 
     @classmethod
     def balanced_grid(cls) -> "TileSpec":
-        return cls(width=160, height=160, columns=None, label_height=18, label_max_chars=18)
+        return cls(width=220, height=220, columns=None, label_height=24, label_max_chars=22)
 
     @classmethod
-    def micro_grid(cls, columns: int = 8) -> "TileSpec":
-        return cls(width=104, height=104, columns=columns, label_height=14, label_max_chars=12)
+    def micro_grid(cls, columns: int = 6) -> "TileSpec":
+        return cls(width=136, height=136, columns=columns, label_height=18, label_max_chars=14)
 
     @classmethod
     def auto_micro_grid(cls) -> "TileSpec":
-        return cls(width=104, height=104, columns=None, label_height=14, label_max_chars=12)
+        return cls(width=136, height=136, columns=None, label_height=18, label_max_chars=14)
 
     @classmethod
-    def tiny_grid(cls, columns: int = 10) -> "TileSpec":
-        return cls(width=88, height=88, columns=columns, label_height=12, label_max_chars=14)
+    def tiny_grid(cls, columns: int = 8) -> "TileSpec":
+        return cls(width=112, height=112, columns=columns, label_height=16, label_max_chars=14)
 
     @classmethod
     def auto_tiny_grid(cls) -> "TileSpec":
-        return cls(width=88, height=88, columns=None, label_height=12, label_max_chars=14)
+        return cls(width=112, height=112, columns=None, label_height=16, label_max_chars=14)
 
     @classmethod
-    def square_moodboard(cls, columns: int = 5) -> "TileSpec":
-        return cls(width=176, height=176, columns=columns, label_height=20, label_max_chars=20)
+    def square_moodboard(cls, columns: int = 4) -> "TileSpec":
+        return cls(width=240, height=240, columns=columns, label_height=26, label_max_chars=24)
 
     @classmethod
     def auto_square_moodboard(cls) -> "TileSpec":
-        return cls(width=176, height=176, columns=None, label_height=20, label_max_chars=20)
+        return cls(width=240, height=240, columns=None, label_height=26, label_max_chars=24)
 
     @classmethod
-    def filmstrip(cls, columns: int = 6) -> "TileSpec":
-        return cls(width=280, height=170, columns=columns, label_height=24, label_max_chars=32)
+    def filmstrip(cls, columns: int = 5) -> "TileSpec":
+        return cls(width=360, height=220, columns=columns, label_height=28, label_max_chars=36)
 
     def columns_for_count(self, count: int) -> int:
         if self.columns is not None:
@@ -208,14 +208,14 @@ class TileSpec:
 
 @dataclass(frozen=True)
 class RenderConfig:
-    resolution_x: int = 960
-    resolution_y: int = 630
+    resolution_x: int = 1152
+    resolution_y: int = 756
     engine: str = "CYCLES"
-    samples: int = 72
+    samples: int = 96
     use_denoising: bool = True
     use_persistent_data: bool = True
-    max_bounces: int | None = 6
-    transparent_max_bounces: int | None = 16
+    max_bounces: int | None = 8
+    transparent_max_bounces: int | None = 24
     view_transform: str = "Filmic"
     look: str = "High Contrast"
     exposure: float = 0.0
@@ -227,52 +227,52 @@ class RenderConfig:
     @classmethod
     def shape_scout(cls) -> "RenderConfig":
         return cls(
-            resolution_x=520,
-            resolution_y=340,
+            resolution_x=640,
+            resolution_y=420,
             engine="BLENDER_WORKBENCH",
             samples=1,
             use_denoising=False,
             transparent_max_bounces=None,
             view_transform="Standard",
             look="Medium High Contrast",
-            tile=TileSpec.micro_grid(columns=8),
+            tile=TileSpec.micro_grid(columns=6),
         )
 
     @classmethod
     def material_scout(cls) -> "RenderConfig":
         return cls(
-            resolution_x=640,
-            resolution_y=420,
-            engine="EEVEE",
-            samples=12,
-            use_denoising=False,
-            transparent_max_bounces=None,
+            resolution_x=900,
+            resolution_y=590,
+            engine="CYCLES",
+            samples=64,
+            max_bounces=6,
+            transparent_max_bounces=24,
             view_transform="Filmic",
-            look="Medium High Contrast",
-            tile=TileSpec.micro_grid(columns=6),
+            look="High Contrast",
+            tile=TileSpec.square_moodboard(columns=4),
         )
 
     @classmethod
     def cycles_preview(cls) -> "RenderConfig":
         return cls(
-            resolution_x=760,
-            resolution_y=500,
+            resolution_x=1100,
+            resolution_y=720,
             engine="CYCLES",
-            samples=32,
-            max_bounces=4,
-            transparent_max_bounces=18,
+            samples=96,
+            max_bounces=8,
+            transparent_max_bounces=28,
             tile=TileSpec.balanced_grid(),
         )
 
     @classmethod
     def hero_check(cls) -> "RenderConfig":
         return cls(
-            resolution_x=1280,
-            resolution_y=840,
+            resolution_x=1600,
+            resolution_y=1050,
             engine="CYCLES",
-            samples=96,
-            max_bounces=8,
-            transparent_max_bounces=24,
+            samples=192,
+            max_bounces=10,
+            transparent_max_bounces=36,
             tile=TileSpec.hero_pair(),
         )
 

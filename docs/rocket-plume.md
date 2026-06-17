@@ -9,9 +9,11 @@ Use `blender_workbench.recipes.rocket_plume` when scouting an upper-stage or in-
 The default recipe aims for:
 
 - broad translucent expansion rather than a narrow torch
-- blue-white filaments and a gray-blue shell rather than saturated orange fire
-- a short bright engine core, not a long flame
-- soft billowy structure that reads at thumbnail size
+- a gray-blue, optically thin shell rather than saturated orange fire
+- a short bright near-throat core, not a long flame
+- density-led structure: curved wisps, ribbons, clumps, and billows before bright filaments
+- shear-layer filaments that bend through the volume instead of straight nozzle-to-rim spokes
+- downstream falloff so the plume reads like expanding exhaust instead of a solid cone
 - deterministic procedural variation so parameter changes can be compared fairly
 
 ## First Scout
@@ -89,9 +91,9 @@ render_selected_from_sweep(
 
 - `shell_alpha` and `shell_strength`: the main anti-torch controls.
 - `width` and `length`: vacuum expansion shape.
-- `filament_count`, `filament_alpha`, and `filament_strength`: edge structure.
-- `smoke_alpha`, `smoke_strength`, and `billow_count`: broad cloudy read.
-- `density_ribbon_count`, `density_wisp_count`, and `density_clump_count`: spatial density texture.
+- `filament_count`, `filament_alpha`, and `filament_strength`: edge structure; keep these lower than the density controls for believable defaults.
+- `smoke_alpha`, `smoke_strength`, and `billow_count`: broad cloudy read and downstream falloff.
+- `density_ribbon_count`, `density_wisp_count`, and `density_clump_count`: spatial density texture and the main perceived plume body.
 - `density_ribbon_width`, `density_wisp_radius`, and `density_clump_scale`: size of texture structures.
 - `filament_wiggle`: turbulence in strand paths.
 - `plume_texture_magnitude` and `billow_texture_magnitude`: secondary shader-noise texture, not the main density structure.
@@ -99,8 +101,8 @@ render_selected_from_sweep(
 
 ## Performance Notes
 
-Start with `cycles_preview` at 24 to 32 samples. The recipe uses cheap geometry: open cones, curve filaments, and low-poly ellipsoid billows. If a sheet becomes slow, reduce `filament_count`, `billow_count`, tile count, or postprocessing before reducing the clarity of the sweep.
+Start with the default `cycles_preview` unless you are only checking broad silhouette. The recipe uses cheap geometry: open shells, curved wisps, density ribbons, and low-poly ellipsoid billows. If a sheet becomes slow, reduce `density_wisp_count`, `density_clump_count`, `filament_count`, tile count, or postprocessing before reducing samples or transparent bounces.
 
-On the current Mac/Blender 5.1 run, the dense texture scout rendered 16 tiny tiles in about 32.5 seconds at 560x360 and 16 Cycles samples. The 9-tile alpha/shape scout with default density texture rendered in about 21 seconds at 640x420 and 24 samples.
+Historical note: on the earlier Mac/Blender 5.1 run, the dense texture scout rendered 16 small tiles in about 32.5 seconds at 560x360 and 16 Cycles samples. The 9-tile alpha/shape scout with default density texture rendered in about 21 seconds at 640x420 and 24 samples.
 
 Use the dense texture scout to set stride before paying for the full alpha/shape sheet. Use `hero_check` only after the smaller sheets have chosen a shape, alpha regime, and texture range.

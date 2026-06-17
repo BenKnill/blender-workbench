@@ -16,51 +16,52 @@ ROCKET_PLUME_CAMERA = "rocket_plume_camera"
 
 @dataclass(frozen=True)
 class RocketPlumeSettings:
-    """Cheap procedural vacuum plume settings.
+    """Procedural vacuum plume settings.
 
-    The defaults aim for a broad, smoky upper-stage plume rather than a narrow
-    orange torch. Keep this recipe fast enough for scouting sweeps.
+    The defaults aim for an optically thin, expanding upper-stage plume rather
+    than a narrow orange torch. Keep this recipe fast enough for scouting
+    sweeps while avoiding obviously ray-like diagnostic geometry.
     """
 
-    shell_alpha: float = 0.035
-    shell_strength: float = 0.55
-    filament_alpha: float = 0.18
-    filament_strength: float = 0.85
-    filament_count: int = 28
-    width: float = 1.25
-    length: float = 1.0
-    smoke_alpha: float = 0.045
-    smoke_strength: float = 0.08
-    billow_count: int = 8
-    billow_jitter: float = 0.22
+    shell_alpha: float = 0.026
+    shell_strength: float = 0.42
+    filament_alpha: float = 0.095
+    filament_strength: float = 0.55
+    filament_count: int = 18
+    width: float = 1.45
+    length: float = 1.12
+    smoke_alpha: float = 0.034
+    smoke_strength: float = 0.055
+    billow_count: int = 12
+    billow_jitter: float = 0.32
     plume_texture_magnitude: float = 0.08
     plume_texture_scale: float = 10.0
     billow_texture_magnitude: float = 0.12
     billow_texture_scale: float = 5.5
-    density_ribbon_count: int = 8
-    density_ribbon_alpha: float = 0.045
-    density_ribbon_strength: float = 0.22
-    density_ribbon_width: float = 0.22
-    density_wisp_count: int = 18
-    density_wisp_alpha: float = 0.075
-    density_wisp_strength: float = 0.34
-    density_wisp_radius: float = 0.012
-    density_clump_count: int = 12
-    density_clump_alpha: float = 0.045
-    density_clump_strength: float = 0.09
-    density_clump_scale: float = 0.36
-    filament_wiggle: float = 0.13
-    shell_rib_count: int = 8
-    shell_rib_alpha: float = 0.055
-    shell_rib_strength: float = 0.34
-    core_alpha: float = 0.08
-    core_strength: float = 0.62
-    core_length: float = 0.42
-    warmth: float = 0.06
+    density_ribbon_count: int = 6
+    density_ribbon_alpha: float = 0.030
+    density_ribbon_strength: float = 0.14
+    density_ribbon_width: float = 0.36
+    density_wisp_count: int = 34
+    density_wisp_alpha: float = 0.048
+    density_wisp_strength: float = 0.22
+    density_wisp_radius: float = 0.009
+    density_clump_count: int = 18
+    density_clump_alpha: float = 0.032
+    density_clump_strength: float = 0.055
+    density_clump_scale: float = 0.46
+    filament_wiggle: float = 0.24
+    shell_rib_count: int = 6
+    shell_rib_alpha: float = 0.030
+    shell_rib_strength: float = 0.16
+    core_alpha: float = 0.055
+    core_strength: float = 0.48
+    core_length: float = 0.28
+    warmth: float = 0.025
     body_color: tuple[float, float, float, float] = (0.62, 0.66, 0.67, 1.0)
-    shell_color: tuple[float, float, float, float] = (0.50, 0.64, 0.78, 1.0)
-    filament_color: tuple[float, float, float, float] = (0.58, 0.78, 1.0, 1.0)
-    smoke_color: tuple[float, float, float, float] = (0.42, 0.50, 0.56, 1.0)
+    shell_color: tuple[float, float, float, float] = (0.46, 0.56, 0.64, 1.0)
+    filament_color: tuple[float, float, float, float] = (0.62, 0.76, 0.88, 1.0)
+    smoke_color: tuple[float, float, float, float] = (0.38, 0.45, 0.50, 1.0)
 
 
 def coerce_rocket_plume_settings(settings: RocketPlumeSettings | Mapping[str, Any] | None = None) -> RocketPlumeSettings:
@@ -490,6 +491,38 @@ def filament_curve(name: str, points: list[tuple[float, float, float]], radius: 
     return obj
 
 
+def _smoothstep(value: float) -> float:
+    t = max(0.0, min(1.0, value))
+    return t * t * (3.0 - 2.0 * t)
+
+
+def _plume_radius(settings: RocketPlumeSettings, t: float, *, phase: float = 0.0) -> float:
+    """Approximate the fast radial expansion of an upper-stage vacuum plume."""
+
+    clamped = max(0.0, min(1.0, t))
+    expansion = 1.0 - math.exp(-3.4 * clamped)
+    waviness = 1.0 + 0.045 * math.sin(phase + clamped * math.pi * 2.2)
+    return settings.width * (0.10 + 1.58 * expansion) * waviness
+
+
+def _plume_point(
+    settings: RocketPlumeSettings,
+    throat: tuple[float, float, float],
+    end_x: float,
+    t: float,
+    angle: float,
+    radial_fraction: float,
+    *,
+    phase: float = 0.0,
+) -> tuple[float, float, float]:
+    radius = _plume_radius(settings, t, phase=phase) * radial_fraction
+    return (
+        throat[0] + (end_x - throat[0]) * t,
+        math.sin(angle) * radius,
+        math.cos(angle * 0.87 + phase * 0.18) * radius * 0.56,
+    )
+
+
 def density_ribbon(name: str, throat: tuple[float, float, float], end_x: float, radius: float, angle: float, width: float, mat: Any) -> Any:
     import bpy
 
@@ -500,17 +533,20 @@ def density_ribbon(name: str, throat: tuple[float, float, float], end_x: float, 
             math.cos(theta * 0.86) * radius * 0.56 * scale,
         )
 
-    mid_x = throat[0] + (end_x - throat[0]) * 0.48
-    mid_radius = radius * 0.36
+    start_x = throat[0] + (end_x - throat[0]) * 0.14
+    mid_x = throat[0] + (end_x - throat[0]) * 0.52
+    start_radius = radius * 0.10
+    mid_radius = radius * 0.42
     verts = [
-        throat,
-        (mid_x, math.sin(angle - width * 0.35) * mid_radius, math.cos(angle) * mid_radius * 0.44),
+        (start_x, math.sin(angle - width * 0.18) * start_radius, math.cos(angle) * start_radius * 0.44),
+        (mid_x, math.sin(angle - width * 0.42) * mid_radius, math.cos(angle * 0.94) * mid_radius * 0.44),
         rim(angle - width),
         rim(angle + width),
-        (mid_x, math.sin(angle + width * 0.35) * mid_radius, math.cos(angle * 0.92) * mid_radius * 0.44),
+        (mid_x, math.sin(angle + width * 0.42) * mid_radius, math.cos(angle * 0.82) * mid_radius * 0.44),
+        (start_x, math.sin(angle + width * 0.18) * start_radius, math.cos(angle * 0.88) * start_radius * 0.44),
     ]
     mesh = bpy.data.meshes.new(name)
-    mesh.from_pydata(verts, [], [(0, 1, 2), (0, 2, 3), (0, 3, 4)])
+    mesh.from_pydata(verts, [], [(0, 1, 5), (1, 4, 5), (1, 2, 3), (1, 3, 4)])
     mesh.update()
     obj = bpy.data.objects.new(name, mesh)
     bpy.context.collection.objects.link(obj)
@@ -569,96 +605,98 @@ def _add_plume(settings: RocketPlumeSettings) -> None:
 
     throat = (0.26, 0.0, 0.0)
     plume_end_x = 4.7 * settings.length
-    open_cone("short non-flame engine core", throat, (0.75 + settings.core_length, 0, 0), 0.055, 0.28 * settings.width, core, vertices=48)
+    open_cone("short non-flame engine core", throat, (0.68 + settings.core_length, 0, 0), 0.050, 0.18 * settings.width, core, vertices=48)
 
-    for index, scale in enumerate([0.62, 0.9, 1.18]):
+    for index, scale in enumerate([0.56, 0.82, 1.08]):
+        t_end = 0.78 + index * 0.08
+        end_radius = _plume_radius(settings, t_end, phase=index * 0.6) * scale
         end = (
-            plume_end_x * (0.88 + index * 0.06),
-            math.sin(index * 1.9) * 0.08 * settings.width,
-            math.cos(index * 1.4) * 0.05 * settings.width,
+            plume_end_x * t_end,
+            math.sin(index * 1.9) * 0.05 * settings.width,
+            math.cos(index * 1.4) * 0.03 * settings.width,
         )
         open_cone(
             f"nested plume shell {index}",
             throat,
             end,
-            0.10 + index * 0.015,
-            (1.38 + index * 0.22) * settings.width * scale,
+            0.07 + index * 0.012,
+            end_radius,
             shell,
             vertices=96,
         )
 
     for index in range(max(0, int(settings.density_ribbon_count))):
         frac = (index + 0.5) / max(1, settings.density_ribbon_count)
-        angle = index * 2.618 + math.sin(index * 0.71) * 0.3
+        angle = index * 2.618 + math.sin(index * 0.71) * 0.34
+        t_end = 0.44 + 0.42 * _smoothstep(frac)
         density_ribbon(
             f"density ribbon {index:02d}",
             throat,
-            plume_end_x * (0.62 + 0.32 * math.sin(index * 0.37) ** 2),
-            settings.width * (0.42 + 1.2 * frac),
+            plume_end_x * t_end,
+            _plume_radius(settings, t_end, phase=angle) * (0.56 + 0.24 * math.sin(index * 0.57) ** 2),
             angle,
-            settings.density_ribbon_width * (0.72 + frac),
+            settings.density_ribbon_width * (0.8 + 0.9 * frac),
             density,
         )
 
     for index in range(max(0, int(settings.shell_rib_count))):
         frac = (index + 0.5) / max(1, settings.shell_rib_count)
         angle = index * 2.399
-        end_radius = settings.width * (0.75 + 0.85 * frac)
-        end = (
-            plume_end_x * (0.82 + 0.13 * math.sin(index * 0.47) ** 2),
-            math.sin(angle) * end_radius,
-            math.cos(angle * 0.91) * end_radius * 0.48,
-        )
-        mid = (
-            0.55 + end[0] * 0.48,
-            end[1] * (0.18 + 0.2 * math.sin(index * 1.11)),
-            end[2] * (0.14 + 0.18 * math.cos(index * 0.83)),
-        )
-        filament_curve(f"shell rib {index:02d}", [throat, mid, end], 0.0035 + 0.003 * frac, rib)
+        t0 = 0.08
+        t1 = 0.30 + 0.10 * math.sin(index * 0.67) ** 2
+        t2 = 0.58 + 0.18 * frac
+        t3 = 0.82 + 0.08 * math.sin(index * 0.47) ** 2
+        points = [
+            _plume_point(settings, throat, plume_end_x, t0, angle, 0.10, phase=index),
+            _plume_point(settings, throat, plume_end_x, t1, angle + 0.12, 0.34, phase=index),
+            _plume_point(settings, throat, plume_end_x, t2, angle + 0.26, 0.62 + 0.20 * frac, phase=index),
+            _plume_point(settings, throat, plume_end_x, t3, angle + 0.34, 0.82 + 0.10 * frac, phase=index),
+        ]
+        filament_curve(f"shell rib {index:02d}", points, 0.003 + 0.002 * (1.0 - frac), rib)
 
     for index in range(max(0, int(settings.density_wisp_count))):
         frac = (index + 0.5) / max(1, settings.density_wisp_count)
         angle = index * 2.177
-        end_radius = settings.width * (0.22 + 1.05 * frac)
-        end = (
-            plume_end_x * (0.35 + 0.58 * frac),
-            math.sin(angle) * end_radius,
-            math.cos(angle * 0.87) * end_radius * 0.58,
-        )
-        mid = (
-            0.45 + end[0] * (0.34 + 0.18 * math.sin(index * 0.43)),
-            end[1] * (0.22 + 0.28 * math.sin(index * 0.91)),
-            end[2] * (0.20 + 0.22 * math.cos(index * 0.77)),
-        )
-        filament_curve(f"density wisp {index:02d}", [throat, mid, end], settings.density_wisp_radius * (0.6 + 0.7 * frac), wisp)
+        start_t = 0.14 + 0.10 * math.sin(index * 1.13) ** 2
+        mid_t = 0.34 + 0.22 * frac
+        end_t = 0.56 + 0.36 * _smoothstep(frac)
+        radial = 0.18 + 0.56 * frac
+        points = [
+            _plume_point(settings, throat, plume_end_x, start_t, angle, radial * 0.25, phase=index),
+            _plume_point(settings, throat, plume_end_x, mid_t, angle + 0.30 * math.sin(index), radial * 0.55, phase=index),
+            _plume_point(settings, throat, plume_end_x, (mid_t + end_t) * 0.5, angle + 0.46, radial * 0.78, phase=index),
+            _plume_point(settings, throat, plume_end_x, end_t, angle + 0.70, radial * (0.88 + 0.12 * math.sin(index * 0.37)), phase=index),
+        ]
+        filament_curve(f"density wisp {index:02d}", points, settings.density_wisp_radius * (0.55 + 0.55 * (1.0 - frac)), wisp)
 
     for index in range(settings.billow_count):
         t = (index + 0.8) / (settings.billow_count + 1.0)
         phase = index * 2.399
-        x = 0.55 + plume_end_x * t
-        radius = (0.20 + 1.35 * t) * settings.width * (1.0 + 0.22 * settings.billow_texture_magnitude * math.sin(index * 1.71))
-        y = math.sin(phase) * radius * settings.billow_jitter
-        z = math.cos(phase * 0.73) * radius * settings.billow_jitter * 0.62
+        radius = _plume_radius(settings, t, phase=phase) * (1.0 + 0.18 * settings.billow_texture_magnitude * math.sin(index * 1.71))
+        x = throat[0] + (plume_end_x - throat[0]) * (0.12 + 0.82 * t)
+        y = math.sin(phase) * radius * settings.billow_jitter * (0.24 + 0.52 * t)
+        z = math.cos(phase * 0.73) * radius * settings.billow_jitter * (0.18 + 0.34 * t)
         bpy.ops.mesh.primitive_uv_sphere_add(segments=24, ring_count=12, radius=1.0, location=(x, y, z))
         obj = bpy.context.object
         obj.name = f"soft billow {index:02d}"
         lump = 1.0 + settings.billow_texture_magnitude * 0.24 * math.sin(index * 2.17)
-        obj.scale = ((0.18 + 0.35 * t) * lump, radius * 0.52, radius * 0.38 * (2.0 - lump))
+        obj.scale = ((0.14 + 0.26 * t) * lump, radius * 0.34, radius * 0.24 * (2.0 - lump))
         obj.data.materials.append(smoke)
         _shade_smooth()
 
     for index in range(max(0, int(settings.density_clump_count))):
         frac = (index + 0.5) / max(1, settings.density_clump_count)
         phase = index * 2.071
-        x = 0.72 + plume_end_x * (0.18 + 0.68 * frac)
-        radius = settings.width * (0.16 + 1.18 * frac)
-        y = math.sin(phase) * radius * (0.18 + 0.32 * math.sin(index * 0.59) ** 2)
-        z = math.cos(phase * 0.81) * radius * 0.42
+        t = 0.20 + 0.66 * _smoothstep(frac)
+        radius = _plume_radius(settings, t, phase=phase)
+        x = throat[0] + (plume_end_x - throat[0]) * t
+        y = math.sin(phase) * radius * (0.12 + 0.26 * math.sin(index * 0.59) ** 2)
+        z = math.cos(phase * 0.81) * radius * (0.14 + 0.18 * frac)
         bpy.ops.mesh.primitive_uv_sphere_add(segments=16, ring_count=8, radius=1.0, location=(x, y, z))
         obj = bpy.context.object
         obj.name = f"density clump {index:02d}"
-        scale = settings.density_clump_scale * (0.45 + 0.85 * frac)
-        obj.scale = (scale * 0.55, scale * (0.8 + 0.4 * math.sin(index)), scale * 0.55)
+        scale = settings.density_clump_scale * (0.34 + 0.62 * frac)
+        obj.scale = (scale * 0.45, scale * (0.64 + 0.30 * math.sin(index)), scale * 0.38)
         obj.data.materials.append(clump)
         _shade_smooth()
 
@@ -666,16 +704,20 @@ def _add_plume(settings: RocketPlumeSettings) -> None:
     for index in range(count):
         frac = (index + 0.5) / max(1, count)
         angle = index * 2.618
-        end_radius = settings.width * (0.35 + 1.35 * frac)
-        end_x = plume_end_x * (0.78 + 0.2 * math.sin(index * 0.71) ** 2)
-        end_y = math.sin(angle) * end_radius
-        end_z = math.cos(angle * 0.83) * end_radius * 0.55
-        mid_x = 0.55 + end_x * 0.45
         wiggle = settings.filament_wiggle
-        mid_y = end_y * (0.18 + 0.18 * math.sin(index * 0.37)) + math.sin(index * 3.1) * wiggle
-        mid_z = end_z * (0.12 + 0.16 * math.cos(index * 0.53)) + math.cos(index * 2.7) * wiggle * 0.7
-        radius = 0.0045 + 0.006 * (1.0 - frac)
-        filament_curve(f"plume filament {index:02d}", [throat, (mid_x, mid_y, mid_z), (end_x, end_y, end_z)], radius, filament)
+        radial = 0.22 + 0.72 * frac
+        t0 = 0.04 + 0.03 * math.sin(index * 0.61) ** 2
+        t1 = 0.22 + 0.08 * math.sin(index * 1.23) ** 2
+        t2 = 0.50 + 0.18 * frac
+        t3 = 0.72 + 0.18 * math.sin(index * 0.71) ** 2
+        points = [
+            _plume_point(settings, throat, plume_end_x, t0, angle, 0.06, phase=index),
+            _plume_point(settings, throat, plume_end_x, t1, angle + 0.18, radial * 0.26, phase=index + wiggle),
+            _plume_point(settings, throat, plume_end_x, t2, angle + 0.42 + math.sin(index * 3.1) * wiggle * 0.18, radial * 0.58, phase=index),
+            _plume_point(settings, throat, plume_end_x, t3, angle + 0.76 + math.cos(index * 2.7) * wiggle * 0.14, radial, phase=index),
+        ]
+        radius = 0.0032 + 0.0038 * (1.0 - frac)
+        filament_curve(f"plume filament {index:02d}", points, radius, filament)
 
 
 def _add_camera_and_light() -> None:

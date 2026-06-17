@@ -723,7 +723,7 @@ class SweepTests(unittest.TestCase):
 
     def test_render_config_profiles_are_ordered_by_cost(self):
         self.assertEqual(RenderConfig.shape_scout().engine, "BLENDER_WORKBENCH")
-        self.assertEqual(RenderConfig.material_scout().engine, "EEVEE")
+        self.assertEqual(RenderConfig.material_scout().engine, "CYCLES")
         self.assertLess(RenderConfig.shape_scout().resolution_x, RenderConfig.hero_check().resolution_x)
         self.assertLess(RenderConfig.cycles_preview().samples, RenderConfig.hero_check().samples)
 
@@ -732,7 +732,7 @@ class SweepTests(unittest.TestCase):
         data = settings_to_jsonable(config)
 
         self.assertEqual(data["engine"], "CYCLES")
-        self.assertEqual(data["transparent_max_bounces"], 18)
+        self.assertEqual(data["transparent_max_bounces"], 28)
         self.assertIn("tile", data)
 
     def test_rocket_plume_recipe_coerces_known_settings(self):
@@ -742,6 +742,15 @@ class SweepTests(unittest.TestCase):
         self.assertEqual(settings.width, 1.7)
         self.assertEqual(settings.length, 0.8)
         self.assertFalse(hasattr(settings, "samples"))
+
+    def test_rocket_plume_defaults_are_density_led(self):
+        settings = RocketPlumeSettings()
+
+        self.assertGreater(settings.width, 1.2)
+        self.assertLess(settings.shell_alpha, 0.04)
+        self.assertLess(settings.filament_count, settings.density_wisp_count)
+        self.assertGreater(settings.density_clump_count, 0)
+        self.assertGreater(settings.billow_count, 0)
 
     def test_rocket_plume_scout_is_three_by_three(self):
         variants = rocket_plume_scout_variants(prefix="test")
