@@ -17,6 +17,8 @@ https://benknill.github.io/blender-workbench/cuda-demo-gallery/
 - `index.html` - static gallery page.
 - `media/fluidsGL_native_run.gif` - visibly animated native Windows `fluidsGL` CUDA/OpenGL run.
 - `media/fluidsGL_native_run.mp4` - MP4 transcode of that animated run.
+- `media/oceanFFT_native_run.gif` - animated native Windows `oceanFFT` CUDA/CUFFT OpenGL run.
+- `media/oceanFFT_native_run.mp4` - MP4 transcode of that animated run.
 - `media/cuda_sim_contact.png` - contact sheet made from CUDA sample QA buffers.
 - `media/cuda_sim_contact_hold.gif` - GIF preview of the contact sheet.
 - `media/cuda_sim_contact_hold.mp4` - small MP4 hold of the contact sheet.
@@ -29,6 +31,9 @@ The interactive `fluidsGL` OpenGL path did not run inside WSLg because the
 CUDA/OpenGL interop call failed at `cudaGraphicsGLRegisterBuffer` with
 `cudaErrorOperatingSystem`. The native Windows build succeeded after upgrading
 to CUDA 12.6 and produced the animated reference frames here.
+
+The native Windows `oceanFFT` sample was also patched locally for deterministic
+frame capture, producing the animated ocean surface preview in this gallery.
 
 The non-interop CUDA paths did run and validate:
 
