@@ -15,8 +15,8 @@ https://benknill.github.io/blender-workbench/cuda-demo-gallery/
 ## Files
 
 - `index.html` - static gallery page.
-- `media/fluidsGL_reference.gif` - bundled NVIDIA fluidsGL reference animation.
-- `media/fluidsGL_reference.mp4` - tiny MP4 transcode of that reference GIF.
+- `media/fluidsGL_reference.gif` - animated native Windows `fluidsGL` CUDA/OpenGL run.
+- `media/fluidsGL_reference.mp4` - MP4 transcode of that animated run.
 - `media/cuda_sim_contact.png` - contact sheet made from CUDA sample QA buffers.
 - `media/cuda_sim_contact_hold.gif` - GIF preview of the contact sheet.
 - `media/cuda_sim_contact_hold.mp4` - small MP4 hold of the contact sheet.
@@ -25,9 +25,10 @@ https://benknill.github.io/blender-workbench/cuda-demo-gallery/
 
 ## Notes
 
-The interactive `fluidsGL` OpenGL window did not run inside WSLg because the
+The interactive `fluidsGL` OpenGL path did not run inside WSLg because the
 CUDA/OpenGL interop call failed at `cudaGraphicsGLRegisterBuffer` with
-`cudaErrorOperatingSystem`.
+`cudaErrorOperatingSystem`. The native Windows build succeeded after upgrading
+to CUDA 12.6 and produced the animated reference frames here.
 
 The non-interop CUDA paths did run and validate:
 
