@@ -15,8 +15,8 @@ https://benknill.github.io/blender-workbench/cuda-demo-gallery/
 ## Files
 
 - `index.html` - static gallery page.
-- `media/fluidsGL_reference.gif` - animated native Windows `fluidsGL` CUDA/OpenGL run.
-- `media/fluidsGL_reference.mp4` - MP4 transcode of that animated run.
+- `media/fluidsGL_native_run.gif` - visibly animated native Windows `fluidsGL` CUDA/OpenGL run.
+- `media/fluidsGL_native_run.mp4` - MP4 transcode of that animated run.
 - `media/cuda_sim_contact.png` - contact sheet made from CUDA sample QA buffers.
 - `media/cuda_sim_contact_hold.gif` - GIF preview of the contact sheet.
 - `media/cuda_sim_contact_hold.mp4` - small MP4 hold of the contact sheet.
